@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whitepaper — Factor0x</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <style type="text/css">
+    * { box-sizing: border-box; }
+    body {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 64px 24px 96px;
+      background: #fff;
+      color: #111;
+      font-family: 'Manrope', Arial, sans-serif;
+      line-height: 1.7;
+    }
+    b, i {
+      font-style: inherit;
+      font-weight: inherit;
+    }
+    .back {
+      display: inline-block;
+      margin-bottom: 42px;
+      color: #555;
+      font-size: 14px;
+      text-decoration: none;
+    }
+    .back:hover { color: #111; }
+    p.p1 {
+      margin: 0 0 48px;
+      text-align: left;
+      color: #111;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(42px, 6vw, 72px);
+      font-weight: 700;
+      line-height: 0.98;
+    }
+    p.p2 {
+      margin: 44px 0 14px;
+      padding-top: 28px;
+      border-top: 1px solid #e5e5e5;
+      color: #111;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+    p.p1 + p.p2 {
+      margin-top: 0;
+    }
+    p.p6 {
+      margin: 28px 0 10px;
+      color: #111;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+    p.p3 {
+      margin: 0 0 16px;
+      color: #222;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.75;
+    }
+    p.p4 {
+      position: relative;
+      margin: 0 0 7px;
+      padding-left: 22px;
+      color: #222;
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.65;
+    }
+    p.p4 + p.p3,
+    p.p4 + p.p2,
+    p.p4 + p.p5 {
+      margin-top: 16px;
+    }
+    p.p5 {
+      display: none;
+    }
+    .Apple-tab-span {
+      display: none;
+    }
+    .document-language-notice {
+      margin: -20px 0 34px;
+      padding: 14px 16px;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      background: #f7f7f7;
+      color: #555;
+      font-size: 14px;
+    }
+    @media (max-width: 640px) {
+      body { padding: 42px 18px 72px; }
+      p.p1 { font-size: 42px; }
+      p.p2 { font-size: 24px; }
+    }
+    span.Apple-tab-span {white-space:pre}
+  </style>
+  <script src="docs-language.js" defer></script>
+</head>
+<body data-document-lang="en">
+<a class="back" href="index.html">← Back to Factor0x</a>
+<p class="p1"><b><i>Whitepaper<br>
+Factor0x</i></b></p>
+<p class="p2"><b><i>1. Overview</i></b></p>
+<p class="p3"><b><i>Factor0x is a cross-border invoice financing / trade receivables financing platform that helps businesses access liquidity against verified B2B invoices and short-term receivables.</i></b></p>
+<p class="p3"><b><i>The platform connects:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>SMEs and mid-market companies with verified invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>investors and capital providers seeking an opportunity to participate in the financing of verified receivables;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>SPV / licensed partner / factoring provider;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>digital-asset capital providers, where legally permitted;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>AI infrastructure for invoice verification and risk scoring;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>compliance, KYB / KYC and AML framework;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Web3 smart-contract layer for investor participation accounting, deal status transparency and distribution logic.</i></b></p>
+<p class="p3"><b><i>Factor0x is not a speculative token project. It is an infrastructure platform for financing real B2B receivables with a Web3 layer for transparency, accounting and automation.</i></b></p>
+<p class="p3"><b><i>UAE / Dubai is considered the first operating, commercial and regulatory hub for:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>first invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>first SMEs / borrowers;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>first UAE / GCC obligors;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>first pilot transactions;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>crypto-native liquidity infrastructure;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>legal / regulatory pathway review;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>regulated digital asset / conversion infrastructure where required.</i></b></p>
+<p class="p3"><b><i>Singapore and Southeast Asia are considered later as a second layer for structuring, banking, compliance and regional scaling.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>2. Mission</i></b></p>
+<p class="p3"><b><i>The mission of Factor0x is to make the financing of verified receivables faster, more transparent and more accessible by combining:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>verified B2B invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>AI-powered invoice verification;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>risk scoring / underwriting;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>structured capital deployment;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>fiat and crypto-native liquidity;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>smart-contract-based accounting;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>institutional-grade compliance and reporting.</i></b></p>
+<p class="p3"><b><i>Factor0x aims to turn verified receivables into a transparent, controlled and financeable asset class.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>3. Problem</i></b></p>
+<p class="p3"><b><i>Many SMEs earn revenue before they receive cash.</i></b></p>
+<p class="p3"><b><i>In sectors such as logistics, trade, distribution, construction, import/export and B2B services, companies often issue invoices with payment terms of 30–120 days.</i></b></p>
+<p class="p3"><b><i>This creates a recurring gap:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>the service has been performed or goods have been delivered;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>the invoice has been issued;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>the debtor / obligor will pay later;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>the business needs liquidity now.</i></b></p>
+<p class="p3"><b><i>Traditional factoring and invoice financing have several limitations.</i></b></p>
+<p class="p6"><b><i>3.1 Limited access for SMEs</i></b></p>
+<p class="p3"><b><i>Many SMEs do not meet the requirements of banks or traditional factoring providers.</i></b></p>
+<p class="p6"><b><i>3.2 Slow approval process</i></b></p>
+<p class="p3"><b><i>Manual underwriting, document review and credit analysis often take too much time.</i></b></p>
+<p class="p6"><b><i>3.3 Lack of transparency</i></b></p>
+<p class="p3"><b><i>Investors and capital providers often have limited visibility into invoice quality, document status, debtor risk, repayment progress and portfolio performance.</i></b></p>
+<p class="p6"><b><i>3.4 Complexity of cross-border financing</i></b></p>
+<p class="p3"><b><i>International invoice financing is complicated by legal, banking, currency and compliance factors.</i></b></p>
+<p class="p6"><b><i>3.5 Underutilized crypto liquidity</i></b></p>
+<p class="p3"><b><i>Digital-asset markets may become an additional source of liquidity for financing short-term B2B receivables, subject to applicable regulation.</i></b></p>
+<p class="p3"><b><i>Factor0x does not view this segment as a public fundraising channel from an unrestricted investor audience, but as a potential source of structured liquidity that may be connected through a legally permissible model, compliance procedures and regulated partners where required.</i></b></p>
+<p class="p3"><b><i>The key objective is to create a clear and defensible framework in which digital-asset liquidity can be directed into the financing of real trade transactions without breaching requirements related to investor onboarding, AML/KYC, custody, offering restrictions and virtual asset activity.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>4. Factor0x Opportunity</i></b></p>
+<p class="p3"><b><i>Factor0x creates infrastructure where verified B2B invoices can be:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>accepted;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>verified;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>assessed from a risk perspective;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>financed;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>tracked through repayment;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>presented to investors in a transparent and structured form.</i></b></p>
+<p class="p3"><b><i>The key opportunity of Factor0x is to connect:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>businesses that need liquidity against verified B2B invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>capital providers interested in short-duration real-world assets;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>licensed partners / SPVs through which capital deployment can be structured in a legally appropriate manner;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>an AI verification engine that helps verify invoices, documents and transaction quality;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>a smart contract layer that provides operational transparency, participation accounting, deal statuses and distribution logic.</i></b></p>
+<p class="p3"><b><i>Verified receivables can become a scalable real-world asset class when legal structuring, risk control, compliance and digital infrastructure are combined.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>5. Core Factor0x Model</i></b></p>
+<p class="p3"><b><i>Factor0x is built around a separation of roles.</i></b></p>
+<p class="p6"><b><i>5.1 Borrower / SME</i></b></p>
+<p class="p3"><b><i>A company that wants to obtain financing against a verified invoice / receivable.</i></b></p>
+<p class="p6"><b><i>5.2 Debtor / Obligor</i></b></p>
+<p class="p3"><b><i>The corporate customer of the SME that is obligated to pay the invoice.</i></b></p>
+<p class="p6"><b><i>5.3 Factor0x</i></b></p>
+<p class="p3"><b><i>The operating platform responsible for:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>deal sourcing;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>borrower onboarding;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>invoice intake;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>document verification;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>AI-powered risk scoring;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>obligor analysis;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>investor-facing platform layer;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>servicing;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>reporting;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>transaction status tracking;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Web3 transparency layer.</i></b></p>
+<p class="p6"><b><i>5.4 SPV / Licensed Partner / Factoring Provider</i></b></p>
+<p class="p3"><b><i>A legal structure or licensed partner that may:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>purchase receivables;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>finance SMEs against receivables;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>support collection and repayment flows;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>receive repayments;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>support repayment and settlement processes under the approved legal structure.</i></b></p>
+<p class="p6"><b><i>5.5 Crypto / OTC / VASP Provider</i></b></p>
+<p class="p3"><b><i>A licensed or regulated provider that may provide:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>crypto-to-fiat conversion through licensed / regulated providers where required;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>stablecoin settlement;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>custody, if permitted;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>wallet screening;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>AML transaction monitoring.</i></b></p>
+<p class="p6"><b><i>5.6 Investors / Capital Providers</i></b></p>
+<p class="p3"><b><i>Capital providers may include:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>crypto-native investors;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>private investors;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>family offices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>treasury holders;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>funds;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>professional / qualified investors, if required by law.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>6. Target Market</i></b></p>
+<p class="p6"><b><i>6.1 Initial geography</i></b></p>
+<p class="p3"><b><i>The first market for Factor0x is UAE / Dubai.</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>UAE-based SMEs;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>UAE / GCC obligors;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>logistics companies;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>trade companies;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>import / export businesses;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>distributors;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>supply chain companies;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>construction / contractors;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>B2B service providers.</i></b></p>
+<p class="p6"><b><i>6.2 Target borrower profile</i></b></p>
+<p class="p3"><b><i>The ideal borrower:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>SME or mid-market company;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>regular B2B invoice flow;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>payment term of 30–120 days;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>corporate debtor / obligor;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>confirmed operating history;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>absence of critical legal, sanctions, tax or bankruptcy risks;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>ability to provide supporting documents.</i></b></p>
+<p class="p6"><b><i>6.3 Target investor profile</i></b></p>
+<p class="p3"><b><i>Target investors / capital providers:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>crypto-native investors;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>eligible digital-asset capital providers;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>private investors;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>family offices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>funds;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Gulf-based capital providers;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>professional / qualified investors.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>7. Product Architecture</i></b></p>
+<p class="p3"><b><i>Factor0x is a hybrid infrastructure platform that combines off-chain verification and on-chain transparency.</i></b></p>
+<p class="p6"><b><i>7.1 Off-chain layer</i></b></p>
+<p class="p3"><b><i>The off-chain layer includes:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>borrower onboarding;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>KYB / KYC;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>document upload;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>invoice verification;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>obligor review;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>risk scoring;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>legal documents;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>contracts;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>financing agreements;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>receivables assignment documents;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>compliance review;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>banking and repayment flows.</i></b></p>
+<p class="p6"><b><i>7.2 On-chain layer</i></b></p>
+<p class="p3"><b><i>The on-chain layer may include:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>investor participation recording;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>smart-contract allocation tracking;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>deal status events;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>repayment distribution logic if legally permitted;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>audit trail;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>digital participation record;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>pool-level or deal-level transparency;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>immutable hashes of off-chain documents.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>8. AI-powered Invoice Verification and Risk Scoring</i></b></p>
+<p class="p3"><b><i>A key component of Factor0x is the AI-powered invoice verification and receivables underwriting engine.</i></b></p>
+<p class="p6"><b><i>8.1 Invoice Validation</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>verify invoice authenticity;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>extract invoice data;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>check invoice amount;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>check due date;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>check debtor details;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>check payment terms;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>identify missing fields;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>identify inconsistencies.</i></b></p>
+<p class="p6"><b><i>8.2 Fraud Detection</i></b></p>
+<p class="p3"><b><i>The system should identify:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>fake invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>duplicate invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>disputed invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>altered documents;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>inconsistent debtor details;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>unusual invoice amounts;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>repeated invoice patterns;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>related-party risk;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>double financing risk.</i></b></p>
+<p class="p6"><b><i>8.3 Obligor Analysis</i></b></p>
+<p class="p3"><b><i>The system should assess:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>debtor identity;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>debtor jurisdiction;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>corporate status;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>payment history, if available;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>creditworthiness;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>sanctions / adverse media risk;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>concentration exposure;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>industry risk.</i></b></p>
+<p class="p6"><b><i>8.4 Risk Tiering</i></b></p>
+<p class="p3"><b><i>Each invoice / pool should receive a risk tier:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Low Risk;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Medium Risk;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>High Risk;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Manual Review Required;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Rejected.</i></b></p>
+<p class="p3"><b><i>The risk score should influence:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>advance rate;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>investor yield;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>reserve requirement;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>financing eligibility;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>documentation requirements;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>approval workflow.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>9. Transaction Workflow</i></b></p>
+<p class="p6"><b><i>9.1 Borrower Flow</i></b></p>
+<p class="p4"><b><i>1.<span class="Apple-tab-span">	</span>Borrower uploads the invoice and supporting documents.</i></b></p>
+<p class="p4"><b><i>2.<span class="Apple-tab-span">	</span>Factor0x performs KYB and initial document intake.</i></b></p>
+<p class="p4"><b><i>3.<span class="Apple-tab-span">	</span>The AI engine extracts and verifies invoice data.</i></b></p>
+<p class="p4"><b><i>4.<span class="Apple-tab-span">	</span>The obligor is reviewed and risk-scored.</i></b></p>
+<p class="p4"><b><i>5.<span class="Apple-tab-span">	</span>Supporting documents are reviewed.</i></b></p>
+<p class="p4"><b><i>6.<span class="Apple-tab-span">	</span>The invoice receives the status approved, rejected or manual review.</i></b></p>
+<p class="p4"><b><i>7.<span class="Apple-tab-span">	</span>Financing terms are proposed.</i></b></p>
+<p class="p4"><b><i>8.<span class="Apple-tab-span">	</span>The transaction is listed privately or to eligible investors.</i></b></p>
+<p class="p4"><b><i>9.<span class="Apple-tab-span">	</span>Capital is raised through the approved structure.</i></b></p>
+<p class="p4"><b><i>10.<span class="Apple-tab-span">	</span>The SME receives financing.</i></b></p>
+<p class="p4"><b><i>11.<span class="Apple-tab-span">	</span>The debtor pays the invoice into a controlled account.</i></b></p>
+<p class="p4"><b><i>12.<span class="Apple-tab-span">	</span>Repayment is distributed according to the legal and platform logic.</i></b></p>
+<p class="p6"><b><i>9.2 Investor Flow</i></b></p>
+<p class="p4"><b><i>1.<span class="Apple-tab-span">	</span>Investor completes KYC / KYB where required / subject to onboarding rules.</i></b></p>
+<p class="p4"><b><i>2.<span class="Apple-tab-span">	</span>Investor completes wallet screening and source-of-funds checks.</i></b></p>
+<p class="p4"><b><i>3.<span class="Apple-tab-span">	</span>Investor sees available invoice-backed opportunities.</i></b></p>
+<p class="p4"><b><i>4.<span class="Apple-tab-span">	</span>Investor reviews indicative economics.</i></b></p>
+<p class="p4"><b><i>5.<span class="Apple-tab-span">	</span>Investor contributes eligible assets through approved channels, subject to legal and compliance checks.</i></b></p>
+<p class="p4"><b><i>6.<span class="Apple-tab-span">	</span>Investor receives digital confirmation of participation.</i></b></p>
+<p class="p4"><b><i>7.<span class="Apple-tab-span">	</span>Investor tracks deal status.</i></b></p>
+<p class="p4"><b><i>8.<span class="Apple-tab-span">	</span>Investor receives distributions according to transaction terms, subject to risk and legal documentation.</i></b></p>
+<p class="p6"><b><i>9.3 Repayment Flow</i></b></p>
+<p class="p4"><b><i>1.<span class="Apple-tab-span">	</span>Debtor / obligor pays the invoice.</i></b></p>
+<p class="p4"><b><i>2.<span class="Apple-tab-span">	</span>Funds arrive at the SPV / licensed partner / designated collection account.</i></b></p>
+<p class="p4"><b><i>3.<span class="Apple-tab-span">	</span>The receipt is reconciled according to approved transaction documents.</i></b></p>
+<p class="p4"><b><i>4.<span class="Apple-tab-span">	</span>Transaction proceeds and investor allocations are calculated according to approved transaction documents.</i></b></p>
+<p class="p4"><b><i>5.<span class="Apple-tab-span">	</span>Applicable platform and partner fees are deducted if provided by the transaction structure.</i></b></p>
+<p class="p4"><b><i>6.<span class="Apple-tab-span">	</span>Distributions are made in accordance with the approved transaction documents.</i></b></p>
+<p class="p4"><b><i>7.<span class="Apple-tab-span">	</span>Deal status is updated to Repaid, Overdue or Default.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>10. Deal Structure</i></b></p>
+<p class="p3"><b><i>Factor0x is considering several possible legal structures.</i></b></p>
+<p class="p6"><b><i>10.1 Receivables Purchase / Assignment</i></b></p>
+<p class="p3"><b><i>An SPV or licensed partner purchases the receivable from the SME at a discount.</i></b></p>
+<p class="p3"><b><i>Documents may include:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>receivables purchase agreement;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>assignment agreement;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>notice of assignment;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>debtor acknowledgment;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>controlled collection account;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>servicing agreement.</i></b></p>
+<p class="p6"><b><i>10.2 Loan Against Invoice</i></b></p>
+<p class="p3"><b><i>A financing entity provides an SME loan, where the invoice is used as collateral or as a repayment source.</i></b></p>
+<p class="p3"><b><i>Documents may include:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>loan agreement;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>security over receivable;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>repayment waterfall;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>debtor payment direction.</i></b></p>
+<p class="p6"><b><i>10.3 Licensed Partner-led Factoring</i></b></p>
+<p class="p3"><b><i>A licensed factoring / finance partner acts as the legal financing entity.</i></b></p>
+<p class="p3"><b><i>Factor0x remains:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>origination layer;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>verification layer;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>risk scoring layer;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>marketing / investor acquisition layer, where legally permitted;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>servicing layer;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>reporting layer;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Web3 transparency layer.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>11. Investor Participation Model</i></b></p>
+<p class="p6"><b><i>Deal-by-deal / asset-by-asset model</i></b></p>
+<p class="p3"><b><i>Factor0x is considering a model where investors participate not in a broad manager-driven public pool, but in individual invoice-backed opportunities or pre-defined transactions.</i></b></p>
+<p class="p3"><b><i>In this model:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>investors see specific invoice-backed opportunities;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>investors choose whether to participate in a specific transaction;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>each opportunity has disclosed parameters: borrower, obligor, amount, tenor, risk tier, verification status and indicative economics;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>capital is not transferred into a broad manager-driven pool without selection of specific assets;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>the legal form of investor participation is defined by approved transaction documents and is subject to legal review.</i></b></p>
+<p class="p3"><b><i>Disclosed parameters may include:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>borrower;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>obligor;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>invoice amount;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>maturity date;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>expected return;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>risk tier;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>verification status;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>supporting document status;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>jurisdiction;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>repayment source.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>12. Liquidity and Capital Flow</i></b></p>
+<p class="p3"><b><i>Factor0x is designed to connect eligible capital providers with verified invoice financing opportunities through a structured and compliance-oriented model.</i></b></p>
+<p class="p3"><b><i>If digital assets are used in the model, conversion, custody, settlement and other regulated functions should be performed through appropriate licensed or regulated providers.</i></b></p>
+<p class="p3"><b><i>Capital deployment into receivables financing should be conducted through legally appropriate structures, such as an SPV, licensed financing partner or factoring provider.</i></b></p>
+<p class="p3"><b><i>The platform smart-contract layer is intended to support:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>investor participation accounting;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>allocation recording by transaction;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>deal status monitoring;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>repayment status transparency;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>distribution logic, if legally permitted;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>transparency and auditability.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>13. Risk Management Framework</i></b></p>
+<p class="p6"><b><i>13.1 Credit Risk</i></b></p>
+<p class="p3"><b><i>Credit risk arises if the debtor does not pay the invoice.</i></b></p>
+<p class="p3"><b><i>Risk mitigation measures:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>obligor analysis;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>debtor acknowledgment;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>invoice verification;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>concentration limits;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>risk tiering;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>potential reserve mechanisms;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>manual review for high-risk invoices.</i></b></p>
+<p class="p6"><b><i>13.2 Fraud Risk</i></b></p>
+<p class="p3"><b><i>Fraud risk includes fake invoices, duplicate invoices, altered documents, disputed receivables or double financing.</i></b></p>
+<p class="p3"><b><i>Risk mitigation measures:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>AI document checks;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>duplicate detection;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>supporting document validation;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>debtor confirmation;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>KYB checks;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>adverse media screening;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>manual review.</i></b></p>
+<p class="p6"><b><i>13.3 Liquidity Risk</i></b></p>
+<p class="p3"><b><i>Liquidity risk arises if investors expect capital to be returned before invoices are repaid.</i></b></p>
+<p class="p3"><b><i>Risk mitigation measures:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>short-duration assets;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>maturity matching between invoice tenor and investor expectations;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>no guaranteed return or early redemption unless expressly documented;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>clear investor disclosure;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>repayment status tracking;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>reserve policy, if provided by the transaction structure.</i></b></p>
+<p class="p6"><b><i>13.4 Operational Risk</i></b></p>
+<p class="p3"><b><i>Operational risks include:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>incorrect document processing;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>incorrect scoring;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>data privacy breach;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>incorrect payment allocation;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>admin key compromise;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>smart contract bugs;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>failed integration;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>delayed reconciliation.</i></b></p>
+<p class="p3"><b><i>Risk mitigation measures:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>RBAC;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>audit trail;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>encrypted document storage;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>access control;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>reconciliation controls;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>smart contract audit;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>incident response plan.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>14. Economic Model</i></b></p>
+<p class="p3"><b><i>Factor0x may track the following platform metrics:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Total Funded Volume;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>TVL;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Active Invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Repaid Invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>indicative economics / projected return range where legally permitted;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Average Duration;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Overdue Rate;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Default Rate;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>default / overdue metrics;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Indicative investor economics, where legally permitted;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Platform Revenue;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>Portfolio Concentration;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>UAE / GCC Exposure.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>15. Security Architecture</i></b></p>
+<p class="p3"><b><i>Security is a mandatory element of Factor0x.</i></b></p>
+<p class="p3"><b><i>The system must protect:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>investor funds;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>borrower data;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>invoice documents;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>KYC / KYB records;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>smart contract logic;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>private keys;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>admin access;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>repayment records;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>audit trails.</i></b></p>
+<p class="p6"><b><i>15.1 Smart Contract Controls</i></b></p>
+<p class="p3"><b><i>Mandatory controls:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>strict state machine;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>role-based access control;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>multisig admin roles;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>no arbitrary owner withdrawal of investor funds;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>no post-funding change of economic terms;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>reentrancy protection;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>replay attack protection;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>double payout protection;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>emergency pause;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>event logging;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>external audit before mainnet launch.</i></b></p>
+<p class="p6"><b><i>15.2 Web2 Security</i></b></p>
+<p class="p3"><b><i>Mandatory controls:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>encrypted storage;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>secure API;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>access control;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>audit logs;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>document integrity checks;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>secure key management;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>backup and recovery;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>incident response plan;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>penetration testing.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>16. Platform Interfaces</i></b></p>
+<p class="p6"><b><i>16.1 Investor Interface</i></b></p>
+<p class="p3"><b><i>Shows eligible invoice-backed opportunities.</i></b></p>
+<p class="p3"><b><i>Main fields:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>borrower;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>obligor;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>jurisdiction;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>invoice amount;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>required funding;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>current funding;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>APR;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>maturity date;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>risk tier;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>verification status;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>document status;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>funding progress;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>repayment status.</i></b></p>
+<p class="p6"><b><i>16.2 Invoice Details Page</i></b></p>
+<p class="p3"><b><i>Shows:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>business overview;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>invoice terms;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>debtor profile;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>supporting documents status;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>risk score;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>payment timeline;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>expected return;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>legal structure summary;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>risk disclosure.</i></b></p>
+<p class="p6"><b><i>16.3 Borrower Dashboard</i></b></p>
+<p class="p3"><b><i>Allows SMEs to:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>upload invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>upload documents;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>track review status;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>receive financing terms;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>monitor repayment status.</i></b></p>
+<p class="p6"><b><i>16.4 Compliance / Risk Panel</i></b></p>
+<p class="p3"><b><i>Allows the authorized team to:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>review KYB;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>approve / reject invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>assign risk tier;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>check debtor;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>monitor overdue invoices;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>manage documents;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>trigger manual review.</i></b></p>
+<p class="p6"><b><i>16.5 Analytics Dashboard</i></b></p>
+<p class="p3"><b><i>Tracks:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>funded volume;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>TVL;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>repayment performance;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>overdue rate;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>default rate;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>portfolio diversification;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>risk tier exposure;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>obligor concentration;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>sector concentration.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>17. Roadmap</i></b></p>
+<p class="p6"><b><i>Phase 1 — Legal &amp; Structural Setup</i></b></p>
+<p class="p3"><b><i>Legal structure, regulatory review, partner selection and compliance framework preparation.</i></b></p>
+<p class="p6"><b><i>Phase 2 — MVP Development</i></b></p>
+<p class="p3"><b><i>Platform, investor interface, borrower flow, invoice verification, risk scoring and smart-contract layer.</i></b></p>
+<p class="p6"><b><i>Phase 3 — First UAE Pilot</i></b></p>
+<p class="p3"><b><i>First verified invoice financing transactions within the UAE / GCC framework.</i></b></p>
+<p class="p6"><b><i>Phase 4 — Partner &amp; Capital Expansion</i></b></p>
+<p class="p3"><b><i>Onboarding licensed partners, capital providers and logistics / trade originators.</i></b></p>
+<p class="p6"><b><i>Phase 5 — Regional Scaling</i></b></p>
+<p class="p3"><b><i>Scaling in UAE / GCC, followed by the Singapore / SEA layer.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>18. Key Legal and Regulatory Disclaimers</i></b></p>
+<p class="p3"><b><i>This whitepaper is not:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>an invitation to invest;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>legal advice;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>investment advice;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>financial promotion;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>an offer of securities;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>a public offering;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>a promise of return;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>confirmation of licensing status.</i></b></p>
+<p class="p5"><b><i></i></b><br></p>
+<p class="p2"><b><i>19. Conclusion</i></b></p>
+<p class="p3"><b><i>Factor0x aims to create regulated, transparent and technology-enabled infrastructure for financing verified B2B receivables.</i></b></p>
+<p class="p3"><b><i>The platform combines:</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>real-world invoice flow;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>AI-powered verification;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>risk scoring;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>structured capital deployment;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>crypto-native liquidity;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>smart-contract transparency;</i></b></p>
+<p class="p4"><b><i>•<span class="Apple-tab-span">	</span>UAE-first legal and commercial strategy.</i></b></p>
+<p class="p3"><b><i>The long-term vision of Factor0x is to make verified receivables a more accessible, transparent and investable short-duration real-world asset class. The next stage is legal structuring, MVP development and the first pilot transaction in UAE / Dubai.</i></b></p>
+</body>
+</html>

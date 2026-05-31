@@ -1,0 +1,55 @@
+<svg width="420" height="600" viewBox="0 0 420 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="paper" x1="70" y1="40" x2="355" y2="550" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" stop-opacity="0.88"/>
+      <stop offset="0.48" stop-color="#f8f8f8" stop-opacity="0.68"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.82"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="70" y1="60" x2="350" y2="560" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#bdbdbd" stop-opacity="0.52"/>
+      <stop offset="0.45" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#9d9d9d" stop-opacity="0.45"/>
+    </linearGradient>
+    <linearGradient id="shade" x1="120" y1="130" x2="325" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#d8d8d8" stop-opacity="0.38"/>
+    </linearGradient>
+    <filter id="softShadow" x="20" y="10" width="380" height="580" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="24" stdDeviation="18" flood-color="#050505" flood-opacity="0.11"/>
+    </filter>
+  </defs>
+
+  <path filter="url(#softShadow)" d="M102 35C102 16.7 118.5 2.8 136.5 6L328 39.7C343.6 42.5 355 56.1 355 72V505C355 526.1 337.1 542.8 316.1 541.3C300.3 540.1 295.5 520 281 520C266.5 520 261.8 541 247.3 541C232.8 541 228.2 520 213.7 520C199.2 520 194.5 541 180 541C165.5 541 160.8 520 146.3 520C131.8 520 127.2 541 112.7 541C97.3 541 88 527.8 88 512.4L102 35Z" fill="url(#paper)"/>
+  <path d="M102 35C102 16.7 118.5 2.8 136.5 6L328 39.7C343.6 42.5 355 56.1 355 72V505C355 526.1 337.1 542.8 316.1 541.3C300.3 540.1 295.5 520 281 520C266.5 520 261.8 541 247.3 541C232.8 541 228.2 520 213.7 520C199.2 520 194.5 541 180 541C165.5 541 160.8 520 146.3 520C131.8 520 127.2 541 112.7 541C97.3 541 88 527.8 88 512.4L102 35Z" stroke="url(#edge)" stroke-width="2"/>
+  <path d="M102 35C102 16.7 118.5 2.8 136.5 6L328 39.7C343.6 42.5 355 56.1 355 72V505C355 526.1 337.1 542.8 316.1 541.3C300.3 540.1 295.5 520 281 520C266.5 520 261.8 541 247.3 541C232.8 541 228.2 520 213.7 520C199.2 520 194.5 541 180 541C165.5 541 160.8 520 146.3 520C131.8 520 127.2 541 112.7 541C97.3 541 88 527.8 88 512.4L102 35Z" fill="url(#shade)"/>
+
+  <rect x="147" y="80" width="128" height="19" rx="5" transform="rotate(10 147 80)" fill="#d9d9d9" fill-opacity="0.72"/>
+  <text x="238" y="148" font-family="Space Grotesk, Arial, sans-serif" font-size="38" font-weight="700" fill="#111111">Factor<tspan fill="#8d8d8d">0x</tspan></text>
+
+  <circle cx="158" cy="185" r="48" fill="#111111"/>
+  <path d="M135 181L153 202L188 160" stroke="#ffffff" stroke-width="14" stroke-linecap="square" stroke-linejoin="miter"/>
+
+  <rect x="238" y="204" width="130" height="20" rx="5" fill="#d8d8d8" fill-opacity="0.78"/>
+  <rect x="238" y="238" width="128" height="20" rx="5" fill="#d8d8d8" fill-opacity="0.66"/>
+  <rect x="238" y="272" width="72" height="20" rx="5" fill="#d8d8d8" fill-opacity="0.72"/>
+
+  <g opacity="0.78">
+    <rect x="130" y="326" width="238" height="174" rx="4" fill="#ffffff" fill-opacity="0.16" stroke="#b8b8b8" stroke-width="2"/>
+    <path d="M130 374H368M130 422H368M130 470H368M244 326V500M302 326V500" stroke="#b8b8b8" stroke-width="2"/>
+    <rect x="151" y="348" width="62" height="10" rx="5" fill="#cfcfcf"/>
+    <rect x="151" y="392" width="70" height="18" rx="5" fill="#d7d7d7"/>
+    <rect x="151" y="440" width="70" height="18" rx="5" fill="#d7d7d7"/>
+    <rect x="151" y="488" width="70" height="18" rx="5" fill="#d7d7d7"/>
+    <rect x="263" y="352" width="34" height="12" rx="5" fill="#cfcfcf"/>
+    <rect x="263" y="400" width="28" height="14" rx="5" fill="#d7d7d7"/>
+    <rect x="263" y="448" width="28" height="14" rx="5" fill="#d7d7d7"/>
+    <rect x="263" y="496" width="28" height="14" rx="5" fill="#d7d7d7"/>
+    <rect x="321" y="352" width="40" height="12" rx="5" fill="#cfcfcf"/>
+    <rect x="321" y="400" width="36" height="14" rx="5" fill="#d7d7d7"/>
+    <rect x="321" y="448" width="36" height="14" rx="5" fill="#d7d7d7"/>
+    <rect x="321" y="496" width="36" height="14" rx="5" fill="#d7d7d7"/>
+  </g>
+
+  <rect x="132" y="530" width="96" height="20" rx="5" fill="#d7d7d7" fill-opacity="0.78"/>
+  <rect x="304" y="530" width="102" height="20" rx="5" fill="#d7d7d7" fill-opacity="0.78"/>
+</svg>

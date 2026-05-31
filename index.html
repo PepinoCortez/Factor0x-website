@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Factor0x — Liquidity for Business</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo">Factor<span class="logo-accent">0x</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">О нас</a></li>
+    <li><a href="#contacts">Контакты</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="wallet-bar">
+    <div class="language-select">
+      <button class="language-trigger" type="button" aria-label="Выбрать язык" aria-expanded="false">
+        <span aria-hidden="true"></span>
+      </button>
+      <div class="language-menu">
+        <button type="button" data-lang="en">ENG</button>
+        <button type="button" data-lang="ar">العربية</button>
+        <button type="button" data-lang="es">ESP</button>
+        <button type="button" data-lang="ru">РУС</button>
+      </div>
+    </div>
+    <div class="network-select">
+      <button class="network-trigger" type="button" aria-label="Выбрать сеть" aria-expanded="false">
+        <span class="network-icon eth-icon" aria-hidden="true"></span>
+      </button>
+      <div class="network-menu">
+        <button type="button" data-network="ETH"><span class="network-icon eth-icon"></span>ETH</button>
+        <button type="button" data-network="AVAX"><span class="network-icon avax-icon"></span>AVAX</button>
+        <button type="button" data-network="Arbitrum"><span class="network-icon arb-icon"></span>Arbitrum</button>
+        <button type="button" data-network="Polygon"><span class="network-icon poly-icon"></span>Polygon</button>
+      </div>
+    </div>
+    <button class="btn-nav wallet-toggle" type="button">Подключить кошелек</button>
+  </div>
+  <button class="burger" id="burger">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- FIRST SLIDE -->
+<section class="brand-first-slide" aria-label="Factor0x">
+  <img src="assets/factor0x-first-slide-cutout.png" alt="Factor0x">
+  <div class="brand-hero-content">
+    <span class="brand-eyebrow">WEB3 INVOICE FINANCING PLATFORM</span>
+    <h1><span>Капитал для бизнеса</span><span>Доход для инвестора</span></h1>
+    <p>Платформа, где проверенные инвойсы находят ликвидность</p>
+    <div class="brand-hero-actions">
+      <a href="#" data-open-apply>Получить финансирование</a>
+      <a href="#invoices" class="fund-deal-trigger">Профинансировать сделку</a>
+    </div>
+  </div>
+</section>
+
+<div class="apply-modal-backdrop" id="applyModal" aria-hidden="true">
+  <div class="apply-modal" role="dialog" aria-modal="true" aria-labelledby="applyModalTitle">
+    <button class="apply-modal-close" type="button" aria-label="Close apply form">×</button>
+    <div class="apply-modal-head">
+      <div class="apply-modal-kicker">Apply</div>
+      <h2 id="applyModalTitle">Получить финансирование</h2>
+    </div>
+    <div class="apply-modal-body"></div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <div class="hero-grid"></div>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <canvas id="particles"></canvas>
+  </div>
+  <div class="hero-inner invoice-hero" id="invoices">
+    <div class="market-header">
+      <div>
+        <h1 class="hero-title">
+          <span class="line">Finance verified <span class="accent">B2B invoices</span></span>
+        </h1>
+        <p class="hero-desc">
+          Подключите кошелёк и участвуйте в краткосрочном финансировании реального бизнеса.
+        </p>
+      </div>
+      <div class="tvl-strip">
+        <div class="tvl-icon" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div>
+          <div class="tvl-date">TVL on 21 May, 2026</div>
+          <div class="tvl-value">$103 504 459,50 USD</div>
+        </div>
+        <button class="tvl-info-btn" type="button" aria-label="Что такое TVL" aria-expanded="false" aria-controls="tvlInfo">i</button>
+        <div class="tvl-info" id="tvlInfo" role="tooltip" aria-hidden="true">TVL —капитал, размещённый в активных invoice financing deals.</div>
+      </div>
+    </div>
+
+    <div class="offers-head">
+      <div>
+        <span class="offers-title">ТОП offers</span>
+      </div>
+      <button class="view-more-btn" type="button" aria-expanded="false">View more</button>
+    </div>
+
+    <div class="invoice-board">
+      <article class="invoice-card featured">
+        <div class="invoice-top">
+          <div>
+            <h3>Gulf Trade Logistics</h3>
+            <span>#INV-041 · Dubai → Singapore</span>
+          </div>
+          <span class="risk low">Low Risk</span>
+        </div>
+        <div class="invoice-metrics">
+          <div><span>Amount</span><strong>$420 000</strong></div>
+          <div><span>APR</span><strong>6.2%</strong></div>
+          <div><span>Due Date</span><strong>58 days</strong></div>
+        </div>
+        <div class="fill-row">
+          <div><span>Filled</span><strong>64.0%</strong></div>
+          <div class="progress"><span style="width:64%"></span></div>
+        </div>
+        <div class="invoice-footer">
+          <div><span>Contributors</span><strong>18</strong></div>
+          <div><span>Min Contribution</span><strong>$1 000</strong></div>
+        </div>
+        <div class="invoice-actions">
+          <button type="button">Contribute</button>
+          <button type="button" class="details-btn" data-company="gulf">View Details</button>
+        </div>
+      </article>
+
+      <article class="invoice-card">
+        <div class="invoice-top">
+          <div>
+            <h3>Asia Components Ltd</h3>
+            <span>#INV-042 · Electronics</span>
+          </div>
+          <span class="risk medium">Medium Risk</span>
+        </div>
+        <div class="invoice-metrics">
+          <div><span>Amount</span><strong>$315 000</strong></div>
+          <div><span>APR</span><strong>9.4%</strong></div>
+          <div><span>Due Date</span><strong>40 days</strong></div>
+        </div>
+        <div class="fill-row">
+          <div><span>Filled</span><strong>38.5%</strong></div>
+          <div class="progress"><span style="width:38.5%"></span></div>
+        </div>
+        <div class="invoice-footer">
+          <div><span>Contributors</span><strong>12</strong></div>
+          <div><span>Min Contribution</span><strong>$500</strong></div>
+        </div>
+        <div class="invoice-actions">
+          <button type="button">Contribute</button>
+          <button type="button" class="details-btn" data-company="asia">View Details</button>
+        </div>
+      </article>
+
+      <article class="invoice-card">
+        <div class="invoice-top">
+          <div>
+            <h3>Desert Cloud Services</h3>
+            <span>#INV-043 · SaaS Contract</span>
+          </div>
+          <span class="risk low">Low Risk</span>
+        </div>
+        <div class="invoice-metrics">
+          <div><span>Amount</span><strong>$250 000</strong></div>
+          <div><span>APR</span><strong>5.4%</strong></div>
+          <div><span>Due Date</span><strong>24 days</strong></div>
+        </div>
+        <div class="fill-row">
+          <div><span>Filled</span><strong>81.0%</strong></div>
+          <div class="progress"><span style="width:81%"></span></div>
+        </div>
+        <div class="invoice-footer">
+          <div><span>Contributors</span><strong>27</strong></div>
+          <div><span>Min Contribution</span><strong>$250</strong></div>
+        </div>
+        <div class="invoice-actions">
+          <button type="button">Contribute</button>
+          <button type="button" class="details-btn" data-company="desert">View Details</button>
+        </div>
+      </article>
+    </div>
+    <div class="more-invoices" id="moreInvoices" aria-hidden="true">
+      <div class="invoice-table-wrap">
+        <table class="invoice-table">
+          <thead>
+            <tr>
+              <th>Company</th>
+              <th><button type="button" class="invoice-sort" data-sort="amount">Amount</button></th>
+              <th><button type="button" class="invoice-sort" data-sort="apr">APR</button></th>
+              <th><button type="button" class="invoice-sort" data-sort="dueDate">Due Date</button></th>
+              <th><button type="button" class="invoice-sort" data-sort="filled">Filled</button></th>
+              <th><button type="button" class="invoice-sort" data-sort="risk">Risk</button></th>
+              <th><button type="button" class="invoice-sort" data-sort="minContribution">Min Contribution</button></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-company-name="Emirates Food Distribution" data-invoice-id="#INV-044" data-sector="FMCG Supply" data-amount="$360 000" data-apr="7.1%" data-due-date="52 days" data-risk="Low Risk" data-min-contribution="$750">
+              <td><strong>Emirates Food Distribution</strong></td>
+              <td>$360 000</td>
+              <td>7.1%</td>
+              <td>52 days</td>
+              <td>46.0%</td>
+              <td><span class="risk low">Low Risk</span></td>
+              <td>$750</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Harbor Medical Imports" data-invoice-id="#INV-045" data-sector="Healthcare Trade" data-amount="$275 000" data-apr="8.6%" data-due-date="44 days" data-risk="Medium Risk" data-min-contribution="$500">
+              <td><strong>Harbor Medical Imports</strong></td>
+              <td>$275 000</td>
+              <td>8.6%</td>
+              <td>44 days</td>
+              <td>29.5%</td>
+              <td><span class="risk medium">Medium Risk</span></td>
+              <td>$500</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Falcon Retail Group" data-invoice-id="#INV-046" data-sector="Consumer Goods" data-amount="$510 000" data-apr="6.8%" data-due-date="61 days" data-risk="Low Risk" data-min-contribution="$1 000">
+              <td><strong>Falcon Retail Group</strong></td>
+              <td>$510 000</td>
+              <td>6.8%</td>
+              <td>61 days</td>
+              <td>72.0%</td>
+              <td><span class="risk low">Low Risk</span></td>
+              <td>$1 000</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Atlas Packaging LLC" data-invoice-id="#INV-047" data-sector="Packaging" data-amount="$188 000" data-apr="10.2%" data-due-date="35 days" data-risk="Medium Risk" data-min-contribution="$250">
+              <td><strong>Atlas Packaging LLC</strong></td>
+              <td>$188 000</td>
+              <td>10.2%</td>
+              <td>35 days</td>
+              <td>18.0%</td>
+              <td><span class="risk medium">Medium Risk</span></td>
+              <td>$250</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Jumeirah Supply Chain" data-invoice-id="#INV-048" data-sector="Logistics" data-amount="$640 000" data-apr="5.9%" data-due-date="73 days" data-risk="Low Risk" data-min-contribution="$2 000">
+              <td><strong>Jumeirah Supply Chain</strong></td>
+              <td>$640 000</td>
+              <td>5.9%</td>
+              <td>73 days</td>
+              <td>55.5%</td>
+              <td><span class="risk low">Low Risk</span></td>
+              <td>$2 000</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Blue Pearl Textiles" data-invoice-id="#INV-049" data-sector="Apparel Export" data-amount="$224 000" data-apr="9.8%" data-due-date="48 days" data-risk="Medium Risk" data-min-contribution="$500">
+              <td><strong>Blue Pearl Textiles</strong></td>
+              <td>$224 000</td>
+              <td>9.8%</td>
+              <td>48 days</td>
+              <td>34.0%</td>
+              <td><span class="risk medium">Medium Risk</span></td>
+              <td>$500</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Oasis Industrial Parts" data-invoice-id="#INV-050" data-sector="Industrial Supply" data-amount="$398 000" data-apr="7.9%" data-due-date="57 days" data-risk="Low Risk" data-min-contribution="$750">
+              <td><strong>Oasis Industrial Parts</strong></td>
+              <td>$398 000</td>
+              <td>7.9%</td>
+              <td>57 days</td>
+              <td>41.5%</td>
+              <td><span class="risk low">Low Risk</span></td>
+              <td>$750</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Gulf Fresh Trading" data-invoice-id="#INV-051" data-sector="Food Import" data-amount="$315 000" data-apr="8.1%" data-due-date="42 days" data-risk="Low Risk" data-min-contribution="$500">
+              <td><strong>Gulf Fresh Trading</strong></td>
+              <td>$315 000</td>
+              <td>8.1%</td>
+              <td>42 days</td>
+              <td>64.0%</td>
+              <td><span class="risk low">Low Risk</span></td>
+              <td>$500</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Marina Office Supplies" data-invoice-id="#INV-052" data-sector="Office Supply" data-amount="$142 000" data-apr="11.4%" data-due-date="31 days" data-risk="Medium Risk" data-min-contribution="$250">
+              <td><strong>Marina Office Supplies</strong></td>
+              <td>$142 000</td>
+              <td>11.4%</td>
+              <td>31 days</td>
+              <td>22.0%</td>
+              <td><span class="risk medium">Medium Risk</span></td>
+              <td>$250</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Pearl Coast Electronics" data-invoice-id="#INV-053" data-sector="Electronics Trade" data-amount="$720 000" data-apr="6.4%" data-due-date="68 days" data-risk="Low Risk" data-min-contribution="$2 500">
+              <td><strong>Pearl Coast Electronics</strong></td>
+              <td>$720 000</td>
+              <td>6.4%</td>
+              <td>68 days</td>
+              <td>58.5%</td>
+              <td><span class="risk low">Low Risk</span></td>
+              <td>$2 500</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Sahara Pharma Logistics" data-invoice-id="#INV-054" data-sector="Pharma Logistics" data-amount="$455 000" data-apr="7.6%" data-due-date="55 days" data-risk="Low Risk" data-min-contribution="$1 000">
+              <td><strong>Sahara Pharma Logistics</strong></td>
+              <td>$455 000</td>
+              <td>7.6%</td>
+              <td>55 days</td>
+              <td>49.0%</td>
+              <td><span class="risk low">Low Risk</span></td>
+              <td>$1 000</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Creekside Building Materials" data-invoice-id="#INV-055" data-sector="Construction Supply" data-amount="$268 000" data-apr="10.8%" data-due-date="37 days" data-risk="Medium Risk" data-min-contribution="$500">
+              <td><strong>Creekside Building Materials</strong></td>
+              <td>$268 000</td>
+              <td>10.8%</td>
+              <td>37 days</td>
+              <td>27.5%</td>
+              <td><span class="risk medium">Medium Risk</span></td>
+              <td>$500</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Nile Freight Services" data-invoice-id="#INV-056" data-sector="Freight Services" data-amount="$590 000" data-apr="6.9%" data-due-date="62 days" data-risk="Low Risk" data-min-contribution="$1 500">
+              <td><strong>Nile Freight Services</strong></td>
+              <td>$590 000</td>
+              <td>6.9%</td>
+              <td>62 days</td>
+              <td>76.0%</td>
+              <td><span class="risk low">Low Risk</span></td>
+              <td>$1 500</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Metro Hospitality Group" data-invoice-id="#INV-057" data-sector="Hospitality Supply" data-amount="$205 000" data-apr="9.2%" data-due-date="46 days" data-risk="Medium Risk" data-min-contribution="$500">
+              <td><strong>Metro Hospitality Group</strong></td>
+              <td>$205 000</td>
+              <td>9.2%</td>
+              <td>46 days</td>
+              <td>39.0%</td>
+              <td><span class="risk medium">Medium Risk</span></td>
+              <td>$500</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Palm Industrial Cleaning" data-invoice-id="#INV-058" data-sector="B2B Services" data-amount="$176 000" data-apr="12.1%" data-due-date="29 days" data-risk="Medium Risk" data-min-contribution="$250">
+              <td><strong>Palm Industrial Cleaning</strong></td>
+              <td>$176 000</td>
+              <td>12.1%</td>
+              <td>29 days</td>
+              <td>16.5%</td>
+              <td><span class="risk medium">Medium Risk</span></td>
+              <td>$250</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Skyline Auto Parts" data-invoice-id="#INV-059" data-sector="Automotive Parts" data-amount="$334 000" data-apr="8.4%" data-due-date="51 days" data-risk="Low Risk" data-min-contribution="$750">
+              <td><strong>Skyline Auto Parts</strong></td>
+              <td>$334 000</td>
+              <td>8.4%</td>
+              <td>51 days</td>
+              <td>44.5%</td>
+              <td><span class="risk low">Low Risk</span></td>
+              <td>$750</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+            <tr data-company-name="Bayline Equipment Rental" data-invoice-id="#INV-060" data-sector="Equipment Rental" data-amount="$482 000" data-apr="7.3%" data-due-date="59 days" data-risk="Low Risk" data-min-contribution="$1 000">
+              <td><strong>Bayline Equipment Rental</strong></td>
+              <td>$482 000</td>
+              <td>7.3%</td>
+              <td>59 days</td>
+              <td>67.0%</td>
+              <td><span class="risk low">Low Risk</span></td>
+              <td>$1 000</td>
+              <td><div class="table-actions"><button type="button" class="table-contribute-btn">Contribute</button><button type="button" class="details-btn table-details-btn">View Details</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="invoice-pagination" aria-label="Invoice table pages">
+        <div class="invoice-page-size" aria-label="Rows per page">
+          <span>Show</span>
+          <button type="button" class="active" data-page-size="10">10</button>
+          <button type="button" data-page-size="20">20</button>
+          <button type="button" data-page-size="30">30</button>
+          <button type="button" data-page-size="all">All</button>
+        </div>
+        <button type="button" class="invoice-page-prev">Prev</button>
+        <span class="invoice-page-status">Page 1 / 1</span>
+        <button type="button" class="invoice-page-next">Next</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span>Invoice Financing</span><span class="sep">✦</span>
+    <span>Cross-border B2B</span><span class="sep">✦</span>
+    <span>UAE · Dubai</span><span class="sep">✦</span>
+    <span>Singapore</span><span class="sep">✦</span>
+    <span>Crypto Liquidity</span><span class="sep">✦</span>
+    <span>Real World Assets</span><span class="sep">✦</span>
+    <span>GCC · SEA</span><span class="sep">✦</span>
+    <span>SME Financing</span><span class="sep">✦</span>
+    <span>Invoice Financing</span><span class="sep">✦</span>
+    <span>Cross-border B2B</span><span class="sep">✦</span>
+    <span>UAE · Dubai</span><span class="sep">✦</span>
+    <span>Singapore</span><span class="sep">✦</span>
+    <span>Crypto Liquidity</span><span class="sep">✦</span>
+    <span>Real World Assets</span><span class="sep">✦</span>
+    <span>GCC · SEA</span><span class="sep">✦</span>
+    <span>SME Financing</span><span class="sep">✦</span>
+  </div>
+</div>
+
+<!-- QUICK HOW -->
+<section class="section quick-how-section" id="factor0x-layer">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="quick-how-title">Как работает модель</div>
+      <p class="section-sub quick-how-sub">Factor0x помогает бизнесу получить оборотный капитал, а инвесторам — заработать на проверенных B2B-инвойсах.</p>
+    </div>
+    <div class="quick-flow reveal" aria-label="Как работает Factor0x">
+      <article class="quick-flow-card">
+        <div class="quick-flow-node">
+          <span class="business-pictogram" aria-hidden="true">
+            <svg viewBox="0 0 52 52" focusable="false">
+              <path d="M18 18h16"></path>
+              <path d="M21 18v-4c0-2 1.4-3.5 3.5-3.5h3c2.1 0 3.5 1.5 3.5 3.5v4"></path>
+              <rect x="9" y="18" width="34" height="24" rx="5"></rect>
+              <path d="M9 27h34"></path>
+              <path d="M23 27v3h6v-3"></path>
+            </svg>
+          </span>
+          Бизнес
+        </div>
+        <h3>Получает финансирование</h3>
+        <p>Передаёт подтверждённый B2B-инвойс и получает оборотный капитал до оплаты клиента.</p>
+        <button type="button" class="quick-card-action gold apply-toggle" aria-expanded="false" aria-controls="applyPanel">Apply</button>
+      </article>
+      <article class="quick-flow-card center">
+        <div class="quick-flow-node brand-node">Factor<span>0x</span></div>
+        <h3>Структурирует сделку</h3>
+        <p>Связывает бизнес, капитал и repayment-процесс в единую управляемую инфраструктуру.</p>
+        <button type="button" class="quick-card-action silver flow-toggle" aria-expanded="false" aria-controls="flowPanel">Flow</button>
+      </article>
+      <article class="quick-flow-card">
+        <div class="quick-flow-node">
+          <span class="investor-pictogram" aria-hidden="true">
+            <svg viewBox="0 0 52 52" focusable="false">
+              <rect x="8" y="15" width="36" height="22" rx="4"></rect>
+              <path d="M13 21c2.5 0 4-1.4 4-4"></path>
+              <path d="M35 17c0 2.6 1.5 4 4 4"></path>
+              <path d="M39 31c-2.5 0-4 1.4-4 4"></path>
+              <path d="M17 35c0-2.6-1.5-4-4-4"></path>
+              <circle cx="26" cy="26" r="6"></circle>
+              <path d="M26 21.5v9"></path>
+              <path d="M23.5 23.7c.6-.7 1.5-1 2.6-1 1.4 0 2.4.6 2.4 1.7 0 2.3-5 .9-5 3.2 0 1.1 1.1 1.9 2.7 1.9 1 0 2-.3 2.6-.9"></path>
+            </svg>
+          </span>
+          Инвесторы
+        </div>
+        <h3>Предоставляют ликвидность</h3>
+        <p>Финансируют реальные торговые сделки и получают доход после их погашения.</p>
+        <a href="#invoices" class="quick-card-action gold">Earn</a>
+      </article>
+    </div>
+    <div class="flow-panel" id="flowPanel" aria-hidden="true">
+      <div class="flow-panel-inner">
+        <span class="flow-step invoice-step">Инвойс<img src="assets/flow-invoice.png" alt="" aria-hidden="true"></span>
+        <span class="flow-step">Проверка<img src="assets/flow-check.png" alt="" aria-hidden="true"></span>
+        <span class="flow-step">Финансирование<img src="assets/flow-funding.png" alt="" aria-hidden="true"></span>
+        <span class="flow-step">Погашение<img src="assets/flow-repayment.png" alt="" aria-hidden="true"></span>
+        <span class="flow-step">Доход<img src="assets/flow-yield.png" alt="" aria-hidden="true"></span>
+      </div>
+      <p class="flow-micro-label">Каждый этап фиксируется в системе и отображается инвестору в статусе сделки.</p>
+    </div>
+    <div class="apply-panel" id="applyPanel" aria-hidden="true">
+      <form class="apply-form" novalidate>
+        <label><span>Company name</span><input type="text" name="company_name" placeholder="Atlas Trade LLC" data-required></label>
+        <label><span>Country</span><input type="text" name="country" placeholder="UAE" data-required></label>
+        <label><span>Industry</span><input type="text" name="industry" placeholder="Logistics" data-required></label>
+        <label class="amount-field"><span>Invoice amount</span><span class="currency-field"><input type="text" name="invoice_amount" placeholder="100 000" inputmode="numeric" data-amount-format data-required><select name="invoice_currency" aria-label="Invoice currency"><option value="USD">USD</option><option value="AED">AED</option><option value="EUR">EUR</option></select></span></label>
+        <label><span>Invoice due date</span><span class="date-field"><input type="text" name="invoice_due_date" placeholder="08 / 30 / 2026" inputmode="numeric" maxlength="10" data-date-mask data-required><button type="button" class="date-icon-btn" aria-label="Open invoice due date calendar"><svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><rect x="4" y="5.5" width="16" height="14" rx="3"></rect><path d="M8 3.5v4"></path><path d="M16 3.5v4"></path><path d="M4 10h16"></path><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 17h.01"></path><path d="M12 17h.01"></path></svg></button><div class="date-picker" aria-hidden="true"><div class="date-picker-head"><button type="button" class="date-prev" aria-label="Previous month">‹</button><strong></strong><button type="button" class="date-next" aria-label="Next month">›</button></div><div class="date-weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div><div class="date-days"></div></div></span></label>
+        <label><span>Debtor company name</span><input type="text" name="debtor_company" placeholder="Gulf Retail Group" data-required></label>
+        <label class="file-field"><span>Upload invoice</span><input type="file" name="invoice_file" multiple data-required><span class="file-upload-row"><span class="file-upload-ui">Choose file</span><span class="file-selected">No files selected</span><button type="button" class="file-single-remove" aria-label="Remove selected file">×</button><button type="button" class="file-all-toggle" aria-expanded="false">All</button></span><span class="file-list"></span></label>
+        <label class="file-field supporting-file-field"><span>Upload supporting documents</span><input type="file" name="supporting_documents" multiple><span class="file-upload-row"><span class="file-upload-ui">Choose file</span><span class="file-selected">No files selected</span><button type="button" class="file-single-remove" aria-label="Remove selected file">×</button><button type="button" class="file-all-toggle" aria-expanded="false">All</button></span><span class="file-list"></span></label>
+        <label><span>Contact email / Telegram / WhatsApp</span><input type="text" name="contact" placeholder="founder@atlastrade.ae" data-required></label>
+        <label class="comment-field"><span>Leave a comment</span><input type="text" name="comment" placeholder="Need working capital for a confirmed B2B invoice."></label>
+        <button type="submit" class="apply-submit">Submit application</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section about-section" id="about">
+  <div class="container">
+    <div class="about-layout reveal">
+      <div class="about-visual" aria-hidden="true">
+        <img src="assets/about-safe-quality.png" alt="" class="about-safe-img">
+        <img src="assets/about-platform-safe.png" alt="" class="about-platform-img">
+      </div>
+      <div class="about-copy">
+        <div class="about-kicker">О нас</div>
+        <p class="about-lead"><span>Factor0x работает на пересечении trade finance,</span><br>Web3-ликвидности и реального B2B-сектора.</p>
+        <p>Мы начинаем с ОАЭ — рынка с сильной торговлей, логистикой и спросом на оборотный капитал.</p>
+        <p>Наша цель — дать бизнесу быстрый капитал, а инвестору — понятный способ заработка на проверенных B2B-инвойсах.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INVOICE VISUAL -->
+<section class="invoice-visual-section" aria-label="Factor0x invoice visual">
+  <div class="invoice-visual-inner">
+    <div class="invoice-visual-copy reveal">
+      <h2>Прозрачность сделок</h2>
+      <div class="verification-list">
+        <p><strong>Invoice Verification</strong>Проверяем инвойс, документы и факт поставки.</p>
+        <p><strong>KYB & Debtor Check</strong>Проверяем бизнес, должника и юридические риски.</p>
+        <p><strong>Risk Tier</strong>Оцениваем срок, сумму, отрасль и качество сделки.</p>
+        <p class="nowrap-line"><strong>On-chain Tracking</strong>Фиксируем статус сделки, repayment и распределения.</p>
+      </div>
+    </div>
+    <div class="invoice-visual-stage reveal" aria-hidden="true">
+      <img src="assets/factor0x-platform-black.png" alt="" class="reference-shape platform-shape">
+      <img src="assets/factor0x-invoice-check.png" alt="" class="reference-shape invoice-paper-shape">
+    </div>
+  </div>
+</section>
+
+<!-- EARNING -->
+<section class="earning-section" aria-label="Заработок">
+  <div class="earning-inner">
+    <div class="earning-visual reveal">
+      <img src="assets/construction-earning.png" alt="" class="earning-construction-img">
+      <img src="assets/boat-earning.png" alt="" class="earning-port-img">
+      <div class="earning-gold-platform-wrap">
+        <img src="assets/gold-platform-earning.png" alt="" class="earning-gold-platform-img">
+        <button class="earning-platform-label" type="button">EARN</button>
+        <span class="earning-platform-toast" aria-live="polite">Soon</span>
+      </div>
+      <img src="assets/warehouse-earning.png" alt="" class="earning-warehouse-img">
+    </div>
+    <div class="earning-copy reveal">
+      <h2>Заработок</h2>
+      <div class="earning-list">
+        <p class="earning-nowrap"><strong>Реальные активы</strong>Пулы связаны с реальными бизнес-сделками.</p>
+        <p class="earning-nowrap"><strong>Понятные условия</strong>Сумма, срок, APR и контрагент видны до участия.</p>
+        <p><strong>Без токеномики</strong>Доходность связана с инвойсом, не с токеном.</p>
+        <p><strong>Безопасно</strong>Регулярый аудит смарт-контрактов.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section faq-section" id="faq">
+  <div class="container">
+    <div class="faq-head reveal">
+      <div class="faq-kicker">FAQ</div>
+    </div>
+    <div class="faq-grid reveal">
+      <article class="faq-card">
+        <h3>Что такое Factor0x?</h3>
+        <p>Factor0x — это платформа для финансирования проверенных B2B-инвойсов. Бизнес получает оборотный капитал до оплаты клиента, а инвесторы финансируют реальные сделки из B2B-сектора.</p>
+      </article>
+      <article class="faq-card">
+        <h3>Что финансируют инвесторы?</h3>
+        <p>Инвесторы финансируют проверенные B2B-инвойсы. Каждая сделка имеет сумму, срок, risk tier, статус проверки и ожидаемый процесс погашения.</p>
+      </article>
+      <article class="faq-card">
+        <h3>Как инвестор получает доход?</h3>
+        <p>Доход формируется после погашения инвойса должником. Когда клиент бизнеса оплачивает инвойс, средства распределяются между участниками сделки согласно условиям.</p>
+      </article>
+      <article class="faq-card">
+        <h3>Доходность гарантирована?</h3>
+        <p>Нет. Доходность зависит от погашения инвойса, качества должника, условий сделки и возможных задержек. Factor0x показывает target APR, но не гарантирует доход.</p>
+      </article>
+      <article class="faq-card">
+        <h3>Что происходит, если инвойс не оплатят вовремя?</h3>
+        <p>Сделка получает статус overdue. Инвесторы видят обновления по repayment, а Factor0x и партнёры работают по предусмотренному процессу взыскания / урегулирования.</p>
+      </article>
+      <article class="faq-card">
+        <h3>Какие инвойсы подходят?</h3>
+        <p>На первом этапе Factor0x фокусируется на B2B-инвойсах компаний из ОАЭ, связанных с торговлей, логистикой, дистрибуцией, supply chain и B2B-услугами.</p>
+      </article>
+      <article class="faq-card">
+        <h3>Зачем нужна проверка KYB / KYC?</h3>
+        <p>KYB / KYC нужны для проверки бизнеса, инвесторов, источника средств, санкционных рисков и соответствия требованиям compliance.</p>
+      </article>
+      <article class="faq-card">
+        <h3>Нужен ли бизнесу crypto wallet?</h3>
+        <p>Нет. Бизнесу не обязательно использовать crypto wallet. Для бизнеса продукт должен работать как понятное финансирование под инвойс.</p>
+      </article>
+      <article class="faq-card">
+        <h3>В чём роль Web3?</h3>
+        <p>Web3 используется для прозрачности, учёта участия инвесторов, статуса сделки и on-chain tracking. Factor0x не строится вокруг спекулятивного токена.</p>
+      </article>
+      <article class="faq-card">
+        <h3>В какой валюте происходит финансирование?</h3>
+        <p>Инвесторы могут участвовать через USDT / USDC или fiat, если это доступно для конкретной сделки и соответствует требованиям compliance.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="section team-section" id="team">
+  <div class="container">
+    <div class="team-head reveal">
+      <div class="team-title">Команда проекта</div>
+    </div>
+    <div class="team-grid reveal">
+      <article class="team-card">
+        <div class="team-portrait has-photo">
+          <img src="assets/team-ceo.png" alt="Ethan Walker">
+        </div>
+        <h3>Ethan Walker</h3>
+        <span>Founder & CEO</span>
+        <p>Strategy, partnerships, first UAE deals</p>
+      </article>
+      <article class="team-card">
+        <div class="team-portrait has-photo">
+          <img src="assets/team-architect.png" alt="Daniel Chen">
+        </div>
+        <h3>Daniel Chen</h3>
+        <span>Chief Architect</span>
+        <p>Platform architecture, smart contracts, security</p>
+      </article>
+      <article class="team-card">
+        <div class="team-portrait has-photo">
+          <img src="assets/team-legal.png" alt="Sophia Laurent">
+        </div>
+        <h3>Sophia Laurent</h3>
+        <span>Legal & Regulatory Counsel</span>
+        <p>Legal structure, compliance, UAE pathway</p>
+      </article>
+      <article class="team-card">
+        <div class="team-portrait has-photo">
+          <img src="assets/team-risk.jpg" alt="Marcus Bennett">
+        </div>
+        <h3>Marcus Bennett</h3>
+        <span>Head of Risk</span>
+        <p>Underwriting, risk tiers, debtor quality</p>
+      </article>
+      <article class="team-card">
+        <div class="team-portrait has-photo">
+          <img src="assets/team-advisor.png" alt="Adrian Moreau">
+        </div>
+        <h3>Adrian Moreau</h3>
+        <span>Strategic Advisor</span>
+        <p>Fundraising, partnerships, market entry</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- HUBS -->
+<section class="section" id="hubs">
+  <div class="container">
+    <div class="section-head reveal">
+      <h2>Dual-hub архитектура</h2>
+      <p class="section-sub">
+        UAE / Dubai — операционный центр Factor0x для deal flow и ликвидности.<br>
+        Singapore — стратегический слой для banking, structuring и регионального масштабирования.
+      </p>
+    </div>
+    <div class="hubs-wrap reveal">
+      <div class="hub-unit hub-unit-uae">
+        <div class="hub-visual" aria-hidden="true">
+          <img src="assets/hub-dubai-bg.png" alt="">
+        </div>
+        <div class="hub-card hub-uae">
+          <div class="hub-num">Dubai</div>
+          <div class="hub-role">Операционный хаб</div>
+          <div class="hub-separator"></div>
+          <ul class="hub-list">
+            <li>Crypto-friendly юрисдикция для digital assets</li>
+            <li>Первые invoices от UAE-based SME и GCC obligors</li>
+            <li>Доступ к Gulf capital: family offices и crypto investors</li>
+            <li>Логистический и торговый deal flow</li>
+            <li>UAE / VARA / ADGM / DIFC regulatory pathway</li>
+          </ul>
+        </div>
+      </div>
+      <div class="hub-unit hub-unit-sg">
+        <div class="hub-visual" aria-hidden="true">
+          <img src="assets/hub-singapore-bg.png" alt="">
+        </div>
+        <div class="hub-card hub-sg">
+          <div class="hub-num">Singapore</div>
+          <div class="hub-role">Structuring & Compliance хаб</div>
+          <div class="hub-separator"></div>
+          <ul class="hub-list">
+            <li>Structuring / banking / compliance layer для SEA</li>
+            <li>Singapore · Malaysia · Indonesia · Vietnam · India</li>
+            <li>Institutional credibility для банков и партнёров</li>
+            <li>Масштабирование cross-border receivables</li>
+            <li>Institutional capital onboarding</li>
+          </ul>
+          <div class="hub-tag">COMING SOON</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="contacts">
+  <div class="container footer-inner">
+    <div class="footer-left">
+      <div class="logo">Factor<span class="logo-accent">0x</span></div>
+      <p>Invoice financing · Web3 · Digital infrastructure</p>
+      <div class="footer-legal">
+        <a href="privacy-policy.html" data-doc-link="privacy">Privacy Policy</a>
+        <a href="terms-of-service.html" data-doc-link="terms">Terms of Service</a>
+        <a href="whitepaper.html" data-doc-link="whitepaper">Whitepaper</a>
+      </div>
+      <p class="footer-copy">© 2026 Factor0x. All rights reserved.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <div class="footer-col-title">Продукт</div>
+        <a href="#factor0x-layer">Как работает</a>
+        <a href="#hubs">Хабы</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Для бизнеса</div>
+        <a href="#" data-open-apply>Получить финансирование</a>
+        <a href="#invoices">Инвесторам</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Контакт</div>
+        <a href="mailto:hello@factor0x.com">hello@factor0x.com</a>
+        <div class="footer-socials">
+          <a href="#" class="footer-social" aria-label="X / Twitter">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M17.7 3h3.1l-6.8 7.8L22 21h-6.3l-4.9-6.4L5.1 21H2l7.3-8.4L1.6 3h6.5l4.4 5.8L17.7 3Zm-1.1 16.2h1.7L7.2 4.7H5.4l11.2 14.5Z"></path>
+            </svg>
+          </a>
+          <a href="#" class="footer-social" aria-label="Telegram">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M21 4.7 17.9 20c-.2 1-.8 1.2-1.6.8l-4.5-3.3-2.2 2.1c-.2.2-.4.4-.9.4l.3-4.7 8.6-7.8c.4-.3-.1-.5-.6-.2L6.4 14 1.8 12.5c-1-.3-1-1 .2-1.4L19.8 4.2c.9-.3 1.6.2 1.2.5Z"></path>
+            </svg>
+          </a>
+          <a href="#" class="footer-social" aria-label="LinkedIn">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M6.8 8.9H3.6v10.3h3.2V8.9ZM5.2 4a1.86 1.86 0 1 0 0 3.7A1.86 1.86 0 0 0 5.2 4Zm13.7 9.5c0-3.1-1.7-4.8-4-4.8-1.8 0-2.6 1-3.1 1.7V8.9H8.7v10.3h3.2v-5.1c0-1.4.3-2.7 2-2.7 1.6 0 1.7 1.5 1.7 2.8v5h3.2v-5.7Z"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-backdrop" id="detailsModal" aria-hidden="true">
+  <div class="details-modal" role="dialog" aria-modal="true" aria-labelledby="modalCompanyName">
+    <button class="modal-close" type="button" aria-label="Закрыть">×</button>
+    <div class="modal-kicker">Key facts</div>
+    <div class="modal-card" id="modalCard">
+      <div class="modal-top">
+        <div class="modal-logo">Factor<span>0x</span></div>
+        <div class="modal-actions">
+          <button type="button">Website</button>
+          <button type="button">Forum</button>
+          <button type="button">Email</button>
+          <button type="button">Summary</button>
+        </div>
+      </div>
+      <div class="modal-grid">
+        <div class="modal-summary">
+          <h2 id="modalCompanyName">Gulf Trade Logistics</h2>
+          <div class="modal-underline"></div>
+          <p id="modalDescription"></p>
+        </div>
+        <div class="modal-facts" id="modalFacts"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>

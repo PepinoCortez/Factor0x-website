@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whitepaper — Factor0x</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <style type="text/css">
+    * { box-sizing: border-box; }
+    body {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 64px 24px 96px;
+      background: #fff;
+      color: #111;
+      font-family: 'Manrope', Arial, sans-serif;
+      line-height: 1.7;
+    }
+    .back {
+      display: inline-block;
+      margin-bottom: 42px;
+      color: #555;
+      font-size: 14px;
+      text-decoration: none;
+    }
+    .back:hover { color: #111; }
+    p.p1 {
+      margin: 0 0 48px;
+      text-align: left;
+      color: #111;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(42px, 6vw, 72px);
+      font-weight: 700;
+      line-height: 0.98;
+    }
+    p.p2,
+    p.p8 {
+      margin: 44px 0 14px;
+      padding-top: 28px;
+      border-top: 1px solid #e5e5e5;
+      color: #111;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+    p.p1 + p.p2 {
+      margin-top: 0;
+    }
+    p.p9 {
+      margin: 28px 0 10px;
+      color: #111;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+    p.p3,
+    p.p11 {
+      margin: 0 0 16px;
+      color: #222;
+      font-size: 16px;
+      line-height: 1.75;
+    }
+    p.p7,
+    p.p10,
+    p.p12 {
+      display: none;
+    }
+    ul.ul1 {
+      margin: 0 0 20px;
+      padding-left: 22px;
+      color: #222;
+      font-size: 16px;
+      line-height: 1.65;
+      list-style-type: disc;
+    }
+    li.li4,
+    li.li5,
+    li.li6 {
+      margin: 5px 0;
+      font: inherit;
+    }
+    .document-language-notice {
+      margin: -20px 0 34px;
+      padding: 14px 16px;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      background: #f7f7f7;
+      color: #555;
+      font-size: 14px;
+    }
+    @media (max-width: 640px) {
+      body { padding: 42px 18px 72px; }
+      p.p1 { font-size: 42px; }
+      p.p2,
+      p.p8 { font-size: 24px; }
+    }
+  </style>
+  <script src="docs-language.js" defer></script>
+</head>
+<body data-document-lang="ru">
+<a class="back" href="index.html">← Back to Factor0x</a>
+<p class="p1"><b>Whitepaper<br>
+Factor0x</b><b></b></p>
+<p class="p2"><b>1. Обзор</b></p>
+<p class="p3">Factor0x — это платформа cross-border invoice financing / trade receivables financing, которая помогает бизнесу получать ликвидность под подтверждённые B2B-инвойсы и краткосрочную дебиторскую задолженность.</p>
+<p class="p3">Платформа соединяет:</p>
+<ul class="ul1">
+  <li class="li4">SME и mid-market компании с подтверждёнными инвойсами;</li>
+  <li class="li5">инвесторов и capital providers, ищущих возможность участвовать в финансировании подтверждённых receivables;</li>
+  <li class="li5">SPV / licensed partner / factoring provider;</li>
+  <li class="li5">digital-asset capital providers, where legally permitted;</li>
+  <li class="li5">AI-инфраструктуру проверки инвойсов и риск-скоринга;</li>
+  <li class="li5">compliance, KYB / KYC и AML-контур;</li>
+  <li class="li6">Web3 smart-contract layer для учёта участия инвесторов, прозрачности статусов сделок и логики распределений.</li>
+</ul>
+<p class="p3">Factor0x не является спекулятивным токен-проектом. Это инфраструктурная платформа для финансирования реальных B2B receivables с Web3-слоем прозрачности, учёта и автоматизации.</p>
+<p class="p3">UAE / Dubai рассматривается как первый операционный, коммерческий и регуляторный хаб для:</p>
+<ul class="ul1">
+  <li class="li4">первых инвойсов;</li>
+  <li class="li5">первых SME / borrowers;</li>
+  <li class="li5">первых UAE / GCC obligors;</li>
+  <li class="li5">первых пилотных сделок;</li>
+  <li class="li5">crypto-native liquidity infrastructure;</li>
+  <li class="li5">legal / regulatory pathway review;</li>
+  <li class="li5">regulated digital asset / conversion infrastructure where required.</li>
+</ul>
+<p class="p3">Singapore и Southeast Asia рассматриваются позже как второй слой для structuring, banking, compliance и регионального масштабирования.</p>
+<p class="p7"><br></p>
+<p class="p8"><b>2. Миссия</b></p>
+<p class="p3">Миссия Factor0x — сделать финансирование подтверждённых receivables более быстрым, прозрачным и доступным за счёт объединения:</p>
+<ul class="ul1">
+  <li class="li4">подтверждённых B2B-инвойсов;</li>
+  <li class="li5">AI-powered invoice verification;</li>
+  <li class="li5">risk scoring / underwriting;</li>
+  <li class="li5">structured capital deployment;</li>
+  <li class="li5">fiat и crypto-native liquidity;</li>
+  <li class="li5">smart-contract-based accounting;</li>
+  <li class="li6">institutional-grade compliance и reporting.</li>
+</ul>
+<p class="p3">Factor0x стремится превратить подтверждённую дебиторскую задолженность в прозрачный, контролируемый и пригодный для финансирования класс активов.</p>
+<p class="p7"><br></p>
+<p class="p8"><b>3. Проблема</b></p>
+<p class="p3">Многие SME зарабатывают выручку раньше, чем получают деньги.</p>
+<p class="p3">В таких отраслях, как logistics, trade, distribution, construction, import/export и B2B services, компании часто выставляют инвойсы с отсрочкой оплаты 30–120 дней.</p>
+<p class="p3">Это создаёт постоянный разрыв:</p>
+<ul class="ul1">
+  <li class="li4">услуга оказана или товар поставлен;</li>
+  <li class="li5">инвойс выставлен;</li>
+  <li class="li5">debtor / obligor оплатит позже;</li>
+  <li class="li6">бизнесу ликвидность нужна сейчас.</li>
+</ul>
+<p class="p3">Традиционный факторинг и invoice financing имеют несколько ограничений.</p>
+<p class="p9"><b>3.1 Ограниченный доступ для SME</b></p>
+<p class="p3">Многие SME не проходят требования банков или классических factoring providers.</p>
+<p class="p9"><b>3.2 Медленный процесс одобрения</b></p>
+<p class="p3">Ручной underwriting, проверка документов и кредитный анализ часто занимают слишком много времени.</p>
+<p class="p9"><b>3.3 Недостаток прозрачности</b></p>
+<p class="p3">Инвесторы и capital providers часто не видят качество инвойса, статус документов, риск debtor, repayment progress и performance портфеля.</p>
+<p class="p9"><b>3.4 Сложность cross-border financing</b></p>
+<p class="p3">Международное финансирование инвойсов усложняется юридическими, банковскими, валютными и compliance-факторами.</p>
+<p class="p9"><b>3.5 Недоиспользованная crypto liquidity</b></p>
+<p class="p3">Рынок digital assets может стать дополнительным источником ликвидности для финансирования краткосрочных B2B receivables при условии соблюдения применимого регулирования.</p>
+<p class="p3">Factor0x рассматривает этот сегмент не как публичный сбор средств у неограниченного круга инвесторов, а как потенциальный источник структурированной ликвидности, который может быть подключён через юридически допустимую модель, compliance-процедуры и регулируемых партнёров, где это требуется.</p>
+<p class="p3">Ключевая задача — создать понятный и defensible контур, в котором digital-asset liquidity может быть направлена в финансирование реальных торговых сделок без нарушения требований к investor onboarding, AML/KYC, custody, offering restrictions и virtual asset activity</p>
+<p class="p7"><br></p>
+<p class="p8"><b>4. Возможность Factor0x</b></p>
+<p class="p3">Factor0x создаёт инфраструктуру, где подтверждённые B2B-инвойсы могут быть:</p>
+<ul class="ul1">
+  <li class="li4">приняты;</li>
+  <li class="li5">проверены;</li>
+  <li class="li5">оценены с точки зрения риска;</li>
+  <li class="li5">профинансированы;</li>
+  <li class="li5">отслежены до погашения;</li>
+  <li class="li6">представлены инвесторам в прозрачной и структурированной форме.</li>
+</ul>
+<p class="p3">Ключевая возможность Factor0x — соединить:</p>
+<ul class="ul1">
+  <li class="li4">бизнес, которому нужна ликвидность под подтверждённые B2B-инвойсы;</li>
+  <li class="li5">capital providers, которым интересны short-duration real-world assets;</li>
+  <li class="li5">licensed partners / SPV, через которые может быть организовано юридически корректное размещение капитала;</li>
+  <li class="li5">AI verification engine, который помогает проверять инвойсы, документы и качество сделок;</li>
+  <li class="li6">smart contract layer, который обеспечивает operational transparency, учёт участия, статусы сделок и логику распределений.</li>
+</ul>
+<p class="p3">Verified receivables могут стать масштабируемым real-world asset class, если объединить legal structuring, risk control, compliance и digital infrastructure.</p>
+<p class="p7"><br></p>
+<p class="p8"><b>5. Базовая модель Factor0x</b></p>
+<p class="p3">Factor0x построен на разделении ролей.</p>
+<p class="p9"><b>5.1 Borrower / SME</b></p>
+<p class="p3">Компания, которая хочет получить финансирование под подтверждённый invoice / receivable.</p>
+<p class="p9"><b>5.2 Debtor / Obligor</b></p>
+<p class="p3">Корпоративный клиент SME, который обязан оплатить инвойс.</p>
+<p class="p9"><b>5.3 Factor0x</b></p>
+<p class="p3">Операционная платформа, которая отвечает за:</p>
+<ul class="ul1">
+  <li class="li4">deal sourcing;</li>
+  <li class="li5">borrower onboarding;</li>
+  <li class="li5">invoice intake;</li>
+  <li class="li5">document verification;</li>
+  <li class="li5">AI-powered risk scoring;</li>
+  <li class="li5">obligor analysis;</li>
+  <li class="li5">investor-facing platform layer;</li>
+  <li class="li5">servicing;</li>
+  <li class="li5">reporting;</li>
+  <li class="li5">transaction status tracking;</li>
+  <li class="li6">Web3 transparency layer.</li>
+</ul>
+<p class="p9"><b>5.4 SPV / Licensed Partner / Factoring Provider</b></p>
+<p class="p3">Юридическая структура или лицензированный партнёр, который может:</p>
+<ul class="ul1">
+  <li class="li4">покупать receivables;</li>
+  <li class="li5">финансировать SME под receivables;</li>
+  <li class="li5">support collection and repayment flows;</li>
+  <li class="li5">принимать repayments;</li>
+  <li class="li5">support repayment and settlement processes under the approved legal structure.</li>
+</ul>
+<p class="p9"><b>5.5 Crypto / OTC / VASP Provider</b></p>
+<p class="p3">Лицензированный или регулируемый провайдер, который может обеспечивать:</p>
+<ul class="ul1">
+  <li class="li4">crypto-to-fiat conversion through licensed/regulated providers where required;</li>
+  <li class="li5">stablecoin settlement;</li>
+  <li class="li5">custody, если это разрешено;</li>
+  <li class="li5">wallet screening;</li>
+  <li class="li6">AML transaction monitoring.</li>
+</ul>
+<p class="p9"><b>5.6 Investors / Capital Providers</b></p>
+<p class="p3">Поставщики капитала, включая:</p>
+<ul class="ul1">
+  <li class="li4">crypto-native investors;</li>
+  <li class="li5">private investors;</li>
+  <li class="li5">family offices;</li>
+  <li class="li5">treasury holders;</li>
+  <li class="li5">funds;</li>
+  <li class="li6">professional / qualified investors, если это требуется по закону.</li>
+</ul>
+<p class="p7"><br></p>
+<p class="p8"><b>6. Целевой рынок</b></p>
+<p class="p9"><b>6.1 Первая география</b></p>
+<p class="p3">Первый рынок Factor0x — <b>UAE / Dubai</b>.</p>
+<ul class="ul1">
+  <li class="li4">UAE-based SME;</li>
+  <li class="li5">UAE / GCC obligors;</li>
+  <li class="li5">logistics companies;</li>
+  <li class="li5">trade companies;</li>
+  <li class="li5">import / export businesses;</li>
+  <li class="li5">distributors;</li>
+  <li class="li5">supply chain companies;</li>
+  <li class="li5">construction / contractors;</li>
+  <li class="li6">B2B service providers.</li>
+</ul>
+<p class="p9"><b>6.2 Целевой borrower profile</b></p>
+<p class="p3">Идеальный borrower:</p>
+<ul class="ul1">
+  <li class="li4">SME или mid-market company;</li>
+  <li class="li5">регулярный B2B invoice flow;</li>
+  <li class="li5">срок оплаты 30–120 дней;</li>
+  <li class="li5">corporate debtor / obligor;</li>
+  <li class="li5">подтверждённая операционная история;</li>
+  <li class="li5">отсутствие критических legal, sanctions, tax или bankruptcy risks;</li>
+  <li class="li6">возможность предоставить supporting documents.</li>
+</ul>
+<p class="p9"><b>6.3 Целевой investor profile</b></p>
+<p class="p3">Целевые investors / capital providers:</p>
+<ul class="ul1">
+  <li class="li4">crypto-native investors;</li>
+  <li class="li5">eligible digital-asset capital providers;</li>
+  <li class="li5">private investors;</li>
+  <li class="li5">family offices;</li>
+  <li class="li5">funds;</li>
+  <li class="li5">Gulf-based capital providers;</li>
+  <li class="li6">professional / qualified investors.</li>
+</ul>
+<p class="p7"><br></p>
+<p class="p8"><b>7. Продуктовая архитектура</b></p>
+<p class="p3">Factor0x — это hybrid infrastructure platform, которая сочетает off-chain verification и on-chain transparency.</p>
+<p class="p9"><b>7.1 Off-chain layer</b></p>
+<p class="p3">Off-chain слой включает:</p>
+<ul class="ul1">
+  <li class="li4">borrower onboarding;</li>
+  <li class="li5">KYB / KYC;</li>
+  <li class="li5">document upload;</li>
+  <li class="li5">invoice verification;</li>
+  <li class="li5">obligor review;</li>
+  <li class="li5">risk scoring;</li>
+  <li class="li5">legal documents;</li>
+  <li class="li5">contracts;</li>
+  <li class="li5">financing agreements;</li>
+  <li class="li5">receivables assignment documents;</li>
+  <li class="li5">compliance review;</li>
+  <li class="li6">banking и repayment flows.</li>
+</ul>
+<p class="p9"><b>7.2 On-chain layer</b></p>
+<p class="p3">On-chain слой может включать:</p>
+<ul class="ul1">
+  <li class="li4">investor participation recording;</li>
+  <li class="li5">smart-contract allocation tracking;</li>
+  <li class="li5">deal status events;</li>
+  <li class="li5">repayment distribution logic if legally permitted;</li>
+  <li class="li5">audit trail;</li>
+  <li class="li5">digital participation record;</li>
+  <li class="li5">pool-level или deal-level transparency;</li>
+  <li class="li6">immutable hashes of off-chain documents.</li>
+</ul>
+<p class="p7"><br></p>
+<p class="p8"><b>8. AI-powered Invoice Verification and Risk Scoring</b></p>
+<p class="p3">Ключевой элемент Factor0x — AI-powered invoice verification and receivables underwriting engine.</p>
+<p class="p9"><b>8.1 Invoice Validation</b></p>
+<ul class="ul1">
+  <li class="li4">проверять подлинность инвойса;</li>
+  <li class="li5">извлекать invoice data;</li>
+  <li class="li5">проверять invoice amount;</li>
+  <li class="li5">проверять due date;</li>
+  <li class="li5">проверять debtor details;</li>
+  <li class="li5">проверять payment terms;</li>
+  <li class="li5">выявлять missing fields;</li>
+  <li class="li6">выявлять несоответствия.</li>
+</ul>
+<p class="p9"><b>8.2 Fraud Detection</b></p>
+<p class="p3">Система должна выявлять:</p>
+<ul class="ul1">
+  <li class="li4">fake invoices;</li>
+  <li class="li5">duplicate invoices;</li>
+  <li class="li5">disputed invoices;</li>
+  <li class="li5">altered documents;</li>
+  <li class="li5">inconsistent debtor details;</li>
+  <li class="li5">unusual invoice amounts;</li>
+  <li class="li5">repeated invoice patterns;</li>
+  <li class="li5">related-party risk;</li>
+  <li class="li6">double financing risk.</li>
+</ul>
+<p class="p9"><b>8.3 Obligor Analysis</b></p>
+<p class="p3">Система должна оценивать:</p>
+<ul class="ul1">
+  <li class="li4">debtor identity;</li>
+  <li class="li5">debtor jurisdiction;</li>
+  <li class="li5">corporate status;</li>
+  <li class="li5">payment history, если доступна;</li>
+  <li class="li5">creditworthiness;</li>
+  <li class="li5">sanctions / adverse media risk;</li>
+  <li class="li5">concentration exposure;</li>
+  <li class="li6">industry risk.</li>
+</ul>
+<p class="p9"><b>8.4 Risk Tiering</b></p>
+<p class="p3">Каждый invoice / pool должен получать risk tier:</p>
+<ul class="ul1">
+  <li class="li4">Low Risk;</li>
+  <li class="li5">Medium Risk;</li>
+  <li class="li5">High Risk;</li>
+  <li class="li5">Manual Review Required;</li>
+  <li class="li6">Rejected.</li>
+</ul>
+<p class="p3">Risk score должен влиять на:</p>
+<ul class="ul1">
+  <li class="li4">advance rate;</li>
+  <li class="li5">investor yield;</li>
+  <li class="li5">reserve requirement;</li>
+  <li class="li5">financing eligibility;</li>
+  <li class="li5">documentation requirements;</li>
+  <li class="li6">approval workflow.</li>
+</ul>
+<p class="p7"><br></p>
+<p class="p8"><b>9. Transaction Workflow</b></p>
+<p class="p9"><b>9.1 Borrower Flow</b></p>
+<ul class="ul1">
+  <li class="li4">Borrower загружает invoice и supporting documents.</li>
+  <li class="li5">Factor0x проводит KYB и первичный document intake.</li>
+  <li class="li5">AI engine извлекает и проверяет invoice data.</li>
+  <li class="li5">Obligor проходит проверку и risk scoring.</li>
+  <li class="li5">Supporting documents проходят review.</li>
+  <li class="li5">Invoice получает статус approved, rejected или manual review.</li>
+  <li class="li5">Предлагаются financing terms.</li>
+  <li class="li5">Сделка листится privately или для eligible investors.</li>
+  <li class="li5">Капитал привлекается через approved structure.</li>
+  <li class="li5">SME получает financing.</li>
+  <li class="li5">Debtor оплачивает invoice на controlled account.</li>
+  <li class="li6">Repayment распределяется согласно legal and platform logic.</li>
+</ul>
+<p class="p9"><b>9.2 Investor Flow</b></p>
+<ul class="ul1">
+  <li class="li4">Investor проходит KYC / KYB where required / subject to onboarding rules;</li>
+  <li class="li5">Investor проходит wallet screening и source-of-funds checks.</li>
+  <li class="li5">Investor видит доступные invoice-backed opportunities.</li>
+  <li class="li5">Investor анализирует indicative economics;</li>
+  <li class="li5">Investor contributes eligible assets through approved channels, subject to legal and compliance checks;</li>
+  <li class="li5">Investor получает digital confirmation of participation.</li>
+  <li class="li5">Investor отслеживает deal status.</li>
+  <li class="li6">Investor receives distributions according to transaction terms, subject to risk and legal documentation.</li>
+</ul>
+<p class="p9"><b>9.3 Repayment Flow</b></p>
+<ul class="ul1">
+  <li class="li4">Debtor / obligor оплачивает invoice.</li>
+  <li class="li5">Средства поступают на SPV / licensed partner / designated collection account.</li>
+  <li class="li5">Поступление проходит reconciliation согласно approved transaction documents.</li>
+  <li class="li5">Transaction proceeds and investor allocations are calculated according to approved transaction documents.</li>
+  <li class="li5">Удерживаются applicable platform and partner fees, если это предусмотрено структурой сделки.</li>
+  <li class="li5">Производятся distributions в соответствии с approved transaction documents.</li>
+  <li class="li6">Deal status обновляется на Repaid, Overdue или Default.</li>
+</ul>
+<p class="p7"><br></p>
+<p class="p8"><b>10. Deal Structure</b></p>
+<p class="p3">Factor0x рассматривает несколько возможных legal structures.</p>
+<p class="p9"><b>10.1 Receivables Purchase / Assignment</b></p>
+<p class="p3">SPV или licensed partner покупает receivable у SME с дисконтом.</p>
+<p class="p3">Документы могут включать:</p>
+<ul class="ul1">
+  <li class="li4">receivables purchase agreement;</li>
+  <li class="li5">assignment agreement;</li>
+  <li class="li5">notice of assignment;</li>
+  <li class="li5">debtor acknowledgment;</li>
+  <li class="li5">controlled collection account;</li>
+  <li class="li6">servicing agreement.</li>
+</ul>
+<p class="p9"><b>10.2 Loan Against Invoice</b></p>
+<p class="p3">Financing entity выдаёт SME loan, где invoice используется как collateral или repayment source.</p>
+<p class="p3">Документы могут включать:</p>
+<ul class="ul1">
+  <li class="li4">loan agreement;</li>
+  <li class="li5">security over receivable;</li>
+  <li class="li5">repayment waterfall;</li>
+  <li class="li6">debtor payment direction.</li>
+</ul>
+<p class="p9"><b>10.3 Licensed Partner-led Factoring</b></p>
+<p class="p3">Licensed factoring / finance partner выступает legal financing entity.</p>
+<p class="p3">Factor0x остаётся:</p>
+<ul class="ul1">
+  <li class="li4">origination layer;</li>
+  <li class="li5">verification layer;</li>
+  <li class="li5">risk scoring layer;</li>
+  <li class="li5">marketing / investor acquisition layer, где это юридически допустимо;</li>
+  <li class="li5">servicing layer;</li>
+  <li class="li5">reporting layer;</li>
+  <li class="li6">Web3 transparency layer.</li>
+</ul>
+<p class="p10"><br></p>
+<p class="p7"><br></p>
+<p class="p8"><b>11. Investor Participation Model</b></p>
+<p class="p3"><b>Deal-by-deal / asset-by-asset model</b></p>
+<p class="p3">Factor0x рассматривает модель, при которой investors участвуют не в широком manager-driven public pool, а в отдельных invoice-backed opportunities или заранее определённых сделках.</p>
+<p class="p3">В такой модели:</p>
+<ul class="ul1">
+  <li class="li4">investors видят конкретные invoice-backed opportunities;</li>
+  <li class="li5">investors сами выбирают, участвовать в конкретной сделке или нет;</li>
+  <li class="li5">каждая opportunity имеет раскрытые параметры: borrower, obligor, сумма, срок, risk tier, verification status и ожидаемая экономика;</li>
+  <li class="li5">capital не передаётся в широкий manager-driven pool без выбора конкретных активов;</li>
+  <li class="li6">юридическая форма участия investors определяется approved transaction documents и подлежит legal review.</li>
+</ul>
+<p class="p3">Disclosed parameters могут включать:</p>
+<ul class="ul1">
+  <li class="li4">borrower;</li>
+  <li class="li5">obligor;</li>
+  <li class="li5">invoice amount;</li>
+  <li class="li5">maturity date;</li>
+  <li class="li5">expected return;</li>
+  <li class="li5">risk tier;</li>
+  <li class="li5">verification status;</li>
+  <li class="li5">supporting document status;</li>
+  <li class="li5">jurisdiction;</li>
+  <li class="li6">repayment source.</li>
+</ul>
+<p class="p7"><br></p>
+<p class="p8"><b>12. Liquidity and Capital Flow</b></p>
+<p class="p3">Factor0x предназначен для соединения eligible capital providers с подтверждёнными возможностями финансирования инвойсов через структурированную и compliance-oriented модель.</p>
+<p class="p3">Если в модели используются digital assets, то conversion, custody, settlement и другие регулируемые функции должны выполняться через соответствующих лицензированных или регулируемых провайдеров.</p>
+<p class="p3">Размещение капитала в receivables financing должно осуществляться через юридически подходящие структуры, такие как SPV, licensed financing partner или factoring provider.</p>
+<p class="p3">Smart-contract layer платформы предназначен для поддержки:</p>
+<ul class="ul1">
+  <li class="li4">учёта участия инвесторов;</li>
+  <li class="li5">фиксации allocation по сделкам;</li>
+  <li class="li5">мониторинга статуса сделок;</li>
+  <li class="li5">прозрачности статуса погашения;</li>
+  <li class="li5">логики распределений, если это юридически допустимо;</li>
+  <li class="li6">прозрачности и возможности аудита.</li>
+</ul>
+<p class="p8"><b>13. Risk Management Framework</b><b></b></p>
+<p class="p9"><b>13.1 Credit Risk</b></p>
+<p class="p3">Credit risk возникает, если debtor не оплачивает invoice.</p>
+<p class="p3">Меры по снижению риска:</p>
+<ul class="ul1">
+  <li class="li4">obligor analysis;</li>
+  <li class="li5">debtor acknowledgment;</li>
+  <li class="li5">invoice verification;</li>
+  <li class="li5">concentration limits;</li>
+  <li class="li5">risk tiering;</li>
+  <li class="li5">potential reserve mechanisms;</li>
+  <li class="li6">manual review для high-risk invoices.</li>
+</ul>
+<p class="p9"><b>13.2 Fraud Risk</b></p>
+<p class="p3">Fraud risk включает fake invoices, duplicate invoices, altered documents, disputed receivables или double financing.</p>
+<p class="p3">Меры по снижению риска:</p>
+<ul class="ul1">
+  <li class="li4">AI document checks;</li>
+  <li class="li5">duplicate detection;</li>
+  <li class="li5">supporting document validation;</li>
+  <li class="li5">debtor confirmation;</li>
+  <li class="li5">KYB checks;</li>
+  <li class="li5">adverse media screening;</li>
+  <li class="li6">manual review.</li>
+</ul>
+<p class="p9"><b>13.3 Liquidity Risk</b></p>
+<p class="p3">Liquidity risk возникает, если investors ожидают возврат капитала раньше, чем invoices будут погашены.</p>
+<p class="p3">Меры по снижению риска:</p>
+<ul class="ul1">
+  <li class="li4">short-duration assets;</li>
+  <li class="li5">maturity matching между сроками инвойсов и ожиданиями investors;</li>
+  <li class="li5">no guaranteed return or early redemption unless expressly documented;</li>
+  <li class="li5">clear investor disclosure;</li>
+  <li class="li5">repayment status tracking;</li>
+  <li class="li6">reserve policy, если предусмотрено структурой сделки.</li>
+</ul>
+<p class="p9"><b>13.4 Operational Risk</b></p>
+<p class="p3">Operational risks включают:</p>
+<ul class="ul1">
+  <li class="li4">неправильную обработку документов;</li>
+  <li class="li5">ошибочный scoring;</li>
+  <li class="li5">data privacy breach;</li>
+  <li class="li5">неправильное распределение payments;</li>
+  <li class="li5">admin key compromise;</li>
+  <li class="li5">smart contract bugs;</li>
+  <li class="li5">failed integration;</li>
+  <li class="li6">delayed reconciliation.</li>
+</ul>
+<p class="p3">Меры по снижению риска:</p>
+<ul class="ul1">
+  <li class="li4">RBAC;</li>
+  <li class="li5">audit trail;</li>
+  <li class="li5">encrypted document storage;</li>
+  <li class="li5">access control;</li>
+  <li class="li5">reconciliation controls;</li>
+  <li class="li5">smart contract audit;</li>
+  <li class="li6">incident response plan.</li>
+</ul>
+<p class="p7"><br></p>
+<p class="p8"><b>14. Economic Model</b></p>
+<p class="p3">Factor0x может отслеживать следующие платформенные метрики:</p>
+<ul class="ul1">
+  <li class="li4">Total Funded Volume;</li>
+  <li class="li5">TVL;</li>
+  <li class="li5">Active Invoices;</li>
+  <li class="li5">Repaid Invoices;</li>
+  <li class="li5">indicative economics / projected return range where legally permitted;</li>
+  <li class="li5">Average Duration;</li>
+  <li class="li5">Overdue Rate;</li>
+  <li class="li5">Default Rate;</li>
+  <li class="li5">default / overdue metrics;</li>
+  <li class="li5">Indicative investor economics, where legally permitted;</li>
+  <li class="li5">Platform Revenue;</li>
+  <li class="li5">Portfolio Concentration;</li>
+  <li class="li6">UAE / GCC Exposure.</li>
+</ul>
+<p class="p7"><br></p>
+<p class="p8"><b>15. Security Architecture</b></p>
+<p class="p3">Security является обязательным элементом Factor0x.</p>
+<p class="p3">Система должна защищать:</p>
+<ul class="ul1">
+  <li class="li4">investor funds;</li>
+  <li class="li5">borrower data;</li>
+  <li class="li5">invoice documents;</li>
+  <li class="li5">KYC / KYB records;</li>
+  <li class="li5">smart contract logic;</li>
+  <li class="li5">private keys;</li>
+  <li class="li5">admin access;</li>
+  <li class="li5">repayment records;</li>
+  <li class="li6">audit trails.</li>
+</ul>
+<p class="p9"><b>15.1 Smart Contract Controls</b></p>
+<p class="p3">Обязательные controls:</p>
+<ul class="ul1">
+  <li class="li4">strict state machine;</li>
+  <li class="li5">role-based access control;</li>
+  <li class="li5">multisig admin roles;</li>
+  <li class="li5">no arbitrary owner withdrawal of investor funds;</li>
+  <li class="li5">no post-funding change of economic terms;</li>
+  <li class="li5">reentrancy protection;</li>
+  <li class="li5">replay attack protection;</li>
+  <li class="li5">double payout protection;</li>
+  <li class="li5">emergency pause;</li>
+  <li class="li5">event logging;</li>
+  <li class="li6">external audit before mainnet launch.</li>
+</ul>
+<p class="p9"><b>15.2 Web2 Security</b></p>
+<p class="p3">Обязательные controls:</p>
+<ul class="ul1">
+  <li class="li4">encrypted storage;</li>
+  <li class="li5">secure API;</li>
+  <li class="li5">access control;</li>
+  <li class="li5">audit logs;</li>
+  <li class="li5">document integrity checks;</li>
+  <li class="li5">secure key management;</li>
+  <li class="li5">backup and recovery;</li>
+  <li class="li5">incident response plan;</li>
+  <li class="li6">penetration testing.</li>
+</ul>
+<p class="p7"><br></p>
+<p class="p8"><b>16. Platform Interfaces</b></p>
+<p class="p9"><b>16.1 Investor Interface</b><b></b></p>
+<p class="p11">Показывает eligible invoice-backed opportunities.</p>
+<p class="p3">Основные поля:</p>
+<ul class="ul1">
+  <li class="li4">borrower;</li>
+  <li class="li5">obligor;</li>
+  <li class="li5">jurisdiction;</li>
+  <li class="li5">invoice amount;</li>
+  <li class="li5">required funding;</li>
+  <li class="li5">current funding;</li>
+  <li class="li5">APR;</li>
+  <li class="li5">maturity date;</li>
+  <li class="li5">risk tier;</li>
+  <li class="li5">verification status;</li>
+  <li class="li5">document status;</li>
+  <li class="li5">funding progress;</li>
+  <li class="li6">repayment status.</li>
+</ul>
+<p class="p9"><b>16.2 Invoice Details Page</b></p>
+<p class="p3">Показывает:</p>
+<ul class="ul1">
+  <li class="li4">business overview;</li>
+  <li class="li5">invoice terms;</li>
+  <li class="li5">debtor profile;</li>
+  <li class="li5">supporting documents status;</li>
+  <li class="li5">risk score;</li>
+  <li class="li5">payment timeline;</li>
+  <li class="li5">expected return;</li>
+  <li class="li5">legal structure summary;</li>
+  <li class="li6">risk disclosure.</li>
+</ul>
+<p class="p9"><b>16.3 Borrower Dashboard</b></p>
+<p class="p3">Позволяет SME:</p>
+<ul class="ul1">
+  <li class="li4">upload invoices;</li>
+  <li class="li5">upload documents;</li>
+  <li class="li5">track review status;</li>
+  <li class="li5">receive financing terms;</li>
+  <li class="li6">monitor repayment status.</li>
+</ul>
+<p class="p9"><b>16.4 Compliance / Risk Panel</b></p>
+<p class="p3">Позволяет authorized team:</p>
+<ul class="ul1">
+  <li class="li4">review KYB;</li>
+  <li class="li5">approve / reject invoices;</li>
+  <li class="li5">assign risk tier;</li>
+  <li class="li5">check debtor;</li>
+  <li class="li5">monitor overdue invoices;</li>
+  <li class="li5">manage documents;</li>
+  <li class="li6">trigger manual review.</li>
+</ul>
+<p class="p9"><b>16.5 Analytics Dashboard</b></p>
+<p class="p3">Отслеживает:</p>
+<ul class="ul1">
+  <li class="li4">funded volume;</li>
+  <li class="li5">TVL;</li>
+  <li class="li5">repayment performance;</li>
+  <li class="li5">overdue rate;</li>
+  <li class="li5">default rate;</li>
+  <li class="li5">portfolio diversification;</li>
+  <li class="li5">risk tier exposure;</li>
+  <li class="li5">obligor concentration;</li>
+  <li class="li6">sector concentration.</li>
+</ul>
+<p class="p7"><br></p>
+<p class="p8"><b>17. Roadmap</b><b></b></p>
+<p class="p3"><b>Phase 1 — Legal &amp; Structural Setup<br>
+</b>Юридическая структура, regulatory review, выбор партнёров, подготовка compliance framework.</p>
+<p class="p3"><b>Phase 2 — MVP Development<br>
+</b>Платформа, investor interface, borrower flow, invoice verification, risk scoring, smart-contract layer.</p>
+<p class="p3"><b>Phase 3 — First UAE Pilot<br>
+</b>Первые проверенные invoice financing transactions в UAE / GCC-контуре.</p>
+<p class="p3"><b>Phase 4 — Partner &amp; Capital Expansion<br>
+</b>Подключение licensed partners, capital providers, logistics / trade originators.</p>
+<p class="p3"><b>Phase 5 — Regional Scaling<br>
+</b>Масштабирование UAE / GCC, затем Singapore / SEA layer.</p>
+<p class="p7"><br></p>
+<p class="p8"><b>18. Key Legal and Regulatory Disclaimers</b></p>
+<p class="p3">Этот whitepaper не является:</p>
+<ul class="ul1">
+  <li class="li5">приглашением к инвестированию;</li>
+  <li class="li5">legal advice;</li>
+  <li class="li5">investment advice;</li>
+  <li class="li5">financial promotion;</li>
+  <li class="li5">offer of securities;</li>
+  <li class="li5">public offering;</li>
+  <li class="li5">promise of return;</li>
+  <li class="li6">confirmation of licensing status.</li>
+</ul>
+<p class="p7"><br></p>
+<p class="p8"><b>19. Заключение</b></p>
+<p class="p3">Factor0x стремится создать регулируемую, прозрачную и технологичную инфраструктуру для финансирования подтверждённых B2B receivables.</p>
+<p class="p3">Платформа объединяет:</p>
+<ul class="ul1">
+  <li class="li4">real-world invoice flow;</li>
+  <li class="li5">AI-powered verification;</li>
+  <li class="li5">risk scoring;</li>
+  <li class="li5">structured capital deployment;</li>
+  <li class="li5">crypto-native liquidity;</li>
+  <li class="li5">smart-contract transparency;</li>
+  <li class="li6">UAE-first legal and commercial strategy.</li>
+</ul>
+<p class="p3">Долгосрочное видение Factor0x — сделать verified receivables более доступным, прозрачным и investable short-duration real-world asset class. Следующий этап — legal structuring, MVP и первая пилотная сделка в UAE/Dubai.</p>
+<p class="p12"><br></p>
+<p class="p7"><br></p>
+</body>
+</html>

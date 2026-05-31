@@ -1,0 +1,33 @@
+<svg width="700" height="260" viewBox="0 0 700 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="topGlass" x1="76" y1="38" x2="616" y2="176" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" stop-opacity="0.86"/>
+      <stop offset="0.46" stop-color="#f3f3f3" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0.76"/>
+    </linearGradient>
+    <linearGradient id="frontGlass" x1="82" y1="120" x2="636" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#d8d8d8" stop-opacity="0.72"/>
+      <stop offset="0.42" stop-color="#ffffff" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#bdbdbd" stop-opacity="0.62"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="44" y1="82" x2="657" y2="168" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8d8d8d" stop-opacity="0.55"/>
+      <stop offset="0.38" stop-color="#ffffff" stop-opacity="0.7"/>
+      <stop offset="1" stop-color="#858585" stop-opacity="0.56"/>
+    </linearGradient>
+    <filter id="baseShadow" x="0" y="0" width="700" height="260" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="26" stdDeviation="18" flood-color="#050505" flood-opacity="0.13"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#baseShadow)">
+    <path d="M42 96C33 88 37 74 50 72L281 39C326 32.6 372 32.6 417 39L650 72C664 74 668 89 657 98L537 193C523 204 506 210 488 210H207C189 210 171 204 157 193L42 96Z" fill="url(#topGlass)"/>
+    <path d="M42 96C33 88 37 74 50 72L281 39C326 32.6 372 32.6 417 39L650 72C664 74 668 89 657 98L537 193C523 204 506 210 488 210H207C189 210 171 204 157 193L42 96Z" stroke="url(#rim)" stroke-width="2"/>
+
+    <path d="M42 96L157 193C171 204 189 210 207 210H488C506 210 523 204 537 193L657 98V141C657 156 650 170 638 180L542 236C527 245 510 250 492 250H204C187 250 170 245 155 236L60 180C49 170 42 156 42 141V96Z" fill="url(#frontGlass)"/>
+    <path d="M42 96L157 193C171 204 189 210 207 210H488C506 210 523 204 537 193L657 98" stroke="#8c8c8c" stroke-opacity="0.46" stroke-width="2"/>
+    <path d="M61 180C101 202 140 222 181 238M640 178C597 204 562 224 519 240" stroke="#ffffff" stroke-opacity="0.55" stroke-width="2"/>
+    <path d="M87 102L287 72C326 66 367 66 407 72L614 102" stroke="#ffffff" stroke-opacity="0.55" stroke-width="2"/>
+    <path d="M122 120L296 95C331 90 367 90 402 95L580 120" stroke="#b5b5b5" stroke-opacity="0.28" stroke-width="1"/>
+  </g>
+</svg>

@@ -1,0 +1,1136 @@
+/* =============================================
+   FACTOR0X — MAIN JAVASCRIPT
+   ============================================= */
+
+// ── NAV SCROLL ──────────────────────────────
+const nav = document.getElementById('nav');
+if (nav) {
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+}
+
+// ── REVEAL ON SCROLL ─────────────────────────
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.classList.add('visible');
+      }, i * 80);
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ── TVL INFO ────────────────────────────────
+(function initTvlInfo() {
+  const button = document.querySelector('.tvl-info-btn');
+  const info = document.getElementById('tvlInfo');
+  if (!button || !info) return;
+
+  function setOpen(isOpen) {
+    button.setAttribute('aria-expanded', String(isOpen));
+    info.classList.toggle('open', isOpen);
+    info.setAttribute('aria-hidden', String(!isOpen));
+  }
+
+  button.addEventListener('click', event => {
+    event.stopPropagation();
+    setOpen(button.getAttribute('aria-expanded') !== 'true');
+  });
+
+  info.addEventListener('click', event => {
+    event.stopPropagation();
+  });
+
+  document.addEventListener('click', () => setOpen(false));
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') setOpen(false);
+  });
+})();
+
+// ── QUICK FLOW EXPANDER ─────────────────────
+(function initQuickPanels() {
+  const panels = [
+    {
+      toggle: document.querySelector('.flow-toggle'),
+      panel: document.getElementById('flowPanel')
+    },
+    {
+      toggle: document.querySelector('.apply-toggle'),
+      panel: document.getElementById('applyPanel')
+    }
+  ].filter(item => item.toggle && item.panel);
+
+  function closePanels() {
+    panels.forEach(item => {
+      item.panel.classList.remove('open');
+      item.panel.setAttribute('aria-hidden', 'true');
+      item.toggle.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function openPanel(panel, toggle) {
+    closePanels();
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    toggle.setAttribute('aria-expanded', 'true');
+  }
+
+  panels.forEach(({ toggle, panel }) => {
+    toggle.addEventListener('click', () => {
+      const shouldOpen = !panel.classList.contains('open');
+      closePanels();
+      if (shouldOpen) {
+        openPanel(panel, toggle);
+        window.setTimeout(() => {
+          panel.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        }, 120);
+      }
+    });
+  });
+
+  const applyModal = document.getElementById('applyModal');
+  const applyModalBody = applyModal?.querySelector('.apply-modal-body');
+  const applyModalClose = applyModal?.querySelector('.apply-modal-close');
+  const sourceApplyForm = document.querySelector('#applyPanel .apply-form');
+
+  if (applyModal && applyModalBody && sourceApplyForm) {
+    const modalForm = sourceApplyForm.cloneNode(true);
+    modalForm.classList.add('modal-apply-form');
+    applyModalBody.appendChild(modalForm);
+  }
+
+  function openApplyModal() {
+    if (!applyModal) return;
+    applyModal.classList.add('open');
+    applyModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeApplyModal() {
+    if (!applyModal) return;
+    applyModal.classList.remove('open');
+    applyModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('[data-open-apply]').forEach(link => {
+    if (!applyModal) return;
+
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      openApplyModal();
+    });
+  });
+
+  applyModalClose?.addEventListener('click', closeApplyModal);
+  applyModal?.addEventListener('click', event => {
+    if (event.target === applyModal) closeApplyModal();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && applyModal?.classList.contains('open')) closeApplyModal();
+  });
+
+  function initApplyForm(applyForm) {
+    applyForm.addEventListener('submit', event => {
+      event.preventDefault();
+      let firstMissing = null;
+
+      applyForm.querySelectorAll('[data-required]').forEach(input => {
+        const field = input.closest('label');
+        const isEmpty = input.type === 'file'
+          ? input.files.length === 0
+          : input.value.trim() === '';
+
+        field?.classList.toggle('is-missing', isEmpty);
+        if (isEmpty && !firstMissing) firstMissing = input;
+      });
+
+      firstMissing?.focus();
+    });
+
+    applyForm.querySelectorAll('[data-required]').forEach(input => {
+      const clearMissing = () => {
+        const field = input.closest('label');
+        const hasValue = input.type === 'file'
+          ? input.files.length > 0
+          : input.value.trim() !== '';
+        if (hasValue) field?.classList.remove('is-missing');
+      };
+      input.addEventListener('input', clearMissing);
+      input.addEventListener('change', clearMissing);
+    });
+
+    applyForm.querySelectorAll('[data-number-only]').forEach(input => {
+      input.addEventListener('input', () => {
+        const cleaned = input.value.replace(/\D/g, '');
+        const hadLetters = input.value !== cleaned;
+
+        input.value = cleaned;
+
+        if (hadLetters) {
+          window.clearTimeout(input.hintTimer);
+          input.classList.add('show-inline-hint');
+          input.placeholder = 'Only numbers';
+          input.hintTimer = window.setTimeout(() => {
+            input.classList.remove('show-inline-hint');
+            input.placeholder = '';
+          }, 1800);
+        }
+      });
+    });
+
+    applyForm.querySelectorAll('[data-amount-format]').forEach(input => {
+      input.addEventListener('input', () => {
+        const digits = input.value.replace(/\D/g, '');
+        const hadLetters = input.value !== input.value.replace(/[^\d\s]/g, '');
+
+        input.value = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+        if (hadLetters) {
+          window.clearTimeout(input.hintTimer);
+          input.classList.add('show-inline-hint');
+          input.placeholder = 'Only numbers';
+          input.hintTimer = window.setTimeout(() => {
+            input.classList.remove('show-inline-hint');
+            input.placeholder = '100 000';
+          }, 1800);
+        }
+      });
+    });
+
+    applyForm.querySelectorAll('[data-date-mask]').forEach(input => {
+      input.addEventListener('input', () => {
+        const digits = input.value.replace(/\D/g, '').slice(0, 8);
+        const parts = [
+          digits.slice(0, 2),
+          digits.slice(2, 4),
+          digits.slice(4, 8)
+        ].filter(Boolean);
+
+        input.value = parts.join('/');
+      });
+    });
+
+    applyForm.querySelectorAll('.date-icon-btn').forEach(button => {
+      const field = button.closest('.date-field');
+      const input = field?.querySelector('input');
+      const picker = field?.querySelector('.date-picker');
+      const title = picker?.querySelector('.date-picker-head strong');
+      const days = picker?.querySelector('.date-days');
+      const prev = picker?.querySelector('.date-prev');
+      const next = picker?.querySelector('.date-next');
+      if (!field || !input || !picker || !title || !days || !prev || !next) return;
+
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      let visibleDate = new Date();
+
+      function formatDate(date) {
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${month}/${day}/${date.getFullYear()}`;
+      }
+
+      function renderCalendar() {
+        const year = visibleDate.getFullYear();
+        const month = visibleDate.getMonth();
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        title.textContent = `${monthNames[month]} ${year}`;
+        days.innerHTML = '';
+
+        for (let i = 0; i < firstDay; i += 1) {
+          const empty = document.createElement('button');
+          empty.type = 'button';
+          empty.className = 'is-muted';
+          empty.tabIndex = -1;
+          empty.textContent = '';
+          days.appendChild(empty);
+        }
+
+        for (let day = 1; day <= daysInMonth; day += 1) {
+          const option = document.createElement('button');
+          const date = new Date(year, month, day);
+          option.type = 'button';
+          option.textContent = String(day);
+          option.classList.toggle('is-selected', input.value === formatDate(date));
+          option.addEventListener('click', () => {
+            input.value = formatDate(date);
+            field.classList.remove('open');
+            picker.setAttribute('aria-hidden', 'true');
+          });
+          days.appendChild(option);
+        }
+      }
+
+      button.addEventListener('click', event => {
+        event.stopPropagation();
+        field.classList.toggle('open');
+        picker.setAttribute('aria-hidden', String(!field.classList.contains('open')));
+        renderCalendar();
+      });
+
+      prev.addEventListener('click', event => {
+        event.stopPropagation();
+        visibleDate = new Date(visibleDate.getFullYear(), visibleDate.getMonth() - 1, 1);
+        renderCalendar();
+      });
+
+      next.addEventListener('click', event => {
+        event.stopPropagation();
+        visibleDate = new Date(visibleDate.getFullYear(), visibleDate.getMonth() + 1, 1);
+        renderCalendar();
+      });
+
+      picker.addEventListener('click', event => {
+        event.stopPropagation();
+      });
+    });
+
+    document.addEventListener('click', () => {
+      applyForm.querySelectorAll('.date-field.open').forEach(field => {
+        field.classList.remove('open');
+        field.querySelector('.date-picker')?.setAttribute('aria-hidden', 'true');
+      });
+    });
+
+    applyForm.querySelectorAll('.file-field').forEach(field => {
+      const input = field.querySelector('input[type="file"]');
+      const display = field.querySelector('.file-selected');
+      const singleRemove = field.querySelector('.file-single-remove');
+      const allToggle = field.querySelector('.file-all-toggle');
+      const list = field.querySelector('.file-list');
+      if (!input || !display || !singleRemove || !allToggle || !list) return;
+
+      let selectedFiles = [];
+
+      function syncInputFiles() {
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => dataTransfer.items.add(file));
+        input.files = dataTransfer.files;
+      }
+
+      function renderSelectedFiles() {
+        field.classList.toggle('has-files', selectedFiles.length > 0);
+        field.classList.toggle('has-multiple', selectedFiles.length > 1);
+        if (selectedFiles.length < 2) {
+          field.classList.remove('show-list');
+          allToggle.setAttribute('aria-expanded', 'false');
+        }
+
+        display.textContent = selectedFiles.length === 0
+          ? 'No files selected'
+          : selectedFiles.length === 1
+            ? selectedFiles[0].name
+            : `${selectedFiles.length} files selected`;
+
+        list.innerHTML = '';
+        const items = document.createElement('span');
+        items.className = 'file-list-items';
+
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'file-list-close';
+        close.textContent = 'Close';
+        close.addEventListener('click', event => {
+          event.preventDefault();
+          event.stopPropagation();
+          field.classList.remove('show-list');
+          allToggle.setAttribute('aria-expanded', 'false');
+        });
+
+        selectedFiles.forEach((file, index) => {
+          const chip = document.createElement('span');
+          chip.className = 'file-chip';
+
+          const name = document.createElement('span');
+          name.textContent = file.name;
+
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.setAttribute('aria-label', `Remove ${file.name}`);
+          remove.textContent = '×';
+          remove.addEventListener('click', event => {
+            event.preventDefault();
+            event.stopPropagation();
+            selectedFiles = selectedFiles.filter((_, itemIndex) => itemIndex !== index);
+            syncInputFiles();
+            renderSelectedFiles();
+          });
+
+          chip.append(name, remove);
+          items.appendChild(chip);
+        });
+
+        list.append(items, close);
+        requestAnimationFrame(() => {
+          items.classList.toggle('is-scrollable', items.scrollHeight > items.clientHeight);
+        });
+      }
+
+      display.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+
+      allToggle.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        applyForm.querySelectorAll('.file-field.show-list').forEach(item => {
+          if (item !== field) {
+            item.classList.remove('show-list');
+            item.querySelector('.file-all-toggle')?.setAttribute('aria-expanded', 'false');
+          }
+        });
+        const isOpen = field.classList.toggle('show-list');
+        allToggle.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      singleRemove.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        selectedFiles = [];
+        syncInputFiles();
+        renderSelectedFiles();
+      });
+
+      list.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+
+      input.addEventListener('change', () => {
+        const incomingFiles = Array.from(input.files);
+        incomingFiles.forEach(file => {
+          const alreadySelected = selectedFiles.some(item =>
+            item.name === file.name &&
+            item.size === file.size &&
+            item.lastModified === file.lastModified
+          );
+          if (!alreadySelected) selectedFiles.push(file);
+        });
+        syncInputFiles();
+        renderSelectedFiles();
+      });
+    });
+
+    document.addEventListener('click', () => {
+      applyForm.querySelectorAll('.file-field.show-list').forEach(field => {
+        field.classList.remove('show-list');
+        field.querySelector('.file-all-toggle')?.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
+  document.querySelectorAll('.apply-form').forEach(initApplyForm);
+})();
+
+// ── PARTICLES ────────────────────────────────
+(function initParticles() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.className = 'cosmic-dust-canvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+
+  let W = 0;
+  let H = 0;
+  let particles = [];
+  let frame = 0;
+  let dustExclusionZones = [];
+
+  function randomBetween(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  function getPageHeight() {
+    const previousCanvasHeight = canvas.style.height;
+    canvas.style.height = '0px';
+
+    const pageHeight = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      window.innerHeight
+    );
+
+    canvas.style.height = previousCanvasHeight;
+    return pageHeight;
+  }
+
+  function getCurrentPageHeight() {
+    return Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      window.innerHeight
+    );
+  }
+
+  function getParticleCount() {
+    const baseCount = W < 700 ? 78 : 138;
+    const pageRatio = Math.min(getPageHeight() / window.innerHeight, 3.2);
+    return Math.round(baseCount * pageRatio);
+  }
+
+  function syncParticleCount() {
+    const count = getParticleCount();
+    if (particles.length < count) {
+      particles.push(...Array.from({ length: count - particles.length }, () => new DustParticle()));
+    } else if (particles.length > count) {
+      particles.length = count;
+    }
+  }
+
+  function syncDustExclusionZones() {
+    dustExclusionZones = Array.from(document.querySelectorAll('.brand-first-slide, .hub-card, .faq-card, footer')).map(element => {
+      const rect = element.getBoundingClientRect();
+      return {
+        left: rect.left,
+        right: rect.right,
+        top: rect.top + window.scrollY,
+        bottom: rect.bottom + window.scrollY
+      };
+    });
+  }
+
+  function isInsideDustExclusionZone(x, y) {
+    return dustExclusionZones.some(zone =>
+      x >= zone.left &&
+      x <= zone.right &&
+      y >= zone.top &&
+      y <= zone.bottom
+    );
+  }
+
+  function resize() {
+    W = window.innerWidth;
+    H = getPageHeight();
+    canvas.width = Math.floor(W * pixelRatio);
+    canvas.height = Math.floor(H * pixelRatio);
+    canvas.style.width = `${W}px`;
+    canvas.style.height = `${H}px`;
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    syncDustExclusionZones();
+  }
+
+  class DustParticle {
+    constructor() {
+      this.reset(true);
+    }
+
+    reset(initial = false) {
+      this.x = Math.random() * W;
+      this.y = initial ? Math.random() * H : H + randomBetween(10, 80);
+      this.size = randomBetween(0.8, 2.35);
+      this.speedX = randomBetween(-0.08, 0.16);
+      this.speedY = randomBetween(-0.24, -0.06);
+      this.baseOpacity = randomBetween(0.18, 0.54);
+      this.pulse = Math.random() * Math.PI * 2;
+      this.pulseSpeed = randomBetween(0.006, 0.014);
+    }
+
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      this.pulse += this.pulseSpeed;
+
+      if (this.x < -24 || this.x > W + 24 || this.y < -24) {
+        this.reset();
+      }
+    }
+
+    draw() {
+      if (isInsideDustExclusionZone(this.x, this.y)) return;
+
+      const twinkle = Math.sin(this.pulse) * 0.18 + 0.82;
+      ctx.save();
+      ctx.globalAlpha = this.baseOpacity * twinkle;
+      ctx.fillStyle = '#A8A8A8';
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function init() {
+    resize();
+    particles = Array.from({ length: getParticleCount() }, () => new DustParticle());
+  }
+
+  function draw() {
+    frame += 1;
+    if (frame % 120 === 0 && Math.abs(getPageHeight() - H) > 80) {
+      resize();
+      syncParticleCount();
+    }
+    if (frame % 30 === 0) syncDustExclusionZones();
+
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(particle => {
+      particle.update();
+      particle.draw();
+    });
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', () => {
+    resize();
+    syncParticleCount();
+  });
+
+  init();
+  requestAnimationFrame(draw);
+})();
+
+// ── NUMBER COUNTER ANIMATION ─────────────────
+function animateCounter(el, end, suffix = '') {
+  const start = 0;
+  const duration = 1800;
+  const startTime = performance.now();
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = Math.floor(start + (end - start) * eased);
+    el.textContent = current + suffix;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── SMOOTH ANCHOR SCROLL ─────────────────────
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+  link.addEventListener('click', e => {
+    const target = document.querySelector(link.getAttribute('href'));
+    if (!target) return;
+    e.preventDefault();
+    const offset = 80;
+    const top = target.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior: 'smooth' });
+  });
+});
+
+// ── WEB3 MARKETPLACE MICRO-INTERACTIONS ─────
+(function initMarketplaceActions() {
+  const walletButton = document.querySelector('.wallet-toggle');
+  const contributionButtons = document.querySelectorAll('.invoice-actions button:first-child');
+  const viewMoreButton = document.querySelector('.view-more-btn');
+  const moreInvoices = document.getElementById('moreInvoices');
+  const languageSelect = document.querySelector('.language-select');
+  const languageTrigger = document.querySelector('.language-trigger');
+  const languageOptions = document.querySelectorAll('.language-menu button');
+  const networkSelect = document.querySelector('.network-select');
+  const networkTrigger = document.querySelector('.network-trigger');
+  const networkTriggerIcon = document.querySelector('.network-trigger .network-icon');
+  const networkOptions = document.querySelectorAll('.network-menu button');
+  const supportedLangs = ['en', 'ru', 'es', 'ar'];
+  const urlLang = new URLSearchParams(window.location.search).get('lang');
+  let currentLang = supportedLangs.includes(urlLang)
+    ? urlLang
+    : supportedLangs.includes(localStorage.getItem('factor0xLang'))
+      ? localStorage.getItem('factor0xLang')
+    : (document.documentElement.lang === 'en' ? 'en' : 'ru');
+
+  if (walletButton) {
+    walletButton.addEventListener('click', () => {
+      const isConnected = walletButton.classList.toggle('connected');
+      walletButton.textContent = isConnected
+        ? '0xA4...19C2'
+        : currentLang === 'en'
+          ? 'Connect wallet'
+          : 'Подключить кошелек';
+    });
+  }
+
+  contributionButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      contributionButtons.forEach(item => {
+        if (item !== button) item.textContent = 'Contribute';
+      });
+      button.textContent = 'Selected';
+    });
+  });
+
+  document.querySelectorAll('.table-contribute-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.table-contribute-btn').forEach(item => {
+        if (item !== button) item.textContent = 'Contribute';
+      });
+      button.textContent = 'Selected';
+    });
+  });
+
+  if (viewMoreButton && moreInvoices) {
+    const invoiceHero = viewMoreButton.closest('.invoice-hero');
+    const offersTitle = invoiceHero?.querySelector('.offers-title');
+
+    viewMoreButton.addEventListener('click', () => {
+      const isOpen = invoiceHero?.classList.toggle('show-invoice-table');
+      moreInvoices.setAttribute('aria-hidden', String(!isOpen));
+      viewMoreButton.setAttribute('aria-expanded', String(isOpen));
+      viewMoreButton.textContent = isOpen ? 'View less' : 'View more';
+      if (offersTitle) {
+        offersTitle.textContent = isOpen ? 'Offer list' : 'ТОП offers';
+        offersTitle.classList.toggle('plain', Boolean(isOpen));
+      }
+    });
+  }
+
+  document.querySelectorAll('.more-invoices').forEach(invoiceList => {
+    const tableBody = invoiceList.querySelector('.invoice-table tbody');
+    const rows = Array.from(invoiceList.querySelectorAll('.invoice-table tbody tr'));
+    const sortButtons = Array.from(invoiceList.querySelectorAll('.invoice-sort'));
+    const pageSizeButtons = Array.from(invoiceList.querySelectorAll('[data-page-size]'));
+    const prev = invoiceList.querySelector('.invoice-page-prev');
+    const next = invoiceList.querySelector('.invoice-page-next');
+    const status = invoiceList.querySelector('.invoice-page-status');
+    const riskOrder = {
+      'Low Risk': 1,
+      'Medium Risk': 2,
+      'High Risk': 3,
+    };
+    let activeRows = [...rows];
+    let pageSize = 10;
+    let page = 0;
+    let sortState = {
+      key: null,
+      direction: 'desc',
+    };
+
+    if (!tableBody || !rows.length || !prev || !next || !status) return;
+
+    function parseTableValue(row, key) {
+      if (key === 'amount') return Number(row.dataset.amount?.replace(/[^\d.]/g, '')) || 0;
+      if (key === 'apr') return Number(row.dataset.apr?.replace(/[^\d.]/g, '')) || 0;
+      if (key === 'dueDate') return Number(row.dataset.dueDate?.replace(/[^\d.]/g, '')) || 0;
+      if (key === 'filled') return Number(row.children[4]?.textContent.replace(/[^\d.]/g, '')) || 0;
+      if (key === 'risk') return riskOrder[row.dataset.risk] || 0;
+      if (key === 'minContribution') return Number(row.dataset.minContribution?.replace(/[^\d.]/g, '')) || 0;
+      return 0;
+    }
+
+    function applySort() {
+      if (!sortState.key) {
+        activeRows = [...rows];
+      } else {
+        const direction = sortState.direction === 'asc' ? 1 : -1;
+        activeRows = [...activeRows].sort((a, b) => {
+          const diff = parseTableValue(a, sortState.key) - parseTableValue(b, sortState.key);
+          return diff * direction;
+        });
+      }
+
+      activeRows.forEach(row => tableBody.appendChild(row));
+    }
+
+    function renderInvoicePage() {
+      const size = pageSize === 'all' ? activeRows.length : pageSize;
+      const pages = pageSize === 'all' ? 1 : Math.max(Math.ceil(activeRows.length / size), 1);
+      page = Math.min(Math.max(page, 0), pages - 1);
+
+      activeRows.forEach((row, index) => {
+        const isVisible = pageSize === 'all' || (index >= page * size && index < (page + 1) * size);
+        row.hidden = !isVisible;
+      });
+
+      status.textContent = `Page ${page + 1} / ${pages}`;
+      prev.disabled = page === 0;
+      next.disabled = page >= pages - 1;
+    }
+
+    prev.addEventListener('click', () => {
+      page -= 1;
+      renderInvoicePage();
+    });
+
+    next.addEventListener('click', () => {
+      page += 1;
+      renderInvoicePage();
+    });
+
+    pageSizeButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const value = button.dataset.pageSize;
+        pageSize = value === 'all' ? 'all' : Number(value);
+        page = 0;
+        pageSizeButtons.forEach(item => item.classList.toggle('active', item === button));
+        renderInvoicePage();
+      });
+    });
+
+    sortButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const key = button.dataset.sort;
+        if (!key) return;
+
+        if (sortState.key === key) {
+          sortState.direction = sortState.direction === 'desc' ? 'asc' : 'desc';
+        } else {
+          sortState = { key, direction: 'desc' };
+        }
+
+        sortButtons.forEach(item => {
+          const isActive = item === button;
+          item.classList.toggle('active', isActive);
+          item.classList.toggle('asc', isActive && sortState.direction === 'asc');
+        });
+
+        page = 0;
+        applySort();
+        renderInvoicePage();
+      });
+    });
+
+    applySort();
+    renderInvoicePage();
+  });
+
+  if (networkSelect && networkTrigger && networkTriggerIcon) {
+    networkTrigger.addEventListener('click', event => {
+      event.stopPropagation();
+      languageSelect?.classList.remove('open');
+      languageTrigger?.setAttribute('aria-expanded', 'false');
+      const isOpen = networkSelect.classList.toggle('open');
+      networkTrigger.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    networkOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        const icon = option.querySelector('.network-icon');
+        if (!icon) return;
+        networkTriggerIcon.className = icon.className;
+        networkSelect.classList.remove('open');
+        networkTrigger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    document.addEventListener('click', () => {
+      networkSelect.classList.remove('open');
+      networkTrigger.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  if (languageSelect && languageTrigger) {
+    const ruTextNodes = new WeakMap();
+    const ruAttributeValues = new WeakMap();
+    const translations = {
+      text: {
+        'О нас': 'About',
+        'Контакты': 'Contacts',
+        'Подключить кошелек': 'Connect wallet',
+        'Капитал для бизнеса': 'Capital for business',
+        'Доход для инвестора': 'Yield for investors',
+        'Платформа, где проверенные инвойсы находят ликвидность': 'A platform where verified invoices find liquidity',
+        'Получить финансирование': 'Get financing',
+        'Профинансировать сделку': 'Fund a deal',
+        'Подключите кошелёк и участвуйте в краткосрочном финансировании реального бизнеса.': 'Connect your wallet and participate in short-term financing for real businesses.',
+        'ТОП offers': 'Top offers',
+        'Как работает модель': 'How the model works',
+        'Factor0x помогает бизнесу получить оборотный капитал, а инвесторам — заработать на проверенных B2B-инвойсах.': 'Factor0x helps businesses access working capital and investors earn from verified B2B invoices.',
+        'Бизнес': 'Business',
+        'Получает финансирование': 'Receives financing',
+        'Передаёт подтверждённый B2B-инвойс и получает оборотный капитал до оплаты клиента.': 'Submits a confirmed B2B invoice and receives working capital before the customer pays.',
+        'Структурирует сделку': 'Structures the deal',
+        'Связывает бизнес, капитал и repayment-процесс в единую управляемую инфраструктуру.': 'Connects business, capital, and the repayment process in one managed infrastructure.',
+        'Инвесторы': 'Investors',
+        'Предоставляют ликвидность': 'Provide liquidity',
+        'Финансируют реальные торговые сделки и получают доход после их погашения.': 'Finance real trade deals and earn after they are repaid.',
+        'Инвойс': 'Invoice',
+        'Проверка': 'Verification',
+        'Финансирование': 'Financing',
+        'Погашение': 'Repayment',
+        'Доход': 'Yield',
+        'Каждый этап фиксируется в системе и отображается инвестору в статусе сделки.': 'Every stage is recorded in the system and shown to investors in the deal status.',
+        'Factor0x работает на пересечении trade finance,': 'Factor0x operates at the intersection of trade finance,',
+        'Web3-ликвидности и реального B2B-сектора.': 'Web3 liquidity, and the real B2B sector.',
+        'Мы начинаем с ОАЭ — рынка с сильной торговлей, логистикой и спросом на оборотный капитал.': 'We start with the UAE, a market with strong trade, logistics, and demand for working capital.',
+        'Наша цель — дать бизнесу быстрый капитал, а инвестору — понятный способ заработка на проверенных B2B-инвойсах.': 'Our goal is to give businesses fast capital and investors a clear way to earn from verified B2B invoices.',
+        'Прозрачность сделок': 'Deal transparency',
+        'Проверяем инвойс, документы и факт поставки.': 'We verify the invoice, documents, and delivery evidence.',
+        'Проверяем бизнес, должника и юридические риски.': 'We check the business, debtor, and legal risks.',
+        'Оцениваем срок, сумму, отрасль и качество сделки.': 'We assess term, amount, sector, and deal quality.',
+        'Фиксируем статус сделки, repayment и распределения.': 'We record deal status, repayment, and distributions.',
+        'Заработок': 'Earning',
+        'Реальные активы': 'Real assets',
+        'Пулы связаны с реальными бизнес-сделками.': 'Pools are linked to real business deals.',
+        'Понятные условия': 'Clear terms',
+        'Сумма, срок, APR и контрагент видны до участия.': 'Amount, term, APR, and counterparty are visible before participation.',
+        'Без токеномики': 'No tokenomics',
+        'Доходность связана с инвойсом, не с токеном.': 'Yield is linked to the invoice, not a token.',
+        'Безопасно': 'Secure',
+        'Регулярый аудит смарт-контрактов.': 'Regular smart contract audits.',
+        'Что такое Factor0x?': 'What is Factor0x?',
+        'Factor0x — это платформа для финансирования проверенных B2B-инвойсов. Бизнес получает оборотный капитал до оплаты клиента, а инвесторы финансируют реальные сделки из B2B-сектора.': 'Factor0x is a platform for financing verified B2B invoices. Businesses receive working capital before customer payment, while investors finance real B2B-sector deals.',
+        'Что финансируют инвесторы?': 'What do investors finance?',
+        'Инвесторы финансируют проверенные B2B-инвойсы. Каждая сделка имеет сумму, срок, risk tier, статус проверки и ожидаемый процесс погашения.': 'Investors finance verified B2B invoices. Each deal has an amount, term, risk tier, verification status, and expected repayment process.',
+        'Как инвестор получает доход?': 'How does an investor earn?',
+        'Доход формируется после погашения инвойса должником. Когда клиент бизнеса оплачивает инвойс, средства распределяются между участниками сделки согласно условиям.': 'Yield is generated after the debtor repays the invoice. When the business customer pays the invoice, funds are distributed to deal participants according to the terms.',
+        'Доходность гарантирована?': 'Is yield guaranteed?',
+        'Нет. Доходность зависит от погашения инвойса, качества должника, условий сделки и возможных задержек. Factor0x показывает target APR, но не гарантирует доход.': 'No. Yield depends on invoice repayment, debtor quality, deal terms, and possible delays. Factor0x shows target APR but does not guarantee returns.',
+        'Что происходит, если инвойс не оплатят вовремя?': 'What happens if an invoice is not paid on time?',
+        'Сделка получает статус overdue. Инвесторы видят обновления по repayment, а Factor0x и партнёры работают по предусмотренному процессу взыскания / урегулирования.': 'The deal receives overdue status. Investors see repayment updates, while Factor0x and partners follow the defined collection or resolution process.',
+        'Какие инвойсы подходят?': 'Which invoices are eligible?',
+        'На первом этапе Factor0x фокусируется на B2B-инвойсах компаний из ОАЭ, связанных с торговлей, логистикой, дистрибуцией, supply chain и B2B-услугами.': 'At the first stage, Factor0x focuses on B2B invoices from UAE companies in trade, logistics, distribution, supply chain, and B2B services.',
+        'Зачем нужна проверка KYB / KYC?': 'Why are KYB / KYC checks needed?',
+        'KYB / KYC нужны для проверки бизнеса, инвесторов, источника средств, санкционных рисков и соответствия требованиям compliance.': 'KYB / KYC checks verify businesses, investors, source of funds, sanctions risks, and compliance requirements.',
+        'Нужен ли бизнесу crypto wallet?': 'Does a business need a crypto wallet?',
+        'Нет. Бизнесу не обязательно использовать crypto wallet. Для бизнеса продукт должен работать как понятное финансирование под инвойс.': 'No. A business does not have to use a crypto wallet. For businesses, the product should work as straightforward invoice financing.',
+        'В чём роль Web3?': 'What is the role of Web3?',
+        'Web3 используется для прозрачности, учёта участия инвесторов, статуса сделки и on-chain tracking. Factor0x не строится вокруг спекулятивного токена.': 'Web3 is used for transparency, investor participation records, deal status, and on-chain tracking. Factor0x is not built around a speculative token.',
+        'В какой валюте происходит финансирование?': 'Which currency is used for financing?',
+        'Инвесторы могут участвовать через USDT / USDC или fiat, если это доступно для конкретной сделки и соответствует требованиям compliance.': 'Investors may participate through USDT / USDC or fiat when available for a specific deal and compliant with requirements.',
+        'Команда проекта': 'Project team',
+        'Dual-hub архитектура': 'Dual-hub architecture',
+        'UAE / Dubai — операционный центр Factor0x для deal flow и ликвидности.': 'UAE / Dubai is the Factor0x operating hub for deal flow and liquidity.',
+        'Singapore — стратегический слой для banking, structuring и регионального масштабирования.': 'Singapore is the strategic layer for banking, structuring, and regional expansion.',
+        'Операционный хаб': 'Operational hub',
+        'Crypto-friendly юрисдикция для digital assets': 'Crypto-friendly jurisdiction for digital assets',
+        'Первые invoices от UAE-based SME и GCC obligors': 'First invoices from UAE-based SMEs and GCC obligors',
+        'Доступ к Gulf capital: family offices и crypto investors': 'Access to Gulf capital: family offices and crypto investors',
+        'Логистический и торговый deal flow': 'Logistics and trade deal flow',
+        'Structuring & Compliance хаб': 'Structuring & Compliance hub',
+        'Institutional credibility для банков и партнёров': 'Institutional credibility for banks and partners',
+        'Масштабирование cross-border receivables': 'Scaling cross-border receivables',
+        'Продукт': 'Product',
+        'Как работает': 'How it works',
+        'Хабы': 'Hubs',
+        'Для бизнеса': 'For business',
+        'Инвесторам': 'Investors',
+        'Контакт': 'Contact'
+      },
+      attributes: {
+        'Выбрать язык': 'Select language',
+        'Выбрать сеть': 'Select network',
+        'Закрыть': 'Close'
+      }
+    };
+
+    function translateNodeText(node, lang) {
+      if (!ruTextNodes.has(node)) ruTextNodes.set(node, node.nodeValue);
+      const original = ruTextNodes.get(node);
+      const trimmed = original.trim();
+      if (!trimmed) return;
+      const leading = original.match(/^\s*/)?.[0] || '';
+      const trailing = original.match(/\s*$/)?.[0] || '';
+      node.nodeValue = lang === 'en' && translations.text[trimmed]
+        ? `${leading}${translations.text[trimmed]}${trailing}`
+        : original;
+    }
+
+    function updateDocumentLinks(lang) {
+      document.querySelectorAll('[data-doc-link]').forEach(link => {
+        const docType = link.dataset.docLink;
+        const baseHref = docType === 'whitepaper' && lang === 'en'
+          ? 'whitepaper-en.html'
+          : docType === 'whitepaper'
+            ? 'whitepaper.html'
+            : docType === 'privacy' && lang === 'ru'
+              ? 'privacy-policy-ru.html'
+              : docType === 'privacy'
+                ? 'privacy-policy.html'
+                : docType === 'terms' && lang === 'ru'
+                  ? 'terms-of-service-ru.html'
+                  : docType === 'terms'
+                    ? 'terms-of-service.html'
+                    : link.getAttribute('href').split('?')[0];
+        const url = new URL(baseHref, window.location.href);
+        url.searchParams.set('lang', lang);
+        link.setAttribute('href', `${url.pathname.split('/').pop()}${url.search}`);
+      });
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('factor0xLang', lang);
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          const parent = node.parentElement;
+          if (!parent || ['SCRIPT', 'STYLE', 'SVG', 'PATH'].includes(parent.tagName)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          return node.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        }
+      });
+
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(node => translateNodeText(node, lang));
+
+      document.querySelectorAll('[aria-label]').forEach(element => {
+        if (!ruAttributeValues.has(element)) {
+          ruAttributeValues.set(element, element.getAttribute('aria-label'));
+        }
+        const original = ruAttributeValues.get(element);
+        element.setAttribute('aria-label', lang === 'en' && translations.attributes[original]
+          ? translations.attributes[original]
+          : original);
+      });
+
+      document.documentElement.lang = supportedLangs.includes(lang) ? lang : 'ru';
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      updateDocumentLinks(lang);
+    }
+
+    languageTrigger.addEventListener('click', event => {
+      event.stopPropagation();
+      networkSelect?.classList.remove('open');
+      networkTrigger?.setAttribute('aria-expanded', 'false');
+      const isOpen = languageSelect.classList.toggle('open');
+      languageTrigger.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    languageOptions.forEach(option => {
+      option.addEventListener('click', () => {
+        const lang = option.dataset.lang;
+        if (supportedLangs.includes(lang)) setLanguage(lang);
+        languageSelect.classList.remove('open');
+        languageTrigger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    setLanguage(currentLang);
+
+    document.addEventListener('click', () => {
+      languageSelect.classList.remove('open');
+      languageTrigger.setAttribute('aria-expanded', 'false');
+    });
+  }
+})();
+
+// ── INVOICE DETAILS MODAL ────────────────────
+(function initDetailsModal() {
+  const modal = document.getElementById('detailsModal');
+  if (!modal) return;
+
+  const closeButton = modal.querySelector('.modal-close');
+  const card = document.getElementById('modalCard');
+  const title = document.getElementById('modalCompanyName');
+  const description = document.getElementById('modalDescription');
+  const facts = document.getElementById('modalFacts');
+
+  const companyDetails = {
+    gulf: {
+      cardClass: 'modal-card modal-card-photo modal-card-gulf',
+      name: 'Gulf Trade Logistics',
+      description: 'UAE-based logistics operator financing verified cross-border receivables from a Singapore trade counterparty. The invoice is backed by shipping documents, KYB review, and obligor confirmation before funding.',
+      facts: [
+        ['Borrower', 'Gulf Trade Logistics LLC'],
+        ['Obligor', 'Singapore Distribution Pte. Ltd.'],
+        ['Sector', 'Trade Logistics'],
+        ['Jurisdiction', 'Dubai, UAE'],
+        ['Invoice Amount', '$420,000'],
+        ['Due Date', '2026/07/18'],
+        ['APR', '6.2% annual']
+      ]
+    },
+    asia: {
+      cardClass: 'modal-card modal-card-photo modal-card-asia',
+      name: 'Asia Components Ltd',
+      description: 'Electronics components supplier using invoice financing to bridge working capital between shipment and payment settlement. Medium-risk profile reflects sector cyclicality and a shorter counterparty history.',
+      facts: [
+        ['Borrower', 'Asia Components Ltd'],
+        ['Obligor', 'GCC Manufacturing Group'],
+        ['Sector', 'Electronics'],
+        ['Jurisdiction', 'Singapore'],
+        ['Invoice Amount', '$315,000'],
+        ['Due Date', '2026/06/30'],
+        ['APR', '9.4% annual']
+      ]
+    },
+    desert: {
+      cardClass: 'modal-card modal-card-photo modal-card-desert',
+      name: 'Desert Cloud Services',
+      description: 'Recurring SaaS receivable from an enterprise services contract. The invoice has a low-risk profile due to confirmed service delivery, repeat payment history, and a diversified obligor base.',
+      facts: [
+        ['Borrower', 'Desert Cloud Services FZCO'],
+        ['Obligor', 'Regional Enterprise Client'],
+        ['Sector', 'SaaS Contract'],
+        ['Jurisdiction', 'UAE Free Zone'],
+        ['Invoice Amount', '$250,000'],
+        ['Due Date', '2026/06/14'],
+        ['APR', '5.4% annual']
+      ]
+    }
+  };
+
+  function closeModal() {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  document.querySelectorAll('.details-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const row = button.closest('tr');
+      const details = companyDetails[button.dataset.company] || (row ? {
+        cardClass: 'modal-card',
+        name: row.dataset.companyName,
+        description: `${row.dataset.companyName} is a verified B2B invoice opportunity in ${row.dataset.sector}. The deal is listed with current funding progress, target pricing, and risk tier for investor review.`,
+        facts: [
+          ['Invoice', row.dataset.invoiceId],
+          ['Sector', row.dataset.sector],
+          ['Invoice Amount', row.dataset.amount],
+          ['Due Date', row.dataset.dueDate],
+          ['Risk', row.dataset.risk],
+          ['Min Contribution', row.dataset.minContribution],
+          ['APR', `${row.dataset.apr} annual`]
+        ]
+      } : null);
+      if (!details) return;
+
+      card.className = details.cardClass || 'modal-card';
+      title.textContent = details.name;
+      description.textContent = details.description;
+      facts.innerHTML = details.facts.map(([label, value]) => `
+        <div class="fact-row">
+          <div class="fact-label">${label}</div>
+          <div class="fact-value">${value}</div>
+        </div>
+      `).join('');
+
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+    });
+  });
+
+  closeButton.addEventListener('click', closeModal);
+  modal.addEventListener('click', event => {
+    if (event.target === modal) closeModal();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') closeModal();
+  });
+})();
+
+(() => {
+  const platform = document.querySelector('.earning-gold-platform-wrap');
+  const earnButton = document.querySelector('.earning-platform-label');
+  if (!platform || !earnButton) return;
+
+  let soonTimer;
+  earnButton.addEventListener('click', () => {
+    clearTimeout(soonTimer);
+    platform.classList.add('soon-visible');
+    soonTimer = setTimeout(() => {
+      platform.classList.remove('soon-visible');
+    }, 1300);
+  });
+})();
+
+console.log('%cFactor%c0x', 'font-size:32px; color:#050505; font-weight:700', 'font-size:32px; color:#6F6F6F; font-weight:700');
+console.log('%cLiquidity for Business · factor0x.com', 'font-size:14px; color:#888');
