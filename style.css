@@ -4700,23 +4700,32 @@ footer {
   .brand-hero-content {
     left: 24px;
     right: 24px;
-    top: auto;
-    bottom: 34px;
+    top: 50%;
+    bottom: auto;
     width: auto;
     max-width: none;
-    transform: none;
+    transform: translateY(-4%);
   }
   .brand-first-slide img {
     left: 50%;
-    top: 30%;
-    width: 118vw;
+    top: 27%;
+    width: 108vw;
     height: auto;
-    opacity: 0.42;
+    opacity: 0.92;
+    filter: brightness(1.26) contrast(1.04) drop-shadow(0 22px 30px rgba(0,0,0,0.34));
     transform: translate(-50%, -50%);
+  }
+  .brand-first-slide::after {
+    background:
+      linear-gradient(90deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.10) 42%, rgba(0,0,0,0.04) 100%),
+      linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.00) 34%, rgba(0,0,0,0.14));
   }
   .brand-hero-content h1 {
     font-size: 38px;
     max-width: 360px;
+  }
+  .brand-hero-content h1 span {
+    white-space: normal;
   }
   .brand-hero-content p {
     font-size: 15px;
