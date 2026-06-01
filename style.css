@@ -4726,17 +4726,19 @@ footer {
     letter-spacing: 1.2px;
   }
   .brand-hero-content h1 {
-    font-size: 36px;
+    font-size: 32px;
     max-width: 360px;
     margin-bottom: 12px;
+    line-height: 1.2;
   }
   .brand-hero-content h1 span {
     white-space: normal;
   }
   .brand-hero-content p {
     font-size: 14px;
-    max-width: 520px;
+    max-width: 280px;
     margin-bottom: 24px;
+    line-height: 1.5;
   }
   .brand-hero-actions {
     flex-wrap: wrap;
