@@ -1,5 +1,5 @@
 (() => {
-  const supportedLangs = ['en', 'ru', 'es', 'ar'];
+  const supportedLangs = ['en', 'ru'];
   const params = new URLSearchParams(window.location.search);
   const requestedLang = params.get('lang');
   const storedLang = localStorage.getItem('factor0xLang');

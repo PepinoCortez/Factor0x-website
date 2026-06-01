@@ -639,7 +639,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   const networkTrigger = document.querySelector('.network-trigger');
   const networkTriggerIcon = document.querySelector('.network-trigger .network-icon');
   const networkOptions = document.querySelectorAll('.network-menu button');
-  const supportedLangs = ['en', 'ru', 'es', 'ar'];
+  const supportedLangs = ['en', 'ru'];
   const urlLang = new URLSearchParams(window.location.search).get('lang');
   let currentLang = supportedLangs.includes(urlLang)
     ? urlLang
