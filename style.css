@@ -5078,15 +5078,25 @@ footer {
 
 @media (max-width: 768px) and (orientation: portrait) {
   .brand-hero-actions {
-    gap: 21px;
-    margin-top: 34px;
+    gap: 12px;
+    margin-top: 24px;
   }
 
   .brand-hero-actions a {
-    min-height: 66px;
-    padding: 18px 50px;
-    border-radius: 9px;
-    font-size: 23px;
+    min-height: 50px;
+    padding: 13px 14px;
+    border-radius: 8px;
+    font-size: clamp(14px, 3.65vw, 16px);
+    line-height: 1.12;
+    white-space: nowrap;
+  }
+
+  .quick-flow-card:not(.center) .quick-flow-node {
+    justify-content: center;
+    gap: 12px;
+    font-size: 28px;
+    line-height: 1.05;
+    white-space: normal;
   }
 
   .offers-head {
