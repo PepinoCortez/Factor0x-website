@@ -630,7 +630,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 (function initMarketplaceActions() {
   const walletButton = document.querySelector('.wallet-toggle');
   const contributionButtons = document.querySelectorAll('.invoice-actions button:first-child');
-  const viewMoreButton = document.querySelector('.view-more-btn');
+  const viewMoreButtons = document.querySelectorAll('.view-more-btn');
   const moreInvoices = document.getElementById('moreInvoices');
   const languageSelect = document.querySelector('.language-select');
   const languageTrigger = document.querySelector('.language-trigger');
@@ -676,23 +676,28 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     });
   });
 
-  if (viewMoreButton && moreInvoices) {
-    const invoiceHero = viewMoreButton.closest('.invoice-hero');
+  if (viewMoreButtons.length && moreInvoices) {
+    const invoiceHero = moreInvoices.closest('.invoice-hero');
     const offersTitle = invoiceHero?.querySelector('.offers-title');
 
-    viewMoreButton.addEventListener('click', () => {
-      const isOpen = invoiceHero?.classList.toggle('show-invoice-table');
-      moreInvoices.setAttribute('aria-hidden', String(!isOpen));
-      viewMoreButton.setAttribute('aria-expanded', String(isOpen));
-      viewMoreButton.textContent = isOpen
-        ? currentLang === 'en' ? 'View less' : 'Скрыть'
-        : currentLang === 'en' ? 'View more' : 'Смотреть еще';
-      if (offersTitle) {
-        offersTitle.textContent = isOpen
-          ? currentLang === 'en' ? 'Offer list' : 'Список предложений'
-          : currentLang === 'en' ? 'Top offers' : 'ТОП предложения';
-        offersTitle.classList.toggle('plain', Boolean(isOpen));
-      }
+    viewMoreButtons.forEach(viewMoreButton => {
+      viewMoreButton.addEventListener('click', () => {
+        const isOpen = invoiceHero?.classList.toggle('show-invoice-table');
+        moreInvoices.setAttribute('aria-hidden', String(!isOpen));
+        const buttonText = isOpen
+          ? currentLang === 'en' ? 'View less' : 'Скрыть'
+          : currentLang === 'en' ? 'View more' : 'Смотреть еще';
+        viewMoreButtons.forEach(button => {
+          button.setAttribute('aria-expanded', String(isOpen));
+          button.textContent = buttonText;
+        });
+        if (offersTitle) {
+          offersTitle.textContent = isOpen
+            ? currentLang === 'en' ? 'Offer list' : 'Список предложений'
+            : currentLang === 'en' ? 'Top offers' : 'ТОП предложения';
+          offersTitle.classList.toggle('plain', Boolean(isOpen));
+        }
+      });
     });
   }
 

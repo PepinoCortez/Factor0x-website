@@ -777,6 +777,9 @@ body .policy {
   border-color: var(--black);
   box-shadow: 0 12px 28px rgba(5,5,5,0.08);
 }
+.view-more-btn-mobile {
+  display: none;
+}
 .invoice-actions button {
   font-family: 'Manrope', sans-serif;
   cursor: pointer;
@@ -5074,40 +5077,38 @@ footer {
 }
 
 @media (max-width: 768px) and (orientation: portrait) {
-  .invoice-hero {
-    display: grid;
+  .brand-hero-actions {
+    gap: 21px;
+    margin-top: 34px;
   }
 
-  .market-header {
-    order: 1;
+  .brand-hero-actions a {
+    min-height: 66px;
+    padding: 18px 50px;
+    border-radius: 9px;
+    font-size: 23px;
   }
 
   .offers-head {
-    display: contents;
+    align-items: center;
+    text-align: center;
   }
 
   .offers-head > div {
-    order: 2;
     width: 100%;
-    justify-self: center;
-    text-align: center;
   }
 
   .offers-title {
     margin: 0 auto;
   }
 
-  .invoice-board {
-    order: 3;
+  .offers-head .view-more-btn {
+    display: none;
   }
 
-  .view-more-btn {
-    order: 4;
+  .view-more-btn-mobile {
+    display: block;
     width: 100%;
     margin-top: 4px;
-  }
-
-  .more-invoices {
-    order: 5;
   }
 }
