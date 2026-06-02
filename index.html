@@ -43,9 +43,15 @@
     </div>
     <button class="btn-nav wallet-toggle" type="button">Подключить кошелек</button>
   </div>
-  <button class="burger" id="burger">
+  <button class="burger" id="burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileNavMenu">
     <span></span><span></span><span></span>
   </button>
+  <div class="mobile-nav-menu" id="mobileNavMenu" aria-hidden="true">
+    <a href="#about">О нас</a>
+    <a href="#contacts">Контакты</a>
+    <a href="#faq">FAQ</a>
+    <button type="button" class="mobile-wallet-toggle">Подключить кошелек</button>
+  </div>
 </nav>
 
 <!-- FIRST SLIDE -->
