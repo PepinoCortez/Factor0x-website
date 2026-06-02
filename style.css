@@ -5078,26 +5078,46 @@ footer {
 
 @media (max-width: 820px) and (orientation: portrait) {
   .brand-hero-actions {
-    gap: 12px;
-    margin-top: 24px;
+    gap: 21px;
+    margin-top: 34px;
   }
 
   .brand-hero-actions a {
-    min-height: 50px;
-    padding: 13px 14px;
-    border-radius: 8px;
-    font-size: clamp(14px, 3.65vw, 16px);
-    line-height: 1.12;
+    min-height: 66px;
+    padding: 18px 24px;
+    border-radius: 9px;
+    font-size: clamp(16px, 4.25vw, 18px);
+    line-height: 1;
+    letter-spacing: 0;
     white-space: nowrap;
   }
 
   .quick-flow .quick-flow-card:not(.center) > .quick-flow-node {
+    position: relative;
+    width: 100%;
+    min-height: 52px;
     justify-content: center;
-    gap: 12px;
+    text-align: center;
+    transform: translateY(-8px);
     font-size: clamp(24px, 6.8vw, 30px) !important;
     font-weight: 700 !important;
     line-height: 1.05 !important;
     white-space: normal !important;
+  }
+
+  .quick-flow-card:not(.center) .business-pictogram,
+  .quick-flow-card:not(.center) .investor-pictogram {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .quick-flow-card:not(.center) .business-pictogram {
+    left: calc(50% - 112px);
+  }
+
+  .quick-flow-card:not(.center) .investor-pictogram {
+    left: calc(50% - 134px);
   }
 
   .offers-head {
