@@ -4739,6 +4739,8 @@ footer {
     max-width: 240px;
     margin-bottom: 24px;
     line-height: 1.5;
+    white-space: normal;
+    overflow-wrap: break-word;
   }
   .brand-hero-actions {
     flex-wrap: wrap;
@@ -5068,5 +5070,44 @@ footer {
   }
   .fact-row:nth-last-child(-n + 2) .fact-value {
     justify-self: start;
+  }
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  .invoice-hero {
+    display: grid;
+  }
+
+  .market-header {
+    order: 1;
+  }
+
+  .offers-head {
+    display: contents;
+  }
+
+  .offers-head > div {
+    order: 2;
+    width: 100%;
+    justify-self: center;
+    text-align: center;
+  }
+
+  .offers-title {
+    margin: 0 auto;
+  }
+
+  .invoice-board {
+    order: 3;
+  }
+
+  .view-more-btn {
+    order: 4;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .more-invoices {
+    order: 5;
   }
 }
