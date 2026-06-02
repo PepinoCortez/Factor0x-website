@@ -629,9 +629,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 // ── WEB3 MARKETPLACE MICRO-INTERACTIONS ─────
 (function initMarketplaceActions() {
   const walletButton = document.querySelector('.wallet-toggle');
-  const mobileMenuButton = document.getElementById('burger');
-  const mobileMenu = document.getElementById('mobileNavMenu');
-  const mobileWalletButton = document.querySelector('.mobile-wallet-toggle');
   const contributionButtons = document.querySelectorAll('.invoice-actions button:first-child');
   const viewMoreButton = document.querySelector('.view-more-btn');
   const moreInvoices = document.getElementById('moreInvoices');
@@ -650,24 +647,16 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       ? localStorage.getItem('factor0xLang')
     : (document.documentElement.lang === 'en' ? 'en' : 'ru');
 
-  function setWalletConnected(isConnected) {
-    [walletButton, mobileWalletButton].forEach(button => {
-      if (!button) return;
-      button.classList.toggle('connected', isConnected);
-      button.textContent = isConnected
+  if (walletButton) {
+    walletButton.addEventListener('click', () => {
+      const isConnected = walletButton.classList.toggle('connected');
+      walletButton.textContent = isConnected
         ? '0xA4...19C2'
         : currentLang === 'en'
           ? 'Connect wallet'
           : 'Подключить кошелек';
     });
   }
-
-  function toggleWallet() {
-    const isConnected = !(walletButton || mobileWalletButton)?.classList.contains('connected');
-    setWalletConnected(isConnected);
-  }
-
-  walletButton?.addEventListener('click', toggleWallet);
 
   contributionButtons.forEach(button => {
     button.addEventListener('click', () => {
@@ -685,37 +674,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       });
       button.textContent = 'Selected';
     });
-  });
-
-  function closeMobileMenu() {
-    mobileMenu?.classList.remove('open');
-    mobileMenu?.setAttribute('aria-hidden', 'true');
-    mobileMenuButton?.classList.remove('open');
-    mobileMenuButton?.setAttribute('aria-expanded', 'false');
-  }
-
-  if (mobileMenuButton && mobileMenu) {
-    mobileMenuButton.addEventListener('click', event => {
-      event.stopPropagation();
-      languageSelect?.classList.remove('open');
-      languageTrigger?.setAttribute('aria-expanded', 'false');
-      networkSelect?.classList.remove('open');
-      networkTrigger?.setAttribute('aria-expanded', 'false');
-      const isOpen = mobileMenu.classList.toggle('open');
-      mobileMenu.setAttribute('aria-hidden', String(!isOpen));
-      mobileMenuButton.classList.toggle('open', isOpen);
-      mobileMenuButton.setAttribute('aria-expanded', String(isOpen));
-    });
-
-    mobileMenu.addEventListener('click', event => {
-      event.stopPropagation();
-      if (event.target.closest('a')) closeMobileMenu();
-    });
-  }
-
-  mobileWalletButton?.addEventListener('click', () => {
-    toggleWallet();
-    closeMobileMenu();
   });
 
   if (viewMoreButton && moreInvoices) {
@@ -852,7 +810,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       event.stopPropagation();
       languageSelect?.classList.remove('open');
       languageTrigger?.setAttribute('aria-expanded', 'false');
-      closeMobileMenu();
       const isOpen = networkSelect.classList.toggle('open');
       networkTrigger.setAttribute('aria-expanded', String(isOpen));
     });
@@ -870,7 +827,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     document.addEventListener('click', () => {
       networkSelect.classList.remove('open');
       networkTrigger.setAttribute('aria-expanded', 'false');
-      closeMobileMenu();
     });
   }
 
@@ -929,7 +885,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Степень риска': 'Risk Tier',
         'Оцениваем срок, сумму, отрасль и качество сделки.': 'We assess term, amount, sector, and deal quality.',
         'On-chain прослеживаемость': 'On-chain Tracking',
-        'Фиксируем статус сделки, выплаты и распределения.': 'We record deal status, repayment, and distributions.',
+        'Фиксируем статус сделки, repayment и распределения.': 'We record deal status, repayment, and distributions.',
         'Заработок': 'Earning',
         'Реальные активы': 'Real assets',
         'Пулы связаны с реальными бизнес-сделками.': 'Pools are linked to real business deals.',
@@ -1003,7 +959,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       attributes: {
         'Выбрать язык': 'Select language',
         'Выбрать сеть': 'Select network',
-        'Открыть меню': 'Open menu',
         'Закрыть': 'Close',
         'Итан Уокер': 'Ethan Walker',
         'Дэниел Чен': 'Daniel Chen',
@@ -1083,7 +1038,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       event.stopPropagation();
       networkSelect?.classList.remove('open');
       networkTrigger?.setAttribute('aria-expanded', 'false');
-      closeMobileMenu();
       const isOpen = languageSelect.classList.toggle('open');
       languageTrigger.setAttribute('aria-expanded', String(isOpen));
     });
@@ -1102,7 +1056,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     document.addEventListener('click', () => {
       languageSelect.classList.remove('open');
       languageTrigger.setAttribute('aria-expanded', 'false');
-      closeMobileMenu();
     });
   }
 })();
