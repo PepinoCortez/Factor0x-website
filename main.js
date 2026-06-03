@@ -843,7 +843,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'О нас': 'About',
         'Контакты': 'Contacts',
         'Подключить кошелек': 'Connect wallet',
-        'Web3-платформа финансирования инвойсов': 'WEB3 INVOICE FINANCING PLATFORM',
         'Капитал для бизнеса': 'Capital for business',
         'Доход для инвестора': 'Yield for investors',
         'Платформа, где проверенные инвойсы находят ликвидность': 'A platform where verified invoices find liquidity',
