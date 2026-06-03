@@ -36,6 +36,9 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
+body.mobile-menu-open {
+  overflow: hidden;
+}
 
 /* ========== TYPOGRAPHY ========== */
 h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; line-height: 1.08; letter-spacing: 0; }
@@ -301,6 +304,9 @@ em { font-style: normal; color: var(--accent); }
   background: rgba(5,5,5,0.05);
 }
 .burger { display: none; }
+.mobile-menu {
+  display: none;
+}
 
 /* ========== FIRST SLIDE ========== */
 .brand-first-slide {
@@ -4417,6 +4423,82 @@ footer {
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1024px) {
   .nav-links { display: none; }
+  .burger {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    width: 52px;
+    height: 44px;
+    margin-left: auto;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    z-index: 3;
+  }
+  .burger span {
+    display: block;
+    width: 36px;
+    height: 3px;
+    background: var(--white);
+    border-radius: 0;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .burger.open span:nth-child(1) {
+    transform: translateY(10px) rotate(45deg);
+  }
+  .burger.open span:nth-child(2) {
+    opacity: 0;
+  }
+  .burger.open span:nth-child(3) {
+    transform: translateY(-10px) rotate(-45deg);
+  }
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 190;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 96px 28px 48px;
+    background: #08080A;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.24s ease, visibility 0.24s ease;
+  }
+  .mobile-menu.open {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+  }
+  .mobile-menu-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    width: 100%;
+  }
+  .mobile-menu-panel a {
+    color: var(--white);
+    text-decoration: none;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  body.mobile-menu-open #nav {
+    background: #08080A;
+    backdrop-filter: none;
+  }
+  body.mobile-menu-open #nav .logo,
+  body.mobile-menu-open #nav .wallet-bar {
+    opacity: 0;
+    pointer-events: none;
+  }
   .hero { padding-top: 80px; }
   .hero-inner {
     grid-template-columns: 1fr;

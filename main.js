@@ -10,6 +10,39 @@ if (nav) {
   }, { passive: true });
 }
 
+// ── MOBILE MENU ─────────────────────────────
+(() => {
+  const burger = document.getElementById('burger');
+  const menu = document.getElementById('mobileMenu');
+  if (!burger || !menu) return;
+
+  const links = menu.querySelectorAll('a');
+
+  function setOpen(isOpen) {
+    burger.classList.toggle('open', isOpen);
+    menu.classList.toggle('open', isOpen);
+    document.body.classList.toggle('mobile-menu-open', isOpen);
+    burger.setAttribute('aria-expanded', String(isOpen));
+    menu.setAttribute('aria-hidden', String(!isOpen));
+  }
+
+  burger.addEventListener('click', () => {
+    setOpen(!menu.classList.contains('open'));
+  });
+
+  links.forEach(link => {
+    link.addEventListener('click', () => setOpen(false));
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') setOpen(false);
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 1024) setOpen(false);
+  });
+})();
+
 // ── REVEAL ON SCROLL ─────────────────────────
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry, i) => {
@@ -963,6 +996,8 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       attributes: {
         'Выбрать язык': 'Select language',
         'Выбрать сеть': 'Select network',
+        'Открыть меню': 'Open menu',
+        'Мобильная навигация': 'Mobile navigation',
         'Закрыть': 'Close',
         'Итан Уокер': 'Ethan Walker',
         'Дэниел Чен': 'Daniel Chen',
