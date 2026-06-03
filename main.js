@@ -850,7 +850,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Получить финансирование': 'Get financing',
         'Профинансировать сделку': 'Fund a deal',
         'Подключите кошелёк и участвуйте в краткосрочном финансировании реального бизнеса.': 'Connect your wallet and participate in short-term financing for real businesses.',
-        'Участвуйте в краткосрочном финансировании реального бизнеса.': 'Participate in short-term financing for real businesses.',
         'Проверенные': 'Finance verified',
         'B2B инвойсы': 'B2B invoices',
         'ТОП предложения': 'Top offers',
