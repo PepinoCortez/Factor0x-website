@@ -386,6 +386,7 @@ em { font-style: normal; color: var(--accent); }
 .brand-hero-actions a {
   position: relative;
   overflow: hidden;
+  width: 280px;
   min-height: 50px;
   display: inline-flex;
   align-items: center;
