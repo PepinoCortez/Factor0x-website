@@ -51,6 +51,18 @@ if (nav) {
   const cards = Array.from(board.querySelectorAll('.invoice-card'));
   const portraitQuery = window.matchMedia('(max-width: 820px) and (orientation: portrait)');
   let frame;
+  let hasPositionedInitialCard = false;
+
+  function scrollToInitialCard(force = false) {
+    if (!portraitQuery.matches || cards.length < 2) return;
+    if (hasPositionedInitialCard && !force) return;
+
+    const initialCard = cards[1];
+    const targetLeft = initialCard.offsetLeft - ((board.clientWidth - initialCard.offsetWidth) / 2);
+    board.scrollLeft = Math.max(0, targetLeft);
+    hasPositionedInitialCard = true;
+    updateActiveCard();
+  }
 
   function updateActiveCard() {
     cancelAnimationFrame(frame);
@@ -84,11 +96,17 @@ if (nav) {
   board.addEventListener('scroll', updateActiveCard, { passive: true });
   window.addEventListener('resize', updateActiveCard);
   if (portraitQuery.addEventListener) {
-    portraitQuery.addEventListener('change', updateActiveCard);
+    portraitQuery.addEventListener('change', event => {
+      if (event.matches) scrollToInitialCard(true);
+      updateActiveCard();
+    });
   } else {
-    portraitQuery.addListener(updateActiveCard);
+    portraitQuery.addListener(event => {
+      if (event.matches) scrollToInitialCard(true);
+      updateActiveCard();
+    });
   }
-  updateActiveCard();
+  requestAnimationFrame(() => scrollToInitialCard());
 })();
 
 // ── REVEAL ON SCROLL ─────────────────────────
