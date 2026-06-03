@@ -1795,9 +1795,9 @@ body .policy {
   padding: 0;
   border: 0;
   background: transparent;
-  font-family: 'Prata', serif;
-  font-size: clamp(28px, 2.6vw, 42px);
-  font-weight: 400;
+  font-family: 'Manrope', sans-serif;
+  font-size: clamp(26px, 2.5vw, 40px);
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0;
   color: #171006;
@@ -2590,10 +2590,10 @@ body .policy {
   border-radius: 999px;
   text-decoration: none;
   cursor: pointer;
-  font-family: 'Prata', serif;
-  font-size: 18px;
-  font-weight: 400;
-  letter-spacing: 0;
+  font-family: 'Manrope', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
   text-transform: none;
   transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
 }
