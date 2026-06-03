@@ -390,18 +390,18 @@ html[lang="en"] .brand-hero-content p {
   position: relative;
   overflow: hidden;
   width: 280px;
-  min-height: 50px;
+  min-height: 66px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 24px;
+  padding: 18px 50px;
   border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 7px;
+  border-radius: 9px;
   background: rgba(255,255,255,0.12);
   color: var(--white);
   text-decoration: none;
   font-family: 'Manrope', sans-serif;
-  font-size: 15px;
+  font-size: 23px;
   font-weight: 600;
   letter-spacing: 0.1px;
   backdrop-filter: blur(12px);
@@ -438,12 +438,6 @@ html[lang="en"] .brand-hero-content p {
 html[lang="en"] .brand-hero-actions {
   gap: 21px;
   margin-top: 34px;
-}
-html[lang="en"] .brand-hero-actions a {
-  min-height: 66px;
-  padding: 18px 50px;
-  border-radius: 9px;
-  font-size: 23px;
 }
 /* ========== HERO ========== */
 .hero {
