@@ -307,6 +307,9 @@ em { font-style: normal; color: var(--accent); }
 .mobile-menu {
   display: none;
 }
+.mobile-menu-invoice {
+  display: none;
+}
 
 /* ========== FIRST SLIDE ========== */
 .brand-first-slide {
@@ -4489,6 +4492,15 @@ footer {
     font-size: 34px;
     font-weight: 700;
     letter-spacing: 0;
+  }
+  .mobile-menu-invoice {
+    display: block;
+    width: min(210px, 52vw);
+    height: auto;
+    margin-top: 10px;
+    opacity: 0.86;
+    filter: brightness(1.08) contrast(1.04) drop-shadow(0 18px 28px rgba(0,0,0,0.34));
+    pointer-events: none;
   }
   body.mobile-menu-open #nav {
     background: #08080A;
