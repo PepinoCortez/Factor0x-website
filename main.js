@@ -847,7 +847,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Доход для инвестора': 'Yield for investors',
         'Платформа, где проверенные инвойсы находят ликвидность': 'A platform where verified invoices find liquidity',
         'Получить финансирование': 'Get financing',
-        'Профинансировать сделку': 'Fund a deal',
+        'Начать инвестировать': 'Start investing',
         'Участвуйте в краткосрочном финансировании реального бизнеса.': 'Participate in short-term financing for real businesses.',
         'Проверенные': 'Finance verified',
         'B2B инвойсы': 'B2B invoices',
