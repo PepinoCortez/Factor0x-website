@@ -5077,6 +5077,10 @@ footer {
 }
 
 @media (max-width: 820px) and (orientation: portrait) {
+  #nav:not(.scrolled) .logo {
+    font-size: 32px;
+  }
+
   .brand-hero-actions {
     gap: 21px;
     margin-top: 34px;
