@@ -43,6 +43,54 @@ if (nav) {
   });
 })();
 
+// ── MOBILE INVOICE CAROUSEL ────────────────
+(() => {
+  const board = document.querySelector('.invoice-board');
+  if (!board) return;
+
+  const cards = Array.from(board.querySelectorAll('.invoice-card'));
+  const portraitQuery = window.matchMedia('(max-width: 820px) and (orientation: portrait)');
+  let frame;
+
+  function updateActiveCard() {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      if (!portraitQuery.matches) {
+        cards.forEach(card => card.classList.remove('is-carousel-active'));
+        return;
+      }
+
+      const boardRect = board.getBoundingClientRect();
+      const boardCenter = boardRect.left + boardRect.width / 2;
+      let activeCard = cards[0];
+      let activeDistance = Infinity;
+
+      cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const cardCenter = rect.left + rect.width / 2;
+        const distance = Math.abs(cardCenter - boardCenter);
+        if (distance < activeDistance) {
+          activeDistance = distance;
+          activeCard = card;
+        }
+      });
+
+      cards.forEach(card => {
+        card.classList.toggle('is-carousel-active', card === activeCard);
+      });
+    });
+  }
+
+  board.addEventListener('scroll', updateActiveCard, { passive: true });
+  window.addEventListener('resize', updateActiveCard);
+  if (portraitQuery.addEventListener) {
+    portraitQuery.addEventListener('change', updateActiveCard);
+  } else {
+    portraitQuery.addListener(updateActiveCard);
+  }
+  updateActiveCard();
+})();
+
 // ── REVEAL ON SCROLL ─────────────────────────
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry, i) => {
