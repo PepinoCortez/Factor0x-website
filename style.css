@@ -5265,7 +5265,10 @@ footer {
     opacity: 0.42;
     filter: brightness(0.62) saturate(0.9);
     transform: scale(0.94);
-    transition: opacity 0.22s ease, filter 0.22s ease, transform 0.22s ease;
+    transition:
+      opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .invoice-board .invoice-card.is-carousel-active {
