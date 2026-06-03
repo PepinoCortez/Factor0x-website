@@ -386,19 +386,19 @@ em { font-style: normal; color: var(--accent); }
 .brand-hero-actions a {
   position: relative;
   overflow: hidden;
-  width: 280px;
+  width: 330px;
   min-height: 66px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 18px 50px;
+  padding: 0 32px;
   border: 1px solid rgba(255,255,255,0.18);
   border-radius: 9px;
   background: rgba(255,255,255,0.12);
   color: var(--white);
   text-decoration: none;
   font-family: 'Manrope', sans-serif;
-  font-size: 23px;
+  font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.1px;
   backdrop-filter: blur(12px);
@@ -435,6 +435,11 @@ em { font-style: normal; color: var(--accent); }
 html[lang="en"] .brand-hero-actions {
   gap: 21px;
   margin-top: 34px;
+}
+html[lang="en"] .brand-hero-actions a {
+  width: 280px;
+  padding: 18px 50px;
+  font-size: 23px;
 }
 /* ========== HERO ========== */
 .hero {
@@ -5083,12 +5088,17 @@ footer {
 
   .brand-hero-actions a {
     min-height: 66px;
-    padding: 18px 50px;
+    padding: 0 24px;
     border-radius: 9px;
-    font-size: 23px;
+    font-size: 18px;
     line-height: 1;
     letter-spacing: 0;
     white-space: nowrap;
+  }
+
+  html[lang="en"] .brand-hero-actions a {
+    padding: 18px 50px;
+    font-size: 23px;
   }
 
   .quick-flow .quick-flow-card:not(.center) > .quick-flow-node {
