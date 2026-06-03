@@ -363,9 +363,12 @@ em { font-style: normal; color: var(--accent); }
   max-width: 620px;
   margin: 0 auto;
   color: rgba(255,255,255,0.76);
-  font-size: 14px;
+  font-size: 17.5px;
   line-height: 1.46;
   white-space: nowrap;
+}
+html[lang="en"] .brand-hero-content p {
+  font-size: 17px;
 }
 .brand-eyebrow {
   display: inline-flex;
