@@ -4466,10 +4466,10 @@ footer {
     inset: 0;
     z-index: 190;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     min-height: 100vh;
-    padding: 96px 28px 48px;
+    padding: 82px 28px 48px;
     background: #08080A;
     opacity: 0;
     pointer-events: none;
@@ -4492,7 +4492,7 @@ footer {
     color: var(--white);
     text-decoration: none;
     font-family: 'Space Grotesk', sans-serif;
-    font-size: 34px;
+    font-size: 40px;
     font-weight: 700;
     letter-spacing: 0;
   }
