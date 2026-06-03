@@ -5236,6 +5236,37 @@ footer {
     display: none;
   }
 
+  .invoice-board {
+    display: flex;
+    grid-template-columns: none;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    margin-left: -24px;
+    margin-right: -24px;
+    padding: 0 24px 8px;
+    scrollbar-width: none;
+  }
+
+  .invoice-board::-webkit-scrollbar {
+    display: none;
+  }
+
+  .invoice-board .invoice-card {
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 100%;
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+  }
+
+  .invoice-board .invoice-card + .invoice-card {
+    margin-left: 16px;
+  }
+
   .view-more-btn-mobile {
     display: block;
     width: 100%;
