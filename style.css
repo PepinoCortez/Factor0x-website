@@ -1795,9 +1795,9 @@ body .policy {
   padding: 0;
   border: 0;
   background: transparent;
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(34px, 3.4vw, 54px);
-  font-weight: 700;
+  font-family: 'Prata', serif;
+  font-size: clamp(28px, 2.6vw, 42px);
+  font-weight: 400;
   line-height: 1;
   letter-spacing: 0;
   color: #171006;
@@ -2590,11 +2590,11 @@ body .policy {
   border-radius: 999px;
   text-decoration: none;
   cursor: pointer;
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
+  font-family: 'Prata', serif;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
   transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
 }
 .quick-card-action::after {
@@ -4953,7 +4953,7 @@ footer {
     width: min(286px, 65.6vw);
   }
   .earning-platform-label {
-    font-size: clamp(24px, 9vw, 36px);
+    font-size: clamp(20px, 6.2vw, 30px);
   }
   .earning-platform-toast {
     top: 34%;
