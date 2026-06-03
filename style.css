@@ -5239,7 +5239,7 @@ footer {
   .invoice-board {
     display: flex;
     grid-template-columns: none;
-    gap: 0;
+    gap: 14px;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
@@ -5256,15 +5256,11 @@ footer {
   }
 
   .invoice-board .invoice-card {
-    flex: 0 0 100%;
-    width: 100%;
-    min-width: 100%;
-    scroll-snap-align: center;
+    flex: 0 0 86%;
+    width: 86%;
+    min-width: 86%;
+    scroll-snap-align: start;
     scroll-snap-stop: always;
-  }
-
-  .invoice-board .invoice-card + .invoice-card {
-    margin-left: 16px;
   }
 
   .view-more-btn-mobile {
