@@ -4495,11 +4495,13 @@ footer {
   }
   .mobile-menu-invoice {
     display: block;
-    width: min(210px, 52vw);
+    width: min(128px, 34vw);
+    max-height: 128px;
     height: auto;
-    margin-top: 10px;
+    margin-top: 4px;
     opacity: 0.86;
-    filter: brightness(1.08) contrast(1.04) drop-shadow(0 18px 28px rgba(0,0,0,0.34));
+    object-fit: contain;
+    filter: brightness(1.08) contrast(1.04) drop-shadow(0 12px 18px rgba(0,0,0,0.30));
     pointer-events: none;
   }
   body.mobile-menu-open #nav {
