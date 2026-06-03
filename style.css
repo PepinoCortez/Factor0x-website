@@ -340,7 +340,7 @@ em { font-style: normal; color: var(--accent); }
   position: absolute;
   left: 50%;
   top: auto;
-  bottom: clamp(112px, 15vh, 164px);
+  bottom: clamp(150px, 19vh, 210px);
   z-index: 2;
   width: min(86vw, 900px);
   color: var(--white);
@@ -4706,7 +4706,7 @@ footer {
   .brand-hero-content {
     left: 24px;
     right: 24px;
-    top: 30%;
+    top: 26%;
     bottom: auto;
     width: auto;
     max-width: none;
