@@ -69,6 +69,8 @@ em { font-style: normal; color: var(--accent); }
   border-bottom: 1px solid rgba(255,255,255,0.10);
 }
 .logo {
+  flex: 0 0 92px;
+  width: 92px;
   font-family: 'Space Grotesk', sans-serif;
   font-size: 24px;
   font-weight: 700;

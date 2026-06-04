@@ -10,11 +10,10 @@ if (nav) {
   }, { passive: true });
 }
 
-// ── MOBILE HERO LOGO LABEL ─────────────────
+// ── HERO LOGO LABEL ────────────────────────
 (() => {
   const logo = document.querySelector('#nav .logo');
   const heroImage = document.querySelector('.brand-first-slide > img');
-  const portraitQuery = window.matchMedia('(max-width: 820px) and (orientation: portrait)');
   if (!logo || !heroImage) return;
 
   const factorLogo = 'Factor<span class="logo-accent">0x</span>';
@@ -28,11 +27,6 @@ if (nav) {
   }
 
   function updateLogoLabel() {
-    if (!portraitQuery.matches) {
-      setLogo('factor');
-      return;
-    }
-
     const imageBottom = heroImage.getBoundingClientRect().bottom + window.scrollY;
     const navHeight = nav?.offsetHeight || 0;
     setLogo(window.scrollY + navHeight >= imageBottom ? 'factor' : 'home');
@@ -40,11 +34,6 @@ if (nav) {
 
   window.addEventListener('scroll', updateLogoLabel, { passive: true });
   window.addEventListener('resize', updateLogoLabel);
-  if (portraitQuery.addEventListener) {
-    portraitQuery.addEventListener('change', updateLogoLabel);
-  } else {
-    portraitQuery.addListener(updateLogoLabel);
-  }
   updateLogoLabel();
 })();
 
