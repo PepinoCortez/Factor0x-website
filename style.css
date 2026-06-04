@@ -5185,6 +5185,11 @@ footer {
 }
 
 @media (max-width: 820px) and (orientation: portrait) {
+  #nav .logo {
+    flex: 0 0 92px;
+    width: 92px;
+  }
+
   .brand-hero-content {
     top: 33%;
   }
