@@ -5297,6 +5297,20 @@ footer {
 
   .offers-title {
     margin: 0 auto;
+    padding: 7px 14px;
+    border: 1px solid rgba(214,176,91,0.48);
+    border-radius: 999px;
+    background: rgba(5,5,5,0.05);
+    color: #A97822;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    text-transform: uppercase;
+    filter: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
   }
 
   .offers-head .view-more-btn {
