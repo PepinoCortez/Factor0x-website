@@ -5334,8 +5334,13 @@ footer {
   }
 
   .about-copy .about-lead {
-    font-size: clamp(17px, 4.35vw, 19px);
+    max-width: 330px;
+    font-size: clamp(16px, 4.05vw, 18px);
     line-height: 1.34;
+  }
+
+  .about-copy .about-lead br {
+    display: none;
   }
 
   .about-copy .about-lead span {
