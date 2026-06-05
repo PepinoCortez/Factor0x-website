@@ -488,7 +488,7 @@ html[lang="en"] .brand-hero-actions a {
     z-index: 2;
     display: block;
     flex: 0 0 auto;
-    width: min(74vw, 1320px, calc((100svh - 330px) * 1743 / 355));
+    width: min(63vw, 1122px, calc((100svh - 330px) * 1743 / 355));
     aspect-ratio: 1743 / 355;
     overflow: visible;
   }
