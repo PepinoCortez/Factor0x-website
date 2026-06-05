@@ -5316,6 +5316,24 @@ footer {
     display: inline;
   }
 
+  .quick-how-section {
+    padding-top: 82px;
+  }
+
+  .quick-how-section .section-head {
+    margin-bottom: 46px;
+  }
+
+  .quick-flow-card {
+    min-height: 188px;
+    padding: 22px;
+  }
+
+  .quick-flow-card p {
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
   .quick-flow .quick-flow-card:not(.center) > .quick-flow-node {
     position: relative;
     width: 100%;
