@@ -328,9 +328,9 @@ em { font-style: normal; color: var(--accent); }
 .brand-first-slide img {
   position: absolute;
   left: 50%;
-  top: 38%;
+  top: 34%;
   z-index: 2;
-  width: min(74vw, 1320px);
+  width: min(68vw, 1180px);
   height: auto;
   max-width: none;
   object-fit: contain;
@@ -354,7 +354,7 @@ em { font-style: normal; color: var(--accent); }
   position: absolute;
   left: 50%;
   top: auto;
-  bottom: clamp(150px, 19vh, 210px);
+  bottom: clamp(120px, 15vh, 170px);
   z-index: 2;
   width: min(86vw, 900px);
   color: var(--white);
