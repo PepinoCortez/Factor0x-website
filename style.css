@@ -5432,6 +5432,37 @@ footer {
     transform: translate(-50%, -50%) rotate(-7deg);
   }
 
+  .earning-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .earning-copy {
+    order: 1;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    text-align: left;
+  }
+
+  .earning-list {
+    margin-left: 0;
+    margin-right: 0;
+    text-align: left;
+  }
+
+  .earning-list p {
+    text-align: left;
+  }
+
+  .earning-visual {
+    order: 2;
+    width: min(100%, 360px);
+    min-height: 350px;
+    margin: 2px auto 0;
+  }
+
   .quick-how-section {
     padding-top: 82px;
   }
