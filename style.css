@@ -5262,6 +5262,10 @@ footer {
     margin-bottom: 6px;
   }
 
+  #invoices .market-header .hero-desc {
+    font-size: 14px;
+  }
+
   .brand-hero-content {
     top: 33%;
   }
