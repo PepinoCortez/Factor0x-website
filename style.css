@@ -325,6 +325,9 @@ em { font-style: normal; color: var(--accent); }
     radial-gradient(circle at 78% 56%, rgba(255,255,255,0.08), transparent 28%),
     linear-gradient(90deg, #050505 0%, #0D0D0E 42%, #15161A 100%);
 }
+.brand-logo-stage {
+  display: contents;
+}
 .brand-first-slide img {
   position: absolute;
   left: 50%;
@@ -472,13 +475,22 @@ html[lang="en"] .brand-hero-actions a {
   }
 
   .brand-first-slide img {
-    position: relative;
-    left: auto;
-    top: auto;
-    flex: 0 1 auto;
-    min-height: 0;
-    max-height: calc(100svh - 330px);
+    position: absolute;
+    left: calc(-337 / 1743 * 100%);
+    top: calc(-483 / 355 * 100%);
+    width: calc(2400 / 1743 * 100%);
+    height: auto;
     transform: none;
+  }
+
+  .brand-logo-stage {
+    position: relative;
+    z-index: 2;
+    display: block;
+    flex: 0 0 auto;
+    width: min(74vw, 1320px, calc((100svh - 330px) * 1743 / 355));
+    aspect-ratio: 1743 / 355;
+    overflow: visible;
   }
 
   .brand-hero-content {

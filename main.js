@@ -13,7 +13,8 @@ if (nav) {
 // ── HERO LOGO LABEL ────────────────────────
 (() => {
   const logo = document.querySelector('#nav .logo');
-  const heroImage = document.querySelector('.brand-first-slide > img');
+  const heroLogoStage = document.querySelector('.brand-logo-stage');
+  const heroImage = document.querySelector('.brand-first-slide img');
   if (!logo || !heroImage) return;
 
   const factorLogo = 'Factor<span class="logo-accent">0x</span>';
@@ -27,7 +28,10 @@ if (nav) {
   }
 
   function updateLogoLabel() {
-    const imageBottom = heroImage.getBoundingClientRect().bottom + window.scrollY;
+    const logoAnchor = window.matchMedia('(min-width: 769px)').matches && heroLogoStage
+      ? heroLogoStage
+      : heroImage;
+    const imageBottom = logoAnchor.getBoundingClientRect().bottom + window.scrollY;
     const navHeight = nav?.offsetHeight || 0;
     setLogo(window.scrollY + navHeight >= imageBottom ? 'factor' : 'home');
   }
