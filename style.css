@@ -5329,9 +5329,14 @@ footer {
     padding: 22px;
   }
 
+  .quick-flow-card h3,
+  .quick-flow-card.center h3 {
+    margin-top: 42px;
+  }
+
   .quick-flow-card p {
-    font-size: 15px;
-    line-height: 1.55;
+    font-size: 16px;
+    line-height: 1.5;
   }
 
   .quick-flow .quick-flow-card:not(.center) > .quick-flow-node {
