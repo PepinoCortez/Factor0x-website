@@ -823,7 +823,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       if (offersTitle) {
         offersTitle.textContent = isOpen
           ? currentLang === 'en' ? 'Offer list' : 'Список предложений'
-          : currentLang === 'en' ? 'Top offers' : 'ТОП предложения';
+          : currentLang === 'en' ? 'Top offers' : 'ТОП сделки';
         offersTitle.classList.toggle('plain', isOpen);
       }
     };
@@ -997,7 +997,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Краткосрочное финансировании реального бизнеса.': 'Short-term financing for real businesses.',
         'Проверенные': 'Finance verified',
         'B2B инвойсы': 'B2B invoices',
-        'ТОП предложения': 'Top offers',
+        'ТОП сделки': 'Top offers',
         'Смотреть еще': 'View more',
         'Скрыть': 'View less',
         'Список предложений': 'Offer list',
