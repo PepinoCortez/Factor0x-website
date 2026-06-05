@@ -5401,6 +5401,37 @@ footer {
     text-align: left;
   }
 
+  .invoice-visual-stage {
+    width: min(100%, 360px);
+    min-height: 320px;
+    margin: 12px auto 0;
+    overflow: visible;
+  }
+
+  .platform-shape {
+    left: 50%;
+    right: auto;
+    top: 78%;
+    width: min(330px, 86vw);
+    transform: translate(-50%, -50%);
+  }
+
+  .invoice-paper-shape {
+    left: 50%;
+    right: auto;
+    top: 46%;
+    width: min(248px, 64vw);
+    transform: translate(-50%, -50%);
+  }
+
+  .invoice-visual-stage::before {
+    left: 50%;
+    right: auto;
+    top: 72%;
+    width: min(280px, 74vw);
+    transform: translate(-50%, -50%) rotate(-7deg);
+  }
+
   .quick-how-section {
     padding-top: 82px;
   }
