@@ -5025,7 +5025,7 @@ footer {
     --earning-center-y: -1px;
     --earning-offset-y: -12px;
     width: min(196px, 45vw);
-    margin-left: 8px;
+    margin-left: 22px;
   }
   .earning-warehouse-img {
     --earning-center-x: 3px;
@@ -5037,8 +5037,8 @@ footer {
   .earning-gold-platform-wrap {
     --earning-center-x: -3px;
     --earning-center-y: -4px;
-    right: 14%;
-    bottom: 58px;
+    right: 20%;
+    bottom: 74px;
     width: min(258px, 59.2vw);
   }
   .earning-platform-label {
