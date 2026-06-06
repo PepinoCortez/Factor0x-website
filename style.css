@@ -5380,8 +5380,8 @@ footer {
   }
 
   .invoice-visual-section {
-    margin-top: -82px;
-    padding-top: 8px;
+    margin-top: -68px;
+    padding-top: 12px;
     padding-bottom: 14px;
   }
 
@@ -5461,6 +5461,12 @@ footer {
   .earning-copy h2 {
     font-size: clamp(27px, 7.4vw, 31px);
     white-space: nowrap;
+  }
+
+  html[lang="ru"] .invoice-visual-copy h2,
+  html[lang="ru"] .earning-copy h2 {
+    font-size: clamp(29px, 8.7vw, 35px);
+    letter-spacing: 0;
   }
 
   .earning-list {
