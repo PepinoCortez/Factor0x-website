@@ -5029,7 +5029,7 @@ footer {
     --earning-center-x: -3px;
     --earning-center-y: -4px;
     right: 14%;
-    bottom: 48px;
+    bottom: 58px;
     width: min(286px, 65.6vw);
   }
   .earning-platform-label {
@@ -5465,14 +5465,19 @@ footer {
 
   html[lang="ru"] .invoice-visual-copy h2,
   html[lang="ru"] .earning-copy h2 {
-    font-size: clamp(31px, 9.1vw, 37px);
+    font-size: clamp(32px, 9.4vw, 39px);
     letter-spacing: 0;
   }
 
   html[lang="en"] .invoice-visual-copy h2,
   html[lang="en"] .earning-copy h2 {
-    font-size: clamp(32px, 8.8vw, 36px);
+    font-size: clamp(33px, 9.1vw, 38px);
     letter-spacing: 0;
+  }
+
+  html[lang="en"] .quick-how-title {
+    font-size: clamp(33px, 9vw, 37px);
+    white-space: nowrap;
   }
 
   .earning-list {
