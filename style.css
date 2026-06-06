@@ -5382,6 +5382,7 @@ footer {
   .invoice-visual-section {
     margin-top: -38px;
     padding-top: 22px;
+    padding-bottom: 14px;
   }
 
   .invoice-visual-copy h2 {
@@ -5408,15 +5409,15 @@ footer {
 
   .invoice-visual-stage {
     width: min(100%, 360px);
-    min-height: 320px;
-    margin: 12px auto 0;
+    min-height: 300px;
+    margin: 0 auto;
     overflow: visible;
   }
 
   .platform-shape {
     left: 50%;
     right: auto;
-    top: 78%;
+    top: 72%;
     width: min(330px, 86vw);
     transform: translate(-50%, -50%);
   }
@@ -5424,7 +5425,7 @@ footer {
   .invoice-paper-shape {
     left: 16%;
     right: auto;
-    top: 46%;
+    top: 40%;
     width: min(248px, 64vw);
     transform: translate(-50%, -50%);
   }
@@ -5432,9 +5433,13 @@ footer {
   .invoice-visual-stage::before {
     left: 50%;
     right: auto;
-    top: 72%;
+    top: 66%;
     width: min(280px, 74vw);
     transform: translate(-50%, -50%) rotate(-7deg);
+  }
+
+  .earning-section {
+    padding-top: 20px;
   }
 
   .earning-inner {
