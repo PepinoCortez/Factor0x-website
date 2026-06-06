@@ -5011,7 +5011,7 @@ footer {
   .earning-construction-img,
   .earning-port-img,
   .earning-warehouse-img {
-    width: min(270px, 62vw);
+    width: min(257px, 58.9vw);
   }
   .earning-construction-img {
     --earning-offset-x: -58px;
@@ -5024,7 +5024,7 @@ footer {
     --earning-center-x: -3px;
     --earning-center-y: -1px;
     --earning-offset-y: -12px;
-    width: min(217px, 49.9vw);
+    width: min(206px, 47.4vw);
     margin-left: 8px;
   }
   .earning-warehouse-img {
@@ -5032,14 +5032,14 @@ footer {
     --earning-center-y: 4px;
     right: 22%;
     bottom: 190px;
-    width: min(261px, 59.6vw);
+    width: min(248px, 56.6vw);
   }
   .earning-gold-platform-wrap {
     --earning-center-x: -3px;
     --earning-center-y: -4px;
     right: 14%;
     bottom: 58px;
-    width: min(286px, 65.6vw);
+    width: min(272px, 62.3vw);
   }
   .earning-platform-label {
     font-size: clamp(20px, 6.2vw, 30px);
@@ -5456,7 +5456,7 @@ footer {
   .earning-inner {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 6px;
   }
 
   .earning-copy {
@@ -5511,7 +5511,7 @@ footer {
     order: 2;
     width: min(100%, 360px);
     min-height: 350px;
-    margin: 2px auto 0;
+    margin: -8px auto 0;
   }
 
   .faq-section {
