@@ -5023,14 +5023,14 @@ footer {
   .earning-port-img {
     --earning-center-x: -3px;
     --earning-center-y: -1px;
-    --earning-offset-y: -6px;
+    --earning-offset-y: -12px;
     width: min(217px, 49.9vw);
     margin-left: 8px;
   }
   .earning-warehouse-img {
     --earning-center-x: 3px;
     --earning-center-y: 4px;
-    right: 20%;
+    right: 22%;
     bottom: 190px;
     width: min(261px, 59.6vw);
   }
