@@ -1728,6 +1728,9 @@ body .policy {
   color: var(--white);
   white-space: nowrap;
 }
+.earning-title-mobile {
+  display: none;
+}
 .earning-copy h2::after {
   content: '';
   display: block;
@@ -5461,6 +5464,14 @@ footer {
   .earning-copy h2 {
     font-size: clamp(27px, 7.4vw, 31px);
     white-space: nowrap;
+  }
+
+  .earning-title-desktop {
+    display: none;
+  }
+
+  .earning-title-mobile {
+    display: inline;
   }
 
   html[lang="ru"] .invoice-visual-copy h2,
