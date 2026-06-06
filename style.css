@@ -5469,6 +5469,12 @@ footer {
     letter-spacing: 0;
   }
 
+  html[lang="en"] .invoice-visual-copy h2,
+  html[lang="en"] .earning-copy h2 {
+    font-size: clamp(30px, 8.4vw, 34px);
+    letter-spacing: 0;
+  }
+
   .earning-list {
     margin-left: 0;
     margin-right: 0;
