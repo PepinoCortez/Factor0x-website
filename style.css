@@ -5439,7 +5439,7 @@ footer {
   }
 
   .earning-section {
-    padding-top: 20px;
+    padding-top: 6px;
   }
 
   .earning-inner {
@@ -5471,6 +5471,15 @@ footer {
     width: min(100%, 360px);
     min-height: 350px;
     margin: 2px auto 0;
+  }
+
+  .faq-section {
+    margin-top: -92px;
+    padding-top: 8px;
+  }
+
+  .faq-head {
+    margin-bottom: 22px;
   }
 
   .quick-how-section {
