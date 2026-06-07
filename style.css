@@ -5620,7 +5620,10 @@ footer {
   }
 
   .quick-flow-card {
-    min-height: 110px;
+    width: min(92%, 340px);
+    min-height: 124px;
+    margin-left: auto;
+    margin-right: auto;
     padding: 11px 14px 13px;
   }
 
