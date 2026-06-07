@@ -5706,6 +5706,16 @@ footer {
     margin-top: 4px;
   }
 
+  html[lang="ru"] .quick-how-title {
+    width: calc(100vw - 44px);
+    margin-left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(28px, 8.8vw, 38px);
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+  }
+
   html[lang="ru"] #hubs .section-head h2 {
     width: calc(100vw - 44px);
     margin-left: 50%;
