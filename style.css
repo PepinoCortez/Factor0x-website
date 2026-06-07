@@ -5517,6 +5517,10 @@ footer {
     text-align: left;
   }
 
+  .verification-list p:last-child {
+    padding-top: 12px;
+  }
+
   .invoice-visual-stage {
     width: min(100%, 360px);
     min-height: 340px;
@@ -5550,7 +5554,7 @@ footer {
   }
 
   .earning-section {
-    padding-top: 6px;
+    padding-top: 0;
   }
 
   .earning-inner {
@@ -5563,7 +5567,7 @@ footer {
     order: 1;
     width: 100%;
     max-width: 100%;
-    margin: 0;
+    margin: -6px 0 0;
     text-align: left;
   }
 
