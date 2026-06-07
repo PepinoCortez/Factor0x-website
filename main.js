@@ -140,6 +140,19 @@ if (nav) {
   requestAnimationFrame(() => scrollToInitialCard());
 })();
 
+// ── FAQ ACCORDION ───────────────────────────
+(() => {
+  document.querySelectorAll('.faq-card').forEach(card => {
+    const button = card.querySelector('.faq-question');
+    if (!button) return;
+
+    button.addEventListener('click', () => {
+      const isOpen = card.classList.toggle('open');
+      button.setAttribute('aria-expanded', String(isOpen));
+    });
+  });
+})();
+
 // ── REVEAL ON SCROLL ─────────────────────────
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry, i) => {
