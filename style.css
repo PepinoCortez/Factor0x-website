@@ -5620,24 +5620,25 @@ footer {
   }
 
   .quick-flow-card {
-    min-height: 188px;
-    padding: 22px;
+    min-height: 156px;
+    padding: 16px 18px 18px;
   }
 
   .quick-flow-card h3,
   .quick-flow-card.center h3 {
-    margin-top: 34px;
+    margin-top: 22px;
+    margin-bottom: 10px;
   }
 
   .quick-flow-card p {
     font-size: 16px;
-    line-height: 1.5;
+    line-height: 1.42;
   }
 
   .quick-flow .quick-flow-card:not(.center) > .quick-flow-node {
     position: relative;
     width: 100%;
-    min-height: 52px;
+    min-height: 44px;
     justify-content: center;
     text-align: center;
     transform: translateY(-8px);
