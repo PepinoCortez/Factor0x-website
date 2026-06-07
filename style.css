@@ -2406,6 +2406,7 @@ body .policy {
   line-height: 1.08;
   letter-spacing: 0;
   text-align: center;
+  white-space: nowrap;
 }
 .team-card span {
   display: block;
