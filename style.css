@@ -5680,20 +5680,20 @@ footer {
 
   .team-portrait {
     width: 100%;
-    max-width: 74px;
+    max-width: 88px;
     margin: 0 auto;
-    border-radius: 11px;
+    border-radius: 13px;
   }
 
   .team-card h3 {
-    margin-top: 9px;
-    font-size: 10px;
+    margin-top: 10px;
+    font-size: 12px;
     line-height: 1.12;
   }
 
   .team-card span {
-    margin-top: 4px;
-    font-size: 8px;
+    margin-top: 5px;
+    font-size: 9.5px;
     line-height: 1.15;
   }
 
