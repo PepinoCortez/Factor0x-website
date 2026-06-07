@@ -5641,7 +5641,7 @@ footer {
   .quick-flow .quick-flow-card:not(.center) > .quick-flow-node {
     position: relative;
     width: 100%;
-    min-height: 36px;
+    min-height: 52px;
     justify-content: center;
     text-align: center;
     transform: translateY(0);
@@ -5652,8 +5652,12 @@ footer {
   }
 
   .quick-flow-card.center .brand-node {
-    font-size: clamp(24px, 6.8vw, 30px) !important;
+    width: 100%;
+    min-height: 52px;
+    justify-content: center;
+    font-size: clamp(30px, 8.4vw, 36px) !important;
     line-height: 1.05 !important;
+    white-space: nowrap !important;
   }
 
   .quick-flow-card:not(.center) .business-pictogram,
