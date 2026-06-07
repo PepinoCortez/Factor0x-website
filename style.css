@@ -5634,15 +5634,18 @@ footer {
   }
 
   .apply-modal-backdrop {
+    padding-left: 0;
+    padding-right: 0;
     overflow: hidden;
     overscroll-behavior-x: none;
     touch-action: pan-y;
   }
 
   .apply-modal {
-    width: calc(100vw - 24px);
-    max-width: calc(100vw - 24px);
+    width: 100vw;
+    max-width: 100vw;
     border-left: 0;
+    border-radius: 0 16px 16px 0;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior-x: none;
