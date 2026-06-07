@@ -5638,8 +5638,10 @@ footer {
 
   .quick-flow-card h3,
   .quick-flow-card.center h3 {
-    margin-top: 14px;
+    margin-top: 30px;
     margin-bottom: 7px;
+    font-size: clamp(18px, 5.2vw, 22px);
+    white-space: nowrap;
   }
 
   .quick-flow-card p {
