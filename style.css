@@ -2340,8 +2340,8 @@ body .policy {
 }
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
 }
 .team-card {
   min-width: 0;
@@ -2401,7 +2401,7 @@ body .policy {
   margin: 20px 0 0;
   color: var(--white);
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   line-height: 1.08;
   letter-spacing: 0;

@@ -1082,6 +1082,8 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Адриан Моро': 'Adrian Moreau',
         'Стратегический советник': 'Strategic Advisor',
         'Привлечение капитала, партнёрства, выход на новые рынки': 'Capital raising, partnerships, expansion into new markets',
+        'Елена Маркова': 'Elena Markova',
+        'Развитие партнерств, бизнес-связей': 'Partnership development, business relations',
         'Модель двух хабов': 'Dual-hub model',
         'Дубай — операционный центр Factor0x для потока сделок и привлечения ликвидности.': 'Dubai is the Factor0x operating hub for deal flow and liquidity sourcing.',
         'Сингапур — стратегический слой для банковской инфраструктуры, структурирования и регионального масштабирования.': 'Singapore is the strategic layer for banking infrastructure, structuring, and regional expansion.',
@@ -1120,7 +1122,8 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Дэниел Чен': 'Daniel Chen',
         'София Лоран': 'Sophia Laurent',
         'Маркус Беннетт': 'Marcus Bennett',
-        'Адриан Моро': 'Adrian Moreau'
+        'Адриан Моро': 'Adrian Moreau',
+        'Елена Маркова': 'Elena Markova'
       }
     };
 
