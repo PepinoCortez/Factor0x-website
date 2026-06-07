@@ -5630,6 +5630,34 @@ footer {
     padding-top: 82px;
   }
 
+  .apply-modal-backdrop {
+    overflow: hidden;
+    overscroll-behavior-x: none;
+    touch-action: pan-y;
+  }
+
+  .apply-modal {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-x: none;
+    touch-action: pan-y;
+  }
+
+  .apply-modal-body,
+  .apply-modal .apply-form {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .apply-form .file-field.has-files .file-upload-row,
+  .apply-form .file-field.has-multiple .file-upload-row {
+    grid-template-columns: 1fr;
+  }
+
   .quick-how-section .section-head {
     margin-bottom: 46px;
   }
