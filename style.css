@@ -5292,7 +5292,7 @@ footer {
   .footer-inner {
     display: flex;
     flex-direction: column;
-    gap: 22px;
+    gap: 14px;
   }
   .footer-links {
     order: 2;
@@ -5315,6 +5315,8 @@ footer {
   }
   .footer-legal {
     flex-wrap: wrap;
+    gap: 8px 18px;
+    margin-top: 4px;
   }
   .econ-strip { flex-direction: column; }
   .econ-sep { width: 100%; height: 1px; }
@@ -5533,7 +5535,7 @@ footer {
   .invoice-paper-shape {
     left: 50%;
     right: auto;
-    top: 36%;
+    top: 39%;
     width: min(248px, 64vw);
     transform: translate(-50%, -50%);
     animation: invoice-paper-mobile-float 5.8s ease-in-out infinite;
