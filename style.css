@@ -5524,7 +5524,7 @@ footer {
   }
 
   .invoice-paper-shape {
-    left: 16%;
+    left: 50%;
     right: auto;
     top: 36%;
     width: min(248px, 64vw);
