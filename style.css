@@ -5697,12 +5697,12 @@ footer {
     min-height: 220px;
     margin-left: auto;
     margin-right: auto;
-    padding: 30px 14px 18px;
+    padding: 20px 14px 18px;
   }
 
   .quick-flow-card h3,
   .quick-flow-card.center h3 {
-    margin-top: 30px;
+    margin-top: 18px;
     margin-bottom: 7px;
     font-size: clamp(18px, 5.2vw, 22px);
     white-space: nowrap;
@@ -5738,7 +5738,7 @@ footer {
   .quick-flow-card:not(.center) .business-pictogram,
   .quick-flow-card:not(.center) .investor-pictogram {
     position: absolute;
-    top: 50%;
+    top: 38%;
     transform: translateY(-50%);
   }
 
@@ -5833,12 +5833,17 @@ footer {
 
   html[lang="ru"] .quick-how-title {
     width: calc(100vw - 64px);
-    margin-left: 50%;
-    transform: translateX(-50%);
+    margin-left: 0;
+    transform: none;
     font-size: clamp(26px, 8.1vw, 36px);
     line-height: 1;
-    text-align: center;
+    text-align: left;
     white-space: nowrap;
+  }
+
+  html[lang="ru"] .quick-how-title::after {
+    margin-left: 0;
+    margin-right: auto;
   }
 
   html[lang="ru"] #hubs .section-head h2 {
