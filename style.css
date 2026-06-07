@@ -5621,10 +5621,10 @@ footer {
 
   .quick-flow-card {
     width: min(92%, 340px);
-    min-height: 148px;
+    min-height: 188px;
     margin-left: auto;
     margin-right: auto;
-    padding: 11px 14px 13px;
+    padding: 24px 14px 16px;
   }
 
   .quick-flow-card h3,
@@ -5644,7 +5644,7 @@ footer {
     min-height: 36px;
     justify-content: center;
     text-align: center;
-    transform: translateY(-8px);
+    transform: translateY(0);
     font-size: clamp(24px, 6.8vw, 30px) !important;
     font-weight: 700 !important;
     line-height: 1.05 !important;
