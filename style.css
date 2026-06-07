@@ -5640,6 +5640,7 @@ footer {
   .apply-modal {
     width: calc(100vw - 24px);
     max-width: calc(100vw - 24px);
+    border-left: 0;
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior-x: none;
@@ -5651,12 +5652,35 @@ footer {
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    overflow-x: hidden;
+  }
+
+  .apply-modal .apply-form {
+    border-left: 0;
   }
 
   .apply-form .file-field.has-files .file-upload-row,
   .apply-form .file-field.has-multiple .file-upload-row {
     grid-template-columns: 1fr;
+  }
+
+  .apply-modal .date-field.open {
+    overflow: visible;
+  }
+
+  .apply-modal .date-picker {
+    position: static;
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-top: 8px;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+    display: none;
+  }
+
+  .apply-modal .date-field.open .date-picker {
+    display: block;
+    transform: none;
   }
 
   .quick-how-section .section-head {
