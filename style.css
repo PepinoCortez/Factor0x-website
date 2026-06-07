@@ -5674,7 +5674,7 @@ footer {
 
   .team-card {
     flex: 0 0 calc((100% - 20px) / 3);
-    max-width: 86px;
+    max-width: none;
     min-width: 0;
   }
 
