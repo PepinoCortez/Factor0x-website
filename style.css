@@ -2682,6 +2682,9 @@ body .policy {
   margin-top: 52px;
   color: var(--black);
 }
+.quick-flow-card:not(.center) h3 {
+  margin-top: 34px;
+}
 .quick-flow-card p {
   max-width: 310px;
   padding-left: 16px;
