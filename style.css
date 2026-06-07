@@ -2662,7 +2662,7 @@ body .policy {
   border-radius: 0;
   gap: 0;
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 44px;
+  font-size: 34px;
   font-weight: 700;
   letter-spacing: 0;
   text-transform: none;
@@ -5630,6 +5630,11 @@ footer {
     font-weight: 700 !important;
     line-height: 1.05 !important;
     white-space: normal !important;
+  }
+
+  .quick-flow-card.center .brand-node {
+    font-size: clamp(24px, 6.8vw, 30px) !important;
+    line-height: 1.05 !important;
   }
 
   .quick-flow-card:not(.center) .business-pictogram,
