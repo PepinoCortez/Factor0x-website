@@ -4223,7 +4223,13 @@ footer {
   color: var(--text3);
   line-height: 1.6;
 }
-.footer-copy { margin-top: 30px !important; }
+.footer-copy {
+  grid-column: 1 / -1;
+  margin: -34px 0 0 !important;
+  font-size: 13px;
+  color: var(--text3);
+  line-height: 1.6;
+}
 .footer-links {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -5279,7 +5285,7 @@ footer {
     gap: 34px;
   }
   .footer-links {
-    order: 1;
+    order: 2;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 28px 22px;
   }
@@ -5287,14 +5293,15 @@ footer {
     grid-column: 1 / -1;
   }
   .footer-left {
-    order: 2;
+    order: 1;
   }
   .footer-left .logo {
     position: static;
     margin-bottom: 12px;
   }
   .footer-copy {
-    margin-top: 24px !important;
+    order: 3;
+    margin: -10px 0 0 !important;
   }
   .footer-legal {
     flex-wrap: wrap;
