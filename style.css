@@ -4219,9 +4219,10 @@ footer {
 .footer-left .logo {
   position: static;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
   color: var(--black);
   text-decoration: none;
+  line-height: 1;
 }
 .footer-left .logo .logo-accent {
   color: var(--gray);
@@ -4230,7 +4231,7 @@ footer {
   margin: 0;
   font-size: 13px;
   color: var(--text3);
-  line-height: 1.6;
+  line-height: 1.25;
 }
 .footer-copy {
   grid-column: 1 / -1;
@@ -5291,7 +5292,7 @@ footer {
   .footer-inner {
     display: flex;
     flex-direction: column;
-    gap: 34px;
+    gap: 22px;
   }
   .footer-links {
     order: 2;
@@ -5306,7 +5307,7 @@ footer {
   }
   .footer-left .logo {
     position: static;
-    margin-bottom: 6px;
+    margin-bottom: 2px;
   }
   .footer-copy {
     order: 3;
@@ -5534,7 +5535,7 @@ footer {
     right: auto;
     top: 36%;
     width: min(248px, 64vw);
-    transform: translate(-50%, -50%) !important;
+    transform: translate(-50%, -50%);
     animation: invoice-paper-mobile-float 5.8s ease-in-out infinite;
   }
 
