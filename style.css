@@ -5265,8 +5265,29 @@ footer {
   .inv-grid { grid-template-columns: 1fr 1fr; }
   .hero-stats { gap: 28px; }
   .stat-divider { display: none; }
-  .footer-inner { grid-template-columns: 1fr; }
-  .footer-links { grid-template-columns: 1fr; gap: 32px; }
+  .footer-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+  }
+  .footer-links {
+    order: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 22px;
+  }
+  .footer-col:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+  .footer-left {
+    order: 2;
+  }
+  .footer-left .logo {
+    position: static;
+    margin-bottom: 12px;
+  }
+  .footer-copy {
+    margin-top: 24px !important;
+  }
   .footer-legal {
     flex-wrap: wrap;
   }
