@@ -5030,7 +5030,7 @@ footer {
   .earning-warehouse-img {
     --earning-center-x: 3px;
     --earning-center-y: 4px;
-    right: 22%;
+    right: 24%;
     bottom: 190px;
     width: min(236px, 53.8vw);
   }
@@ -5653,5 +5653,46 @@ footer {
     display: block;
     width: 100%;
     margin-top: 4px;
+  }
+
+  .team-section {
+    padding-bottom: 42px;
+  }
+
+  .team-head {
+    margin-bottom: 20px;
+  }
+
+  .team-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 7px;
+    align-items: start;
+  }
+
+  .team-card {
+    min-width: 0;
+  }
+
+  .team-portrait {
+    width: 100%;
+    max-width: 58px;
+    margin: 0 auto;
+    border-radius: 9px;
+  }
+
+  .team-card h3 {
+    margin-top: 8px;
+    font-size: 9px;
+    line-height: 1.12;
+  }
+
+  .team-card span {
+    margin-top: 4px;
+    font-size: 7px;
+    line-height: 1.15;
+  }
+
+  .team-card p {
+    display: none;
   }
 }
