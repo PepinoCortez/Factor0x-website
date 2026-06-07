@@ -1096,6 +1096,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Стратегический советник': 'Strategic Advisor',
         'Привлечение капитала, партнёрства, выход на новые рынки': 'Capital raising, partnerships, expansion into new markets',
         'Майя Рейнольдс': 'Maya Reynolds',
+        'Партнер по бизнес-развитию': 'BD Partner',
         'Развитие партнерств, бизнес-связей': 'Partnership development, business relations',
         'Модель двух хабов': 'Dual-hub model',
         'Дубай — операционный центр Factor0x для потока сделок и привлечения ликвидности.': 'Dubai is the Factor0x operating hub for deal flow and liquidity sourcing.',
