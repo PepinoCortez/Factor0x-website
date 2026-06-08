@@ -902,8 +902,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   const urlLang = new URLSearchParams(window.location.search).get('lang');
   let currentLang = supportedLangs.includes(urlLang)
     ? urlLang
-    : supportedLangs.includes(localStorage.getItem('factor0xLang'))
-      ? localStorage.getItem('factor0xLang')
     : 'en';
 
   if (walletButton) {
