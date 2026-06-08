@@ -2763,6 +2763,9 @@ body .policy {
   .quick-flow-card.center .brand-node {
     transform: translateY(8px);
   }
+  html[lang="en"] .quick-flow .quick-flow-card:nth-of-type(3) .quick-card-action {
+    margin-top: 50px;
+  }
 }
 .quick-card-action {
   position: relative;
