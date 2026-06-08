@@ -5845,16 +5845,23 @@ footer {
 
   .invoice-carousel-control {
     display: block;
-    width: min(54vw, 210px);
-    margin: 6px auto 2px;
-    padding: 2px 0 0;
+    width: min(48vw, 184px);
+    margin: 8px auto 2px;
+    padding: 3px 10px;
+    border: 1px solid rgba(5,5,5,0.08);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.52);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.78),
+      0 10px 26px rgba(5,5,5,0.07);
+    backdrop-filter: blur(10px);
   }
 
   .invoice-carousel-slider {
     --carousel-progress: 50%;
     display: block;
     width: 100%;
-    height: 22px;
+    height: 16px;
     margin: 0;
     padding: 0;
     appearance: none;
@@ -5865,49 +5872,53 @@ footer {
   }
 
   .invoice-carousel-slider::-webkit-slider-runnable-track {
-    height: 3px;
+    height: 2px;
     border-radius: 999px;
     background: linear-gradient(
       90deg,
-      #A97822 0%,
-      #D0A64B var(--carousel-progress),
-      rgba(5,5,5,0.16) var(--carousel-progress),
-      rgba(5,5,5,0.16) 100%
+      rgba(5,5,5,0.78) 0%,
+      rgba(169,120,34,0.98) var(--carousel-progress),
+      rgba(5,5,5,0.14) var(--carousel-progress),
+      rgba(5,5,5,0.14) 100%
     );
   }
 
   .invoice-carousel-slider::-webkit-slider-thumb {
-    width: 17px;
-    height: 17px;
-    margin-top: -7px;
-    border: 2px solid #FFFFFF;
+    width: 28px;
+    height: 8px;
+    margin-top: -3px;
+    border: 1px solid rgba(255,255,255,0.72);
     border-radius: 999px;
-    background: linear-gradient(135deg, #F0D37B 0%, #A97822 100%);
-    box-shadow: 0 7px 16px rgba(5,5,5,0.18);
+    background: linear-gradient(90deg, #F3D989 0%, #C89A3A 58%, #8F641D 100%);
+    box-shadow:
+      0 5px 14px rgba(5,5,5,0.16),
+      inset 0 1px 0 rgba(255,255,255,0.58);
     -webkit-appearance: none;
     appearance: none;
   }
 
   .invoice-carousel-slider::-moz-range-track {
-    height: 3px;
+    height: 2px;
     border: 0;
     border-radius: 999px;
-    background: rgba(5,5,5,0.16);
+    background: rgba(5,5,5,0.14);
   }
 
   .invoice-carousel-slider::-moz-range-progress {
-    height: 3px;
+    height: 2px;
     border-radius: 999px;
-    background: linear-gradient(90deg, #A97822 0%, #D0A64B 100%);
+    background: linear-gradient(90deg, rgba(5,5,5,0.78) 0%, rgba(169,120,34,0.98) 100%);
   }
 
   .invoice-carousel-slider::-moz-range-thumb {
-    width: 17px;
-    height: 17px;
-    border: 2px solid #FFFFFF;
+    width: 28px;
+    height: 8px;
+    border: 1px solid rgba(255,255,255,0.72);
     border-radius: 999px;
-    background: linear-gradient(135deg, #F0D37B 0%, #A97822 100%);
-    box-shadow: 0 7px 16px rgba(5,5,5,0.18);
+    background: linear-gradient(90deg, #F3D989 0%, #C89A3A 58%, #8F641D 100%);
+    box-shadow:
+      0 5px 14px rgba(5,5,5,0.16),
+      inset 0 1px 0 rgba(255,255,255,0.58);
   }
 
   .view-more-btn-mobile {
