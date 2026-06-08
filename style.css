@@ -5835,7 +5835,7 @@ footer {
   .offers-head {
     align-items: center;
     gap: 8px;
-    margin-top: 8px;
+    margin-top: 4px;
     padding-top: 0;
     text-align: center;
   }
@@ -5846,15 +5846,19 @@ footer {
 
   .offers-title {
     margin: 0 auto;
-    padding: 5px 10px;
-    border: 0;
+    padding: 4px 9px;
+    border: 1px solid rgba(5,5,5,0.08);
     border-radius: 999px;
-    background: rgba(5,5,5,0.05);
-    color: #A97822;
+    background: rgba(255,255,255,0.52);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.78),
+      0 8px 22px rgba(5,5,5,0.06);
+    backdrop-filter: blur(10px);
+    color: #8F641D;
     font-family: 'Manrope', sans-serif;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.35px;
     line-height: 1;
     text-transform: none;
     filter: none;
