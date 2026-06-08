@@ -2682,47 +2682,49 @@ body .policy {
 .quick-flow > .flow-panel {
   grid-column: 2;
   grid-row: 2;
+  justify-self: center;
+  width: min(calc(300% + 68px), 920px);
 }
 .quick-flow > .flow-panel.open {
-  max-height: 760px;
+  max-height: 390px;
 }
 .quick-flow > .flow-panel .flow-panel-inner {
-  grid-template-columns: 1fr;
-  gap: 8px;
-  min-height: 0;
-  padding: 18px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  min-height: 160px;
+  padding: 22px 24px;
 }
 .quick-flow > .flow-panel .flow-panel-inner span {
-  flex-direction: row;
-  justify-content: flex-start;
-  min-height: 54px;
-  gap: 12px;
-  font-size: 15px;
-  text-align: left;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 132px;
+  gap: 10px;
+  font-size: 16px;
+  text-align: center;
 }
 .quick-flow > .flow-panel .flow-panel-inner span img {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   object-fit: contain;
 }
 .quick-flow > .flow-panel .flow-panel-inner span:not(:last-child)::after {
-  right: auto;
-  left: 16px;
-  bottom: -12px;
-  top: auto;
-  width: 12px;
-  height: 12px;
-  transform: rotate(135deg);
+  right: -12px;
+  left: auto;
+  bottom: auto;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translateY(-50%) rotate(45deg);
 }
 .quick-flow > .flow-panel .flow-panel-inner span:not(:last-child)::before {
-  right: auto;
-  left: 22px;
-  top: auto;
-  bottom: -4px;
-  width: 1px;
-  height: 18px;
-  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.36));
-  transform: none;
+  right: -4px;
+  left: auto;
+  top: 50%;
+  bottom: auto;
+  width: 22px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.36));
+  transform: translateY(-50%);
 }
 .quick-flow-card.center .brand-node span {
   color: var(--gray);
@@ -4855,6 +4857,7 @@ footer {
   .quick-flow > .flow-panel {
     grid-column: 1;
     grid-row: auto;
+    width: 100%;
   }
   .quick-flow-card {
     min-height: 220px;
@@ -4898,9 +4901,9 @@ footer {
     grid-template-columns: 1fr;
   }
   .flow-panel-inner {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 20px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
+    padding: 14px 10px;
   }
   .flow-panel.open {
     max-height: 420px;
@@ -4915,21 +4918,50 @@ footer {
     grid-column: span 2;
   }
   .flow-panel-inner span:not(:last-child)::after {
-    right: auto;
-    bottom: -17px;
-    top: auto;
-    width: 14px;
-    height: 14px;
-    transform: rotate(135deg);
+    right: -6px;
+    bottom: auto;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    transform: translateY(-50%) rotate(45deg);
   }
   .flow-panel-inner span:not(:last-child)::before {
-    right: auto;
-    top: auto;
-    bottom: -5px;
-    width: 1px;
-    height: 22px;
-    background: linear-gradient(180deg, transparent, rgba(255,255,255,0.36));
-    transform: none;
+    right: 0;
+    top: 50%;
+    bottom: auto;
+    width: 12px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.36));
+    transform: translateY(-50%);
+  }
+  .quick-flow > .flow-panel .flow-panel-inner span {
+    min-height: 88px;
+    gap: 6px;
+    font-size: 10px;
+    line-height: 1.12;
+  }
+  .quick-flow > .flow-panel .flow-panel-inner span img {
+    width: 24px;
+    height: 24px;
+  }
+  .quick-flow > .flow-panel .flow-panel-inner span:not(:last-child)::after {
+    right: -5px;
+    left: auto;
+    bottom: auto;
+    top: 50%;
+    width: 9px;
+    height: 9px;
+    transform: translateY(-50%) rotate(45deg);
+  }
+  .quick-flow > .flow-panel .flow-panel-inner span:not(:last-child)::before {
+    right: 0;
+    left: auto;
+    top: 50%;
+    bottom: auto;
+    width: 10px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.36));
+    transform: translateY(-50%);
   }
   .problem-grid { grid-template-columns: 1fr 1fr; }
   .steps { grid-template-columns: 1fr 1fr; }
