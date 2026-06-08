@@ -2686,25 +2686,25 @@ body .policy {
   width: min(calc(300% + 68px), 920px);
 }
 .quick-flow > .flow-panel.open {
-  max-height: 390px;
+  max-height: 520px;
 }
 .quick-flow > .flow-panel .flow-panel-inner {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0;
-  min-height: 166px;
-  padding: 22px 26px;
+  min-height: 286px;
+  padding: 26px;
 }
 .quick-flow > .flow-panel .flow-panel-inner span {
   flex-direction: column;
   justify-content: center;
-  min-height: 136px;
-  gap: 10px;
+  min-height: 236px;
+  gap: 12px;
   font-size: 16px;
   text-align: center;
 }
 .quick-flow > .flow-panel .flow-panel-inner span img {
-  width: 40px;
-  height: 40px;
+  width: 160px;
+  height: 160px;
   object-fit: contain;
 }
 .quick-flow > .flow-panel .flow-panel-inner span:not(:last-child)::after {
@@ -4908,7 +4908,7 @@ footer {
     padding: 14px 4px;
   }
   .flow-panel.open {
-    max-height: 420px;
+    max-height: 520px;
   }
   .apply-panel.open {
     max-height: 900px;
@@ -4937,14 +4937,14 @@ footer {
     transform: translateY(-50%);
   }
   .quick-flow > .flow-panel .flow-panel-inner span {
-    min-height: 98px;
+    min-height: 192px;
     gap: 7px;
     font-size: 10px;
     line-height: 1.12;
   }
   .quick-flow > .flow-panel .flow-panel-inner span img {
-    width: 34px;
-    height: 34px;
+    width: 136px;
+    height: 136px;
   }
   .quick-flow > .flow-panel .flow-panel-inner span:not(:last-child)::after {
     right: -5px;
