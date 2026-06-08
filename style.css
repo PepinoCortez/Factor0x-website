@@ -2699,12 +2699,12 @@ body .policy {
   justify-content: center;
   min-height: 198px;
   gap: 8px;
-  font-size: 19px;
+  font-size: 16px;
   text-align: center;
 }
 .quick-flow > .flow-panel .flow-panel-inner span img {
-  width: 192px;
-  height: 192px;
+  width: 163px;
+  height: 163px;
   object-fit: contain;
 }
 .quick-flow > .flow-panel .flow-panel-inner span:not(:last-child)::after {
@@ -4949,6 +4949,15 @@ footer {
     font-size: 12px;
     line-height: 1.12;
     scroll-snap-align: center;
+    opacity: 0.38;
+    filter: brightness(0.58) saturate(0.84);
+    transition:
+      opacity 0.28s ease,
+      filter 0.28s ease;
+  }
+  .quick-flow > .flow-panel .flow-panel-inner span.is-flow-visible {
+    opacity: 1;
+    filter: none;
   }
   .quick-flow > .flow-panel .flow-panel-inner span img {
     width: 114px;
@@ -5988,7 +5997,7 @@ footer {
     color: #8F641D;
     font-family: 'Manrope', sans-serif;
     font-size: 9px;
-    font-weight: 500;
+    font-weight: 400;
     letter-spacing: 0.35px;
     line-height: 1;
     text-transform: none;

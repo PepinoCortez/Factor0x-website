@@ -203,6 +203,7 @@ if (nav) {
     cancelAnimationFrame(frame);
     frame = requestAnimationFrame(() => {
       if (!portraitQuery.matches) {
+        steps.forEach(step => step.classList.remove('is-flow-visible'));
         setSliderIndex(Math.min(Number(slider.value) || 0, Math.max(steps.length - 1, 0)));
         return;
       }
@@ -216,6 +217,8 @@ if (nav) {
         const rect = step.getBoundingClientRect();
         const stepCenter = rect.left + rect.width / 2;
         const distance = Math.abs(stepCenter - trackCenter);
+        const isFullyVisible = rect.left >= trackRect.left && rect.right <= trackRect.right;
+        step.classList.toggle('is-flow-visible', isFullyVisible);
         if (distance < activeDistance) {
           activeDistance = distance;
           activeStep = step;
@@ -227,6 +230,7 @@ if (nav) {
   }
 
   setSliderIndex(0);
+  updateActiveStep();
   slider.addEventListener('input', () => {
     const index = Number(slider.value);
     setSliderIndex(index);
