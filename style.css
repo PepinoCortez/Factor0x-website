@@ -4904,13 +4904,13 @@ footer {
   }
   .flow-panel-inner {
     display: flex;
-    gap: 12px;
+    gap: 6px;
     min-height: 158px;
-    padding: 10px 18px 14px;
+    padding: 10px 10px 14px;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
-    scroll-padding-inline: 18px;
+    scroll-padding-inline: 10px;
     -webkit-overflow-scrolling: touch;
     border: 0;
     border-radius: 0;
@@ -4940,7 +4940,7 @@ footer {
     content: none;
   }
   .quick-flow > .flow-panel .flow-panel-inner span {
-    flex: 0 0 min(74vw, 260px);
+    flex: 0 0 min(34vw, 132px);
     min-height: 145px;
     gap: 7px;
     font-size: 10px;
@@ -4952,10 +4952,29 @@ footer {
     height: 95px;
   }
   .quick-flow > .flow-panel .flow-panel-inner span:not(:last-child)::after {
-    content: none;
+    content: '';
+    right: -5px;
+    left: auto;
+    bottom: auto;
+    top: 50%;
+    width: 9px;
+    height: 9px;
+    border-top: 2px solid rgba(255,255,255,0.58);
+    border-right: 2px solid rgba(255,255,255,0.58);
+    transform: translateY(-50%) rotate(45deg);
+    animation: flow-arrow-pulse 2.1s ease-in-out infinite;
   }
   .quick-flow > .flow-panel .flow-panel-inner span:not(:last-child)::before {
-    content: none;
+    content: '';
+    right: 0;
+    left: auto;
+    top: 50%;
+    bottom: auto;
+    width: 10px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.36));
+    transform: translateY(-50%);
+    animation: flow-line-pulse 2.1s ease-in-out infinite;
   }
   .problem-grid { grid-template-columns: 1fr 1fr; }
   .steps { grid-template-columns: 1fr 1fr; }
