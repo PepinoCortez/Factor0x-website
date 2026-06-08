@@ -221,8 +221,15 @@ if (nav) {
         const rect = step.getBoundingClientRect();
         const stepCenter = rect.left + rect.width / 2;
         const distance = Math.abs(stepCenter - trackCenter);
-        const isFullyVisible = rect.left >= trackRect.left && rect.right <= trackRect.right;
-        step.classList.toggle('is-flow-visible', isFullyVisible);
+        const visibleWidth = Math.min(rect.right, trackRect.right) - Math.max(rect.left, trackRect.left);
+        const visibleRatio = Math.max(0, visibleWidth) / rect.width;
+        const index = steps.indexOf(step);
+        const isFlowVisible = isFirstVisible
+          ? index <= 1
+          : isLastVisible
+            ? index >= Math.max(steps.length - 3, 0)
+            : visibleRatio >= 0.64;
+        step.classList.toggle('is-flow-visible', isFlowVisible);
         if (distance < activeDistance) {
           activeDistance = distance;
           activeStep = step;
