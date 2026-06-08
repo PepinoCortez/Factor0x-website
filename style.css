@@ -4261,7 +4261,7 @@ footer {
   border-top: 1px solid var(--border);
   background: var(--white);
   color: var(--black);
-  padding: 42px 0 18px;
+  padding: 42px 0 4px;
 }
 .footer-inner {
   display: grid;
