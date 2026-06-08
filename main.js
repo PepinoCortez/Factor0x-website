@@ -212,6 +212,10 @@ if (nav) {
       const trackCenter = trackRect.left + trackRect.width / 2;
       let activeStep = steps[0];
       let activeDistance = Infinity;
+      const firstRect = steps[0]?.getBoundingClientRect();
+      const lastRect = steps[steps.length - 1]?.getBoundingClientRect();
+      const isFirstVisible = firstRect && firstRect.right > trackRect.left && firstRect.left < trackRect.right;
+      const isLastVisible = lastRect && lastRect.right > trackRect.left && lastRect.left < trackRect.right;
 
       steps.forEach(step => {
         const rect = step.getBoundingClientRect();
@@ -225,7 +229,13 @@ if (nav) {
         }
       });
 
-      setSliderIndex(steps.indexOf(activeStep));
+      if (isFirstVisible) {
+        setSliderIndex(0);
+      } else if (isLastVisible) {
+        setSliderIndex(steps.length - 1);
+      } else {
+        setSliderIndex(steps.indexOf(activeStep));
+      }
     });
   }
 
