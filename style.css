@@ -5350,6 +5350,15 @@ footer {
 }
 
 @media (max-width: 820px) and (orientation: portrait) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    overscroll-behavior-x: none;
+    touch-action: pan-y;
+  }
+
   #nav .logo {
     flex: 0 0 92px;
     width: 92px;
@@ -5478,8 +5487,8 @@ footer {
   }
 
   .about-visual .about-safe-img {
-    left: 50%;
-    bottom: -26px;
+    left: 52%;
+    bottom: -18px;
     width: min(330px, 88vw);
   }
 
