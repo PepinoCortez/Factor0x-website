@@ -5987,17 +5987,17 @@ footer {
 
   .offers-title {
     margin: 0 auto;
-    padding: 4px 9px;
-    border: 1px solid rgba(244,210,132,0.58);
+    padding: 3px 7px;
+    border: 1px solid rgba(111,111,111,0.36);
     border-radius: 999px;
-    background: rgba(244,210,132,0.86);
+    background: rgba(111,111,111,0.08);
     box-shadow: none;
     backdrop-filter: none;
-    color: #171008;
+    color: var(--gray);
     font-family: 'DM Mono', monospace;
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 300;
-    letter-spacing: 0.55px;
+    letter-spacing: 0.45px;
     line-height: 1;
     text-transform: none;
     filter: none;
