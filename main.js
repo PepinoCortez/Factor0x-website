@@ -819,7 +819,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     ? urlLang
     : supportedLangs.includes(localStorage.getItem('factor0xLang'))
       ? localStorage.getItem('factor0xLang')
-    : (document.documentElement.lang === 'en' ? 'en' : 'ru');
+    : 'en';
 
   if (walletButton) {
     walletButton.addEventListener('click', () => {
