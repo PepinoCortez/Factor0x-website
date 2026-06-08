@@ -4322,7 +4322,7 @@ footer {
   display: flex;
   gap: 22px;
   align-items: center;
-  margin-top: 6px;
+  margin-top: 10px;
 }
 .footer-legal a {
   color: var(--text2);
@@ -5376,7 +5376,16 @@ footer {
   .footer-legal {
     flex-wrap: wrap;
     gap: 8px 18px;
-    margin-top: 3px;
+    margin-top: 6px;
+  }
+  .footer-social {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+  }
+  .footer-social svg {
+    width: 18px;
+    height: 18px;
   }
   .econ-strip { flex-direction: column; }
   .econ-sep { width: 100%; height: 1px; }
@@ -5547,7 +5556,7 @@ footer {
   }
 
   .about-visual .about-safe-img {
-    left: 52%;
+    left: 51.5%;
     bottom: -18px;
     width: min(347px, 92vw);
   }
