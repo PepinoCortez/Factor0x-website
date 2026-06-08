@@ -4296,7 +4296,7 @@ footer {
 }
 .footer-copy {
   grid-column: 1 / -1;
-  margin: -44px 0 0 !important;
+  margin: -58px 0 0 !important;
   font-size: 13px;
   color: var(--text3);
   line-height: 1.6;
