@@ -80,9 +80,30 @@ if (nav) {
   if (!board) return;
 
   const cards = Array.from(board.querySelectorAll('.invoice-card'));
+  const slider = document.querySelector('.invoice-carousel-slider');
   const portraitQuery = window.matchMedia('(max-width: 820px) and (orientation: portrait)');
   let frame;
   let hasPositionedInitialCard = false;
+
+  function setSliderIndex(index) {
+    if (!slider) return;
+    const max = Math.max(cards.length - 1, 0);
+    const clamped = Math.min(Math.max(index, 0), max);
+    slider.max = String(max);
+    slider.value = String(clamped);
+    slider.style.setProperty('--carousel-progress', max ? `${(clamped / max) * 100}%` : '0%');
+  }
+
+  function scrollToCard(index, behavior = 'smooth') {
+    const card = cards[index];
+    if (!portraitQuery.matches || !card) return;
+
+    const targetLeft = card.offsetLeft - ((board.clientWidth - card.offsetWidth) / 2);
+    board.scrollTo({
+      left: Math.max(0, targetLeft),
+      behavior
+    });
+  }
 
   function scrollToInitialCard(force = false) {
     if (!portraitQuery.matches || cards.length < 2) return;
@@ -92,6 +113,7 @@ if (nav) {
     const targetLeft = initialCard.offsetLeft - ((board.clientWidth - initialCard.offsetWidth) / 2);
     board.scrollLeft = Math.max(0, targetLeft);
     hasPositionedInitialCard = true;
+    setSliderIndex(1);
     updateActiveCard();
   }
 
@@ -100,6 +122,7 @@ if (nav) {
     frame = requestAnimationFrame(() => {
       if (!portraitQuery.matches) {
         cards.forEach(card => card.classList.remove('is-carousel-active'));
+        setSliderIndex(Math.min(Number(slider?.value) || 0, Math.max(cards.length - 1, 0)));
         return;
       }
 
@@ -121,9 +144,16 @@ if (nav) {
       cards.forEach(card => {
         card.classList.toggle('is-carousel-active', card === activeCard);
       });
+      setSliderIndex(cards.indexOf(activeCard));
     });
   }
 
+  setSliderIndex(cards.length > 1 ? 1 : 0);
+  slider?.addEventListener('input', () => {
+    const index = Number(slider.value);
+    setSliderIndex(index);
+    scrollToCard(index);
+  });
   board.addEventListener('scroll', updateActiveCard, { passive: true });
   window.addEventListener('resize', updateActiveCard);
   if (portraitQuery.addEventListener) {
@@ -1126,6 +1156,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Открыть меню': 'Open menu',
         'Мобильная навигация': 'Mobile navigation',
         'Открыть список инвойсов': 'Open invoice list',
+        'Позиция инвойса': 'Invoice position',
         'Закрыть': 'Close',
         'Реальный доход': 'Real Yield',
         'Итан Уокер': 'Ethan Walker',
