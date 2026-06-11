@@ -84,6 +84,8 @@ if (nav) {
   const portraitQuery = window.matchMedia('(max-width: 820px) and (orientation: portrait)');
   let frame;
   let hasPositionedInitialCard = false;
+  let isSliderSettling = false;
+  let settleTimer;
 
   function setSliderIndex(index) {
     if (!slider) return;
@@ -103,6 +105,17 @@ if (nav) {
       left: Math.max(0, targetLeft),
       behavior
     });
+  }
+
+  function moveToCard(index) {
+    isSliderSettling = true;
+    window.clearTimeout(settleTimer);
+    setSliderIndex(index);
+    scrollToCard(index);
+    settleTimer = window.setTimeout(() => {
+      isSliderSettling = false;
+      updateActiveCard();
+    }, 520);
   }
 
   function scrollToInitialCard(force = false) {
@@ -144,15 +157,15 @@ if (nav) {
       cards.forEach(card => {
         card.classList.toggle('is-carousel-active', card === activeCard);
       });
-      setSliderIndex(cards.indexOf(activeCard));
+      if (!isSliderSettling) {
+        setSliderIndex(cards.indexOf(activeCard));
+      }
     });
   }
 
   setSliderIndex(cards.length > 1 ? 1 : 0);
   slider?.addEventListener('input', () => {
-    const index = Number(slider.value);
-    setSliderIndex(index);
-    scrollToCard(index);
+    moveToCard(Number(slider.value));
   });
   board.addEventListener('scroll', updateActiveCard, { passive: true });
   window.addEventListener('resize', updateActiveCard);

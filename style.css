@@ -5631,7 +5631,15 @@ footer {
     display: flex;
     width: min(100%, 340px);
     margin: 30px auto 0;
-    overflow: hidden;
+    overflow: visible;
+    z-index: 4;
+  }
+
+  .brand-mobile-tvl .tvl-info {
+    top: auto;
+    right: 0;
+    bottom: calc(100% + 8px);
+    width: min(300px, calc(100vw - 40px));
   }
 
   .market-header > .tvl-strip {
