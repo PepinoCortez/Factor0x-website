@@ -1170,7 +1170,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Реальные активы': 'Real assets',
         'Пулы связаны с реальными бизнес-сделками.': 'Pools are linked to real business deals.',
         'Понятные условия': 'Clear terms',
-        'Сумма, срок, APR и контрагент видны до участия.': 'Amount, term, APR, and counterparty are visible before participation.',
+        'Сумма, срок, APR и контрагент видны до участия.': 'Amount, APR, term, and counterparty upfront.',
         'Без токеномики': 'No tokenomics',
         'Доходность связана с инвойсом, не с токеном.': 'Yield is linked to the invoice, not a token.',
         'Безопасно': 'Secure',
