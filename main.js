@@ -181,6 +181,7 @@ if (nav) {
   let frame;
   let isSliderSettling = false;
   let settleTimer;
+  let snapTimer;
 
   function setSliderPosition(position) {
     const clamped = Math.min(Math.max(position, 0), 1);
@@ -198,6 +199,27 @@ if (nav) {
       left: Math.max(0, targetLeft),
       behavior
     });
+  }
+
+  function moveToBinaryPosition(position) {
+    isSliderSettling = true;
+    window.clearTimeout(settleTimer);
+    const normalized = position ? 1 : 0;
+    setSliderPosition(normalized);
+    scrollToStep(normalized ? steps.length - 1 : 0);
+    settleTimer = window.setTimeout(() => {
+      isSliderSettling = false;
+      updateActiveStep();
+    }, 520);
+  }
+
+  function settleToNearestBinaryPosition() {
+    if (!portraitQuery.matches || isSliderSettling) return;
+    window.clearTimeout(snapTimer);
+    snapTimer = window.setTimeout(() => {
+      const maxScroll = Math.max(track.scrollWidth - track.clientWidth, 1);
+      moveToBinaryPosition(track.scrollLeft > maxScroll * 0.38 ? 1 : 0);
+    }, 120);
   }
 
   function updateActiveStep() {
@@ -250,17 +272,18 @@ if (nav) {
   setSliderPosition(0);
   updateActiveStep();
   slider.addEventListener('input', () => {
-    const position = Number(slider.value) ? 1 : 0;
-    isSliderSettling = true;
-    window.clearTimeout(settleTimer);
-    setSliderPosition(position);
-    scrollToStep(position ? steps.length - 1 : 0);
-    settleTimer = window.setTimeout(() => {
-      isSliderSettling = false;
-      updateActiveStep();
-    }, 520);
+    moveToBinaryPosition(Number(slider.value) ? 1 : 0);
   });
-  track.addEventListener('scroll', updateActiveStep, { passive: true });
+  track.addEventListener('scroll', () => {
+    updateActiveStep();
+    settleToNearestBinaryPosition();
+  }, { passive: true });
+  track.addEventListener('touchend', () => {
+    settleToNearestBinaryPosition();
+  }, { passive: true });
+  track.addEventListener('pointerup', () => {
+    settleToNearestBinaryPosition();
+  });
   window.addEventListener('resize', updateActiveStep);
   if (portraitQuery.addEventListener) {
     portraitQuery.addEventListener('change', updateActiveStep);

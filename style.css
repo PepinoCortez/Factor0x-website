@@ -4915,8 +4915,8 @@ footer {
     padding: 10px 10px 14px;
     overflow-x: auto;
     overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: 10px;
+    scroll-snap-type: none;
+    scroll-padding-inline: 0;
     -webkit-overflow-scrolling: touch;
     border: 0;
     border-radius: 0;
@@ -4951,7 +4951,6 @@ footer {
     gap: 7px;
     font-size: 12px;
     line-height: 1.12;
-    scroll-snap-align: center;
     opacity: 0.38;
     filter: brightness(0.58) saturate(0.84);
     transition:
