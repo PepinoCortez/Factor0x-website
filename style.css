@@ -4395,6 +4395,17 @@ footer {
   overflow: auto;
   color: var(--black);
 }
+.details-modal::after {
+  content: '';
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  display: block;
+  height: 34px;
+  margin-top: -34px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(5,5,5,0), rgba(5,5,5,0.24));
+}
 .modal-close {
   position: static;
   z-index: 1;
@@ -4405,6 +4416,11 @@ footer {
   border-radius: 50%;
   background: var(--white);
   color: var(--black);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-family: Arial, sans-serif;
   font-size: 28px;
   line-height: 1;
   cursor: pointer;
@@ -4532,6 +4548,7 @@ footer {
   font-family: 'Manrope', sans-serif;
   font-size: 13px;
   font-weight: 700;
+  cursor: pointer;
 }
 .modal-grid {
   position: relative;
@@ -5536,6 +5553,33 @@ footer {
   .modal-card {
     padding: 24px;
     border-radius: 18px;
+  }
+  .modal-top {
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .modal-title {
+    height: 42px;
+    max-width: 116px;
+    padding: 0 13px;
+    border-radius: 12px;
+    font-size: 18px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .modal-actions {
+    gap: 7px;
+  }
+  .modal-actions button:not(.modal-close) {
+    min-width: 86px;
+    min-height: 34px;
+    font-size: 12px;
+  }
+  .modal-close {
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+    font-size: 24px;
   }
   .modal-summary h2 { font-size: 26px; }
   .modal-summary p { font-size: 15px; }
