@@ -179,6 +179,8 @@ if (nav) {
   const steps = Array.from(track.querySelectorAll('.flow-step'));
   const portraitQuery = window.matchMedia('(max-width: 820px) and (orientation: portrait)');
   let frame;
+  let isSliderSettling = false;
+  let settleTimer;
 
   function setSliderPosition(position) {
     const clamped = Math.min(Math.max(position, 0), 1);
@@ -235,6 +237,8 @@ if (nav) {
         }
       });
 
+      if (isSliderSettling) return;
+
       if (isFirstVisible) {
         setSliderPosition(0);
       } else {
@@ -247,8 +251,14 @@ if (nav) {
   updateActiveStep();
   slider.addEventListener('input', () => {
     const position = Number(slider.value) ? 1 : 0;
+    isSliderSettling = true;
+    window.clearTimeout(settleTimer);
     setSliderPosition(position);
     scrollToStep(position ? steps.length - 1 : 0);
+    settleTimer = window.setTimeout(() => {
+      isSliderSettling = false;
+      updateActiveStep();
+    }, 520);
   });
   track.addEventListener('scroll', updateActiveStep, { passive: true });
   window.addEventListener('resize', updateActiveStep);
@@ -288,28 +298,36 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
 // ── TVL INFO ────────────────────────────────
 (function initTvlInfo() {
-  const button = document.querySelector('.tvl-info-btn');
-  const info = document.getElementById('tvlInfo');
-  if (!button || !info) return;
+  const items = Array.from(document.querySelectorAll('.tvl-info-btn'))
+    .map(button => ({
+      button,
+      info: button.closest('.tvl-strip')?.querySelector('.tvl-info')
+    }))
+    .filter(item => item.info);
+  if (!items.length) return;
 
-  function setOpen(isOpen) {
-    button.setAttribute('aria-expanded', String(isOpen));
-    info.classList.toggle('open', isOpen);
-    info.setAttribute('aria-hidden', String(!isOpen));
+  function setOpen(target, isOpen) {
+    items.forEach(item => {
+      const shouldOpen = item === target && isOpen;
+      item.button.setAttribute('aria-expanded', String(shouldOpen));
+      item.info.classList.toggle('open', shouldOpen);
+      item.info.setAttribute('aria-hidden', String(!shouldOpen));
+    });
   }
 
-  button.addEventListener('click', event => {
-    event.stopPropagation();
-    setOpen(button.getAttribute('aria-expanded') !== 'true');
+  items.forEach(item => {
+    item.button.addEventListener('click', event => {
+      event.stopPropagation();
+      setOpen(item, item.button.getAttribute('aria-expanded') !== 'true');
+    });
+    item.info.addEventListener('click', event => {
+      event.stopPropagation();
+    });
   });
 
-  info.addEventListener('click', event => {
-    event.stopPropagation();
-  });
-
-  document.addEventListener('click', () => setOpen(false));
+  document.addEventListener('click', () => setOpen(null, false));
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') setOpen(false);
+    if (event.key === 'Escape') setOpen(null, false);
   });
 })();
 
