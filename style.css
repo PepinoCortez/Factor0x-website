@@ -5508,25 +5508,25 @@ footer {
     margin-top: 6px;
   }
   .footer-socials {
-    gap: 4px;
+    gap: 3px;
     flex-wrap: nowrap;
   }
   .footer-social {
-    flex: 0 0 28px;
-    inline-size: 28px;
-    block-size: 28px;
-    min-width: 28px;
-    max-width: 28px;
-    width: 28px;
-    height: 28px;
+    flex: 0 0 24px;
+    inline-size: 24px;
+    block-size: 24px;
+    min-width: 24px;
+    max-width: 24px;
+    width: 24px;
+    height: 24px;
     aspect-ratio: 1 / 1;
     padding: 0;
     box-sizing: border-box;
     border-radius: 999px;
   }
   .footer-social svg {
-    width: 14px;
-    height: 14px;
+    width: 13px;
+    height: 13px;
   }
   .econ-strip { flex-direction: column; }
   .econ-sep { width: 100%; height: 1px; }
