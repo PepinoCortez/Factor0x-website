@@ -854,17 +854,14 @@
 
 <div class="modal-backdrop" id="detailsModal" aria-hidden="true">
   <div class="details-modal" role="dialog" aria-modal="true" aria-labelledby="modalCompanyName">
+    <button class="modal-close" type="button" aria-label="Закрыть">×</button>
     <div class="modal-card" id="modalCard">
-      <div class="modal-top">
-        <div class="modal-title">Key facts</div>
-        <div class="modal-actions">
-          <button class="modal-website-btn" type="button">Website</button>
-          <button class="modal-close" type="button" aria-label="Закрыть">×</button>
-        </div>
-      </div>
       <div class="modal-grid">
         <div class="modal-summary">
-          <h2 id="modalCompanyName">Gulf Trade Logistics</h2>
+          <div class="modal-summary-head">
+            <h2 id="modalCompanyName">Gulf Trade Logistics</h2>
+            <button class="modal-website-btn" type="button">Website</button>
+          </div>
           <div class="modal-underline"></div>
           <p id="modalDescription"></p>
         </div>
