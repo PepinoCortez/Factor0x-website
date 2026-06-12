@@ -1424,6 +1424,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         amount: '$420,000',
         apr: '6.2%',
         dueDays: '58 days',
+        dueDate: 'Jul 18, 2026',
         fill: '64.0%',
         risk: 'Low Risk',
         minContribution: '$1,000'
@@ -1446,6 +1447,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         amount: '$315,000',
         apr: '9.4%',
         dueDays: '40 days',
+        dueDate: 'Jun 30, 2026',
         fill: '38.5%',
         risk: 'Medium Risk',
         minContribution: '$500'
@@ -1468,6 +1470,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         amount: '$250,000',
         apr: '5.4%',
         dueDays: '24 days',
+        dueDate: 'Jun 14, 2026',
         fill: '81.0%',
         risk: 'Low Risk',
         minContribution: '$250'
@@ -1505,7 +1508,8 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       dueDays: details.investment?.dueDays || row?.dataset.dueDate || '0 days',
       fill,
       risk: details.investment?.risk || row?.dataset.risk || 'Risk pending',
-      minContribution: details.investment?.minContribution || row?.dataset.minContribution || '$100'
+      minContribution: details.investment?.minContribution || row?.dataset.minContribution || '$100',
+      dueDate: details.investment?.dueDate || ''
     };
   }
 
@@ -1538,16 +1542,20 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         <div class="modal-return-grid">
           <div>
             <span>Time to repayment</span>
-            <strong>${dueDays} days</strong>
+            <strong>${dueDays} days${meta.dueDate ? ` · ${meta.dueDate}` : ''}</strong>
           </div>
           <div>
-            <span>Est. deal yield</span>
+            <span>Total deal yield · ${dueDays}d</span>
             <strong>${formatCurrency(expectedYield)}</strong>
           </div>
         </div>
         <button class="modal-contribute-btn modal-invest-cta" type="button">Contribute from ${normalizeMoney(meta.minContribution)}</button>
       </div>
     `;
+  }
+
+  function getFocusable() {
+    return [...modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter(el => !el.disabled);
   }
 
   function closeModal() {
@@ -1591,6 +1599,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       modal.classList.add('open');
       modal.setAttribute('aria-hidden', 'false');
       document.body.classList.add('details-modal-open');
+      requestAnimationFrame(() => getFocusable()[0]?.focus());
     });
   });
 
@@ -1599,7 +1608,17 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     if (event.target === modal) closeModal();
   });
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') closeModal();
+    if (event.key === 'Escape') { closeModal(); return; }
+    if (event.key === 'Tab' && modal.classList.contains('open')) {
+      const focusable = getFocusable();
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey) {
+        if (document.activeElement === first) { event.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    }
   });
 })();
 

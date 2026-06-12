@@ -4400,6 +4400,13 @@ footer {
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   color: var(--black);
+  opacity: 0;
+  transform: scale(0.97) translateY(10px);
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease;
+}
+.modal-backdrop.open .details-modal {
+  opacity: 1;
+  transform: scale(1) translateY(0);
 }
 .details-modal::after {
   content: none;
@@ -4708,19 +4715,19 @@ footer {
   justify-content: center;
   min-height: 28px;
   padding: 0 12px;
-  border: 1px solid rgba(5,5,5,0.20);
+  border: 1px solid rgba(34,197,94,0.40);
   border-radius: 999px;
-  background: rgba(5,5,5,0.04);
-  color: var(--black);
+  background: rgba(34,197,94,0.10);
+  color: rgb(21,128,61);
   font-family: 'Manrope', sans-serif;
   font-size: 11px;
   font-weight: 800;
   white-space: nowrap;
 }
 .modal-risk.medium {
-  border-color: rgba(111,111,111,0.36);
-  background: rgba(111,111,111,0.08);
-  color: var(--gray);
+  border-color: rgba(197,146,43,0.42);
+  background: rgba(197,146,43,0.12);
+  color: #7A5C00;
 }
 .modal-funding {
   display: grid;
