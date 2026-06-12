@@ -1433,6 +1433,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         ['Borrower', 'Gulf Trade Logistics LLC'],
         ['Obligor', 'Singapore Distribution Pte. Ltd.'],
         ['Sector', 'Trade Logistics'],
+        ['Risk Level', 'Low Risk'],
         ['Jurisdiction', 'Dubai, UAE'],
         ['Invoice Amount', '$420,000'],
         ['Due Date', '2026/07/18'],
@@ -1456,6 +1457,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         ['Borrower', 'Asia Components Ltd'],
         ['Obligor', 'GCC Manufacturing Group'],
         ['Sector', 'Electronics'],
+        ['Risk Level', 'Medium Risk'],
         ['Jurisdiction', 'Singapore'],
         ['Invoice Amount', '$315,000'],
         ['Due Date', '2026/06/30'],
@@ -1479,6 +1481,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         ['Borrower', 'Desert Cloud Services FZCO'],
         ['Obligor', 'Regional Enterprise Client'],
         ['Sector', 'SaaS Contract'],
+        ['Risk Level', 'Low Risk'],
         ['Jurisdiction', 'UAE Free Zone'],
         ['Invoice Amount', '$250,000'],
         ['Due Date', '2026/06/14'],
@@ -1530,7 +1533,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
             <span>APR</span>
             <strong>${meta.apr} annual</strong>
           </div>
-          <div class="modal-risk ${riskClass}">${meta.risk}</div>
         </div>
         <div class="modal-funding">
           <div class="modal-funding-copy">
@@ -1589,12 +1591,12 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       card.className = details.cardClass || 'modal-card';
       title.textContent = details.name;
       description.textContent = details.description;
-      facts.innerHTML = visibleFacts.map(([label, value]) => `
-        <div class="fact-row">
-          <div class="fact-label">${label}</div>
-          <div class="fact-value">${value}</div>
-        </div>
-      `).join('') + renderInvestmentPanel(investment);
+      facts.innerHTML = visibleFacts.map(([label, value]) => {
+        const valueHtml = label === 'Risk Level'
+          ? `<div style="justify-self:end"><div class="modal-risk ${value.toLowerCase().includes('medium') ? 'medium' : 'low'}">${value}</div></div>`
+          : `<div class="fact-value">${value}</div>`;
+        return `<div class="fact-row"><div class="fact-label">${label}</div>${valueHtml}</div>`;
+      }).join('') + renderInvestmentPanel(investment);
 
       modal.classList.add('open');
       modal.setAttribute('aria-hidden', 'false');
