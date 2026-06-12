@@ -4394,15 +4394,15 @@ footer {
 }
 .details-modal {
   position: relative;
-  width: min(1200px, 100%);
-  max-height: min(860px, 92vh);
-  overflow: auto;
+  width: min(1240px, 100%);
+  max-height: none;
+  overflow: visible;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   color: var(--black);
 }
 .details-modal::after {
-  content: '';
+  content: none;
   position: sticky;
   bottom: 0;
   z-index: 4;
@@ -4445,7 +4445,8 @@ footer {
   border-radius: 22px;
   background: rgba(255,255,255,0.96);
   box-shadow: 0 32px 90px rgba(5,5,5,0.24);
-  padding: 40px;
+  max-height: calc(100dvh - 64px);
+  padding: 28px;
   overflow: hidden;
 }
 .modal-card-photo {
@@ -4494,7 +4495,7 @@ footer {
 .modal-card-photo .modal-summary {
   width: fit-content;
   max-width: 540px;
-  padding: 20px 22px;
+  padding: 16px 18px;
   border: 1px solid rgba(255,255,255,0.16);
   border-radius: 18px;
   background: linear-gradient(90deg, rgba(5,5,5,0.34), rgba(5,5,5,0.16));
@@ -4522,12 +4523,12 @@ footer {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 32px;
-  margin-bottom: 36px;
+  gap: 24px;
+  margin-bottom: 22px;
 }
 .modal-title {
   width: fit-content;
-  height: 54px;
+  height: 46px;
   display: inline-flex;
   align-items: center;
   border: 1px solid var(--border);
@@ -4535,7 +4536,7 @@ footer {
   background: var(--black);
   color: var(--white);
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   padding: 0 22px;
 }
@@ -4595,24 +4596,24 @@ footer {
   z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(360px, 1fr);
-  gap: 54px;
+  gap: 34px;
 }
 .modal-summary h2 {
-  font-size: 30px;
+  font-size: 28px;
   line-height: 1.16;
   max-width: 390px;
 }
 .modal-underline {
   width: 82px;
   height: 2px;
-  margin: 10px 0 28px;
+  margin: 8px 0 18px;
   background: linear-gradient(90deg, var(--black), var(--gray));
 }
 .modal-summary p {
   max-width: 470px;
   color: var(--text3);
-  font-size: 16px;
-  line-height: 1.72;
+  font-size: 14px;
+  line-height: 1.52;
   font-weight: 400;
 }
 .modal-facts {
@@ -4621,7 +4622,7 @@ footer {
   display: grid;
   gap: 0;
   align-content: start;
-  padding: 12px;
+  padding: 10px;
   border: 1px solid rgba(5,5,5,0.08);
   border-radius: 18px;
   background: rgba(255,255,255,0.98);
@@ -4629,11 +4630,11 @@ footer {
 }
 .fact-row {
   display: grid;
-  grid-template-columns: 145px 1fr;
-  gap: 18px;
+  grid-template-columns: 132px 1fr;
+  gap: 14px;
   align-items: center;
-  min-height: 58px;
-  padding: 12px 14px;
+  min-height: 44px;
+  padding: 8px 12px;
   border-bottom: 1px solid rgba(5,5,5,0.07);
   transition: background 0.18s ease, transform 0.18s ease;
 }
@@ -4656,7 +4657,7 @@ footer {
 .fact-value {
   color: var(--black);
   font-family: 'Manrope', sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.22;
   font-weight: 600;
   text-align: left;
@@ -4665,9 +4666,9 @@ footer {
 }
 .modal-investment-panel {
   display: grid;
-  gap: 14px;
+  gap: 10px;
   margin: 8px 0 0;
-  padding: 16px;
+  padding: 12px;
   border: 1px solid rgba(5,5,5,0.08);
   border-radius: 16px;
   background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,248,248,0.96));
@@ -4697,7 +4698,7 @@ footer {
   margin-top: 4px;
   color: var(--black);
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.1;
   font-weight: 700;
 }
@@ -4705,7 +4706,7 @@ footer {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 30px;
+  min-height: 28px;
   padding: 0 12px;
   border: 1px solid rgba(5,5,5,0.20);
   border-radius: 999px;
@@ -4723,7 +4724,7 @@ footer {
 }
 .modal-funding {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 .modal-funding-copy {
   display: flex;
@@ -4753,18 +4754,18 @@ footer {
   gap: 10px;
 }
 .modal-return-grid > div {
-  padding: 12px;
+  padding: 10px;
   border: 1px solid rgba(5,5,5,0.07);
   border-radius: 12px;
   background: rgba(255,255,255,0.74);
 }
 .modal-invest-cta {
   width: 100%;
-  min-height: 50px;
+  min-height: 44px;
   margin-top: 2px;
   border-radius: 999px;
   font-family: 'Manrope', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
@@ -4780,13 +4781,13 @@ footer {
   align-items: center;
   justify-self: end;
   width: fit-content;
-  min-height: 34px;
-  padding: 7px 12px;
+  min-height: 30px;
+  padding: 6px 10px;
   border: 1px solid rgba(5,5,5,0.12);
   border-radius: 999px;
   background: rgba(255,255,255,0.72);
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -5703,7 +5704,7 @@ footer {
   .modal-backdrop { padding: 18px; }
   .modal-kicker { font-size: 22px; }
   .details-modal::before {
-    content: '';
+    content: none;
     position: sticky;
     top: 0;
     z-index: 4;
@@ -5714,12 +5715,13 @@ footer {
     background: linear-gradient(180deg, rgba(5,5,5,0.24), rgba(5,5,5,0));
   }
   .modal-card {
-    padding: 24px;
+    max-height: calc(100dvh - 36px);
+    padding: 14px;
     border-radius: 18px;
   }
   .modal-top {
     gap: 10px;
-    margin-bottom: 24px;
+    margin-bottom: 14px;
   }
   .modal-title {
     height: 42px;
@@ -5750,30 +5752,51 @@ footer {
     height: 32px;
     font-size: 23px;
   }
-  .modal-summary h2 { font-size: 26px; }
-  .modal-summary p { font-size: 15px; }
+  .modal-grid {
+    gap: 14px;
+  }
+  .modal-summary h2 { font-size: 22px; }
+  .modal-underline {
+    margin-bottom: 10px;
+  }
+  .modal-summary p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    font-size: 13px;
+    line-height: 1.36;
+  }
+  .modal-facts {
+    padding: 8px;
+    border-radius: 14px;
+  }
   .fact-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: 102px 1fr;
     gap: 8px;
     min-height: auto;
+    padding: 6px 8px;
   }
   .fact-label { font-size: 10px; }
   .fact-value {
-    text-align: left;
-    justify-self: start;
-    font-size: 17px;
+    text-align: right;
+    justify-self: end;
+    font-size: 14px;
   }
   .modal-investment-panel {
-    gap: 12px;
-    padding: 14px;
+    gap: 8px;
+    padding: 10px;
     border-radius: 14px;
   }
   .modal-investment-top {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
   }
   .modal-risk {
-    justify-self: start;
+    justify-self: end;
+    min-height: 26px;
+    padding: 0 9px;
+    font-size: 10px;
   }
   .modal-funding-copy {
     display: grid;
@@ -5783,11 +5806,15 @@ footer {
     text-align: left;
   }
   .modal-return-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .modal-return-grid > div {
+    padding: 9px;
   }
   .modal-invest-cta {
-    min-height: 48px;
-    font-size: 13px;
+    min-height: 42px;
+    font-size: 12.5px;
   }
   .fact-row:nth-last-child(-n + 2) .fact-value {
     justify-self: start;

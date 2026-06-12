@@ -1576,10 +1576,12 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       if (!details) return;
 
       const investment = getInvestmentMeta(details, row);
+      const compactFactLabels = new Set(['APR', 'Due Date', 'Risk', 'Min Contribution']);
+      const visibleFacts = details.facts.filter(([label]) => !compactFactLabels.has(label));
       card.className = details.cardClass || 'modal-card';
       title.textContent = details.name;
       description.textContent = details.description;
-      facts.innerHTML = details.facts.map(([label, value]) => `
+      facts.innerHTML = visibleFacts.map(([label, value]) => `
         <div class="fact-row">
           <div class="fact-label">${label}</div>
           <div class="fact-value">${value}</div>
