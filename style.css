@@ -4419,11 +4419,20 @@ footer {
   pointer-events: none;
   background: linear-gradient(180deg, rgba(5,5,5,0), rgba(5,5,5,0.24));
 }
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.modal-header-label {
+  color: rgba(255,255,255,0.68);
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.4px;
+}
 .modal-close {
-  position: absolute;
-  top: -52px;
-  right: 0;
-  z-index: 10;
   width: 42px;
   height: 42px;
   border: 1px solid rgba(255,255,255,0.36);
