@@ -1414,6 +1414,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   const title = document.getElementById('modalCompanyName');
   const description = document.getElementById('modalDescription');
   const facts = document.getElementById('modalFacts');
+  const metrics = document.getElementById('modalMetrics');
 
   const companyDetails = {
     gulf: {
@@ -1436,7 +1437,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         ['Sector', 'Trade Logistics'],
         ['Risk Level', 'Low Risk'],
         ['Jurisdiction', 'Dubai, UAE'],
-        ['Invoice Amount', '$420 000'],
+        ['Invoice Amount', '$420,000'],
         ['Due Date', '2026/07/18'],
         ['APR', '6.2% annual']
       ]
@@ -1461,7 +1462,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         ['Sector', 'Electronics'],
         ['Risk Level', 'Medium Risk'],
         ['Jurisdiction', 'Singapore'],
-        ['Invoice Amount', '$315 000'],
+        ['Invoice Amount', '$315,000'],
         ['Due Date', '2026/06/30'],
         ['APR', '9.4% annual']
       ]
@@ -1486,7 +1487,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         ['Sector', 'SaaS Contract'],
         ['Risk Level', 'Low Risk'],
         ['Jurisdiction', 'UAE Free Zone'],
-        ['Invoice Amount', '$250 000'],
+        ['Invoice Amount', '$250,000'],
         ['Due Date', '2026/06/14'],
         ['APR', '5.4% annual']
       ]
@@ -1498,12 +1499,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   }
 
   function formatCurrency(value) {
-    return '$' + Math.round(value).toLocaleString('en-US').replace(/,/g, ' ');
-  }
-
-  function normalizeMoney(value) {
-    const amount = parseNumber(value);
-    return amount ? formatCurrency(amount) : value;
+    return '$' + Math.round(value).toLocaleString('en-US');
   }
 
   function getInvestmentMeta(details, row) {
@@ -1531,43 +1527,110 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     return `<div class="risk-gauge risk-gauge-${level}" role="img" aria-label="Risk level: ${level}, ${filled} of 3"><div class="risk-gauge-track" aria-hidden="true">${segs}</div><span class="risk-gauge-label">${labels[level]}</span></div>`;
   }
 
-  function renderInvestmentPanel(meta) {
+  function renderMetrics(meta) {
+    const amount = parseNumber(meta.amount);
+    const apr = parseNumber(meta.apr);
+    const dueDays = parseNumber(meta.dueDays);
+    const fillPercent = Math.min(Math.max(parseNumber(meta.fill), 0), 100);
+    const raised = amount * fillPercent / 100;
+    const poolYield = amount * (apr / 100) * (dueDays / 365);
+    return `<div class="modal-metrics-grid">
+      <div class="modal-metric">
+        <span class="modal-metric-label">APR</span>
+        <strong class="modal-metric-value">${meta.apr} annual</strong>
+      </div>
+      <div class="modal-metric">
+        <span class="modal-metric-label">Pool yield · ${dueDays}d</span>
+        <strong class="modal-metric-value">${formatCurrency(poolYield)}</strong>
+      </div>
+      <div class="modal-metric modal-metric-wide">
+        <div class="modal-metric-funding-row">
+          <span class="modal-metric-label">Funded ${fillPercent.toFixed(1)}%</span>
+          <strong class="modal-metric-value">${formatCurrency(raised)} raised${meta.contributors ? ` · ${meta.contributors} contributors` : ''}</strong>
+        </div>
+        <div class="modal-progress" aria-hidden="true"><span style="width:${fillPercent}%"></span></div>
+      </div>
+      <div class="modal-metric">
+        <span class="modal-metric-label">Time to repayment</span>
+        <strong class="modal-metric-value">${dueDays} days${meta.dueDate ? ` · ${meta.dueDate}` : ''}</strong>
+      </div>
+    </div>`;
+  }
+
+  function renderCalculator(meta) {
+    const amount = parseNumber(meta.amount);
+    const fillPercent = Math.min(Math.max(parseNumber(meta.fill), 0), 100);
+    const raised = amount * fillPercent / 100;
+    const remaining = Math.max(amount - raised, 0);
+    const minInvest = Math.max(500, parseNumber(meta.minContribution) || 500);
+    const maxInvest = Math.max(minInvest, Math.floor(remaining / 100) * 100);
+    const dueDays = parseNumber(meta.dueDays);
+    return `<div class="deal-calc" id="dealCalc">
+      <span class="deal-calc-header">Your investment</span>
+      <div class="deal-calc-input-wrap">
+        <span class="deal-calc-prefix" aria-hidden="true">$</span>
+        <input type="number" id="calcAmount" class="deal-calc-input"
+          min="${minInvest}" max="${maxInvest}" step="100" value="${minInvest}"
+          aria-label="Investment amount in USD">
+      </div>
+      <input type="range" id="calcSlider" class="deal-calc-slider"
+        min="${minInvest}" max="${maxInvest}" step="100" value="${minInvest}"
+        aria-label="Adjust investment amount">
+      <div class="deal-calc-outputs">
+        <div class="deal-calc-row">
+          <span class="deal-calc-row-label">Projected profit · ${dueDays}d</span>
+          <span class="deal-calc-row-value" id="calcProfit">—</span>
+        </div>
+        <div class="deal-calc-row">
+          <span class="deal-calc-row-label">Return · ${dueDays}d</span>
+          <span class="deal-calc-row-value" id="calcReturn">—</span>
+        </div>
+        <div class="deal-calc-row">
+          <span class="deal-calc-row-label">You receive at maturity</span>
+          <span class="deal-calc-row-value" id="calcReceive">—</span>
+        </div>
+      </div>
+      <button class="modal-contribute-btn modal-invest-cta" type="button">Contribute</button>
+    </div>`;
+  }
+
+  function initCalculator(meta) {
     const amount = parseNumber(meta.amount);
     const apr = parseNumber(meta.apr);
     const dueDays = parseNumber(meta.dueDays);
     const fillPercent = Math.min(Math.max(parseNumber(meta.fill), 0), 100);
     const raised = amount * fillPercent / 100;
     const remaining = Math.max(amount - raised, 0);
-    const expectedYield = amount * (apr / 100) * (dueDays / 365);
+    const minInvest = Math.max(500, parseNumber(meta.minContribution) || 500);
+    const maxInvest = Math.max(minInvest, Math.floor(remaining / 100) * 100);
+    const termRatio = (apr / 100) * (dueDays / 365);
+    const termPct = (termRatio * 100).toFixed(2);
 
-    return `
-      <div class="modal-investment-panel">
-        <div class="modal-investment-top">
-          <div>
-            <span>APR</span>
-            <strong>${meta.apr} annual</strong>
-          </div>
-        </div>
-        <div class="modal-funding">
-          <div class="modal-funding-copy">
-            <span>Funded ${fillPercent.toFixed(1)}%</span>
-            <strong>${formatCurrency(raised)} raised${meta.contributors ? ` · ${meta.contributors} contributors` : ''}</strong>
-          </div>
-          <div class="modal-progress" aria-hidden="true"><span style="width:${fillPercent}%"></span></div>
-        </div>
-        <div class="modal-return-grid">
-          <div>
-            <span>Time to repayment</span>
-            <strong>${dueDays} days${meta.dueDate ? ` · ${meta.dueDate}` : ''}</strong>
-          </div>
-          <div>
-            <span>Total deal yield · ${dueDays}d</span>
-            <strong>${formatCurrency(expectedYield)}</strong>
-          </div>
-        </div>
-        <button class="modal-contribute-btn modal-invest-cta" type="button">Contribute from ${normalizeMoney(meta.minContribution)}</button>
-      </div>
-    `;
+    const inputEl  = document.getElementById('calcAmount');
+    const sliderEl = document.getElementById('calcSlider');
+    const profitEl = document.getElementById('calcProfit');
+    const returnEl = document.getElementById('calcReturn');
+    const receiveEl = document.getElementById('calcReceive');
+    const ctaBtn   = document.getElementById('dealCalc')?.querySelector('.modal-invest-cta');
+    if (!inputEl || !sliderEl) return;
+
+    function clamp(val) {
+      return Math.max(minInvest, Math.min(maxInvest, Math.round(val / 100) * 100));
+    }
+    function update(rawVal) {
+      const val = clamp(isNaN(rawVal) || rawVal <= 0 ? minInvest : rawVal);
+      inputEl.value  = val;
+      sliderEl.value = val;
+      if (profitEl)  profitEl.textContent  = formatCurrency(val * termRatio);
+      if (returnEl)  returnEl.textContent  = `+${termPct}% · ${meta.apr} APR`;
+      if (receiveEl) receiveEl.textContent = `${formatCurrency(val + val * termRatio)}${meta.dueDate ? ` · ${meta.dueDate}` : ''}`;
+      if (ctaBtn)    ctaBtn.textContent    = `Contribute ${formatCurrency(val)}`;
+    }
+
+    update(minInvest);
+    inputEl.addEventListener('input',  () => update(parseFloat(inputEl.value)));
+    inputEl.addEventListener('change', () => update(parseFloat(inputEl.value)));
+    sliderEl.addEventListener('input', () => update(parseFloat(sliderEl.value)));
   }
 
   function getFocusable() {
@@ -1606,12 +1669,13 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       title.textContent = details.name;
       description.textContent = details.description;
       facts.innerHTML = visibleFacts.map(([label, value]) => {
-        const safeValue = value.replace(/(\$\d+),(\d{3})/g, '$1 $2');
         const valueHtml = label === 'Risk Level'
           ? `<div style="justify-self:end">${renderRiskMeter(value)}</div>`
-          : `<div class="fact-value">${safeValue}</div>`;
+          : `<div class="fact-value">${value}</div>`;
         return `<div class="fact-row"><div class="fact-label">${label}</div>${valueHtml}</div>`;
-      }).join('') + renderInvestmentPanel(investment);
+      }).join('') + renderCalculator(investment);
+      if (metrics) metrics.innerHTML = renderMetrics(investment);
+      initCalculator(investment);
 
       modal.classList.add('open');
       modal.setAttribute('aria-hidden', 'false');

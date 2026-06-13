@@ -4894,6 +4894,139 @@ footer {
 .modal-invest-cta:active {
   transform: translateY(0);
 }
+
+/* ── MODAL METRICS (left column) ── */
+.modal-metrics-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 20px;
+}
+.modal-metric { display: grid; gap: 4px; }
+.modal-metric-wide { grid-column: 1 / -1; }
+.modal-metric-label {
+  display: block;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+}
+.modal-metric-value {
+  display: block;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--black);
+}
+.modal-metric-funding-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-bottom: 7px;
+}
+.modal-card-photo .modal-metric-label { color: rgba(255,255,255,0.52); }
+.modal-card-photo .modal-metric-value { color: rgba(255,255,255,0.92); }
+
+/* ── DEAL CALCULATOR (right column) ── */
+.deal-calc {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid rgba(5,5,5,0.07);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,248,248,0.96));
+  display: grid;
+  gap: 8px;
+}
+.deal-calc-header {
+  display: block;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.deal-calc-input-wrap {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid rgba(5,5,5,0.14);
+  border-radius: 10px;
+  background: var(--white);
+  overflow: hidden;
+}
+.deal-calc-prefix {
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  color: var(--text3);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  border-right: 1px solid rgba(5,5,5,0.08);
+  background: rgba(5,5,5,0.02);
+  flex-shrink: 0;
+}
+.deal-calc-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  padding: 0 12px;
+  height: 40px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--black);
+  background: transparent;
+  -moz-appearance: textfield;
+}
+.deal-calc-input::-webkit-outer-spin-button,
+.deal-calc-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.deal-calc-input:focus { outline: none; box-shadow: none; }
+.deal-calc-input-wrap:focus-within {
+  border-color: rgba(5,5,5,0.30);
+  box-shadow: 0 0 0 3px rgba(5,5,5,0.07);
+}
+.deal-calc-slider {
+  width: 100%;
+  cursor: pointer;
+  accent-color: #D7B45E;
+}
+.deal-calc-outputs {
+  border: 1px solid rgba(5,5,5,0.07);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.deal-calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 11px;
+  gap: 10px;
+  border-bottom: 1px solid rgba(5,5,5,0.06);
+}
+.deal-calc-row:last-child { border-bottom: none; }
+.deal-calc-row-label {
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.deal-calc-row-value {
+  color: var(--black);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+
 .fact-row:nth-last-child(-n + 2) .fact-value {
   display: inline-flex;
   align-items: center;
