@@ -1524,9 +1524,9 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     const level = riskValue.toLowerCase().includes('medium') ? 'medium'
       : riskValue.toLowerCase().includes('high') ? 'high' : 'low';
     return `<div class="risk-meter">
-      <div class="risk-seg risk-low${level === 'low' ? ' active' : ''}">Low</div>
-      <div class="risk-seg risk-med${level === 'medium' ? ' active' : ''}">Med</div>
-      <div class="risk-seg risk-high${level === 'high' ? ' active' : ''}">High</div>
+      <span class="risk-seg risk-low${level === 'low' ? ' active' : ''}">Low</span>
+      <span class="risk-seg risk-med${level === 'medium' ? ' active' : ''}">Medium</span>
+      <span class="risk-seg risk-high${level === 'high' ? ' active' : ''}">High</span>
     </div>`;
   }
 
