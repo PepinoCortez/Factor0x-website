@@ -4683,26 +4683,116 @@ footer {
 }
 .modal-summary h2 {
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 30px;
+  font-size: 38px;
   font-weight: 600;
-  line-height: 1.14;
-  letter-spacing: -0.01em;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   flex: 1;
   min-width: 0;
 }
 .modal-underline {
   width: 82px;
   height: 2px;
-  margin: 8px 0 18px;
+  margin: 8px 0 14px;
   background: linear-gradient(90deg, var(--black), var(--gray));
 }
 .modal-summary p {
   max-width: 470px;
   color: var(--text3);
-  font-size: 14px;
-  line-height: 1.52;
+  font-size: 16px;
+  line-height: 1.5;
   font-weight: 400;
 }
+
+/* ── LEFT COLUMN BLOCKS ── */
+.lc-apr-block {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 20px;
+}
+.lc-apr-number {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--black);
+}
+.lc-apr-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.lc-progress-block {
+  margin-top: 18px;
+  display: grid;
+  gap: 7px;
+}
+.lc-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.lc-progress-stat {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.lc-progress-amounts {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text3);
+}
+.lc-metrics-row {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+}
+.lc-metric-cell { display: grid; gap: 4px; }
+.lc-metric-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.lc-metric-value {
+  font-family: 'Manrope', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--black);
+}
+.lc-risk-block {
+  margin-top: 18px;
+  display: grid;
+  gap: 8px;
+}
+.lc-risk-note {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--text3);
+  margin: 0;
+}
+/* photo card overrides */
+.modal-card-photo .lc-apr-number { color: var(--white); }
+.modal-card-photo .lc-apr-label  { color: rgba(255,255,255,0.52); }
+.modal-card-photo .lc-progress-stat,
+.modal-card-photo .lc-progress-amounts { color: rgba(255,255,255,0.54); }
+.modal-card-photo .lc-metric-label { color: rgba(255,255,255,0.52); }
+.modal-card-photo .lc-metric-value { color: rgba(255,255,255,0.92); }
+.modal-card-photo .lc-risk-note   { color: rgba(255,255,255,0.54); }
 .modal-facts {
   position: relative;
   z-index: 1;

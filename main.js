@@ -1428,6 +1428,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         dueDate: 'Jul 18, 2026',
         fill: '64.0%',
         risk: 'Low Risk',
+        riskNote: 'Backed by shipping docs, KYB review & obligor confirmation',
         contributors: 47,
         minContribution: '$1,000'
       },
@@ -1453,6 +1454,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         dueDate: 'Jun 30, 2026',
         fill: '38.5%',
         risk: 'Medium Risk',
+        riskNote: 'Backed by shipping docs, KYB review & obligor confirmation',
         contributors: 22,
         minContribution: '$500'
       },
@@ -1478,6 +1480,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         dueDate: 'Jun 14, 2026',
         fill: '81.0%',
         risk: 'Low Risk',
+        riskNote: 'Confirmed SaaS delivery, repeat payment history & diversified obligors',
         contributors: 83,
         minContribution: '$250'
       },
@@ -1512,7 +1515,8 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       risk: details.investment?.risk || row?.dataset.risk || 'Risk pending',
       minContribution: details.investment?.minContribution || row?.dataset.minContribution || '$100',
       dueDate: details.investment?.dueDate || '',
-      contributors: details.investment?.contributors || null
+      contributors: details.investment?.contributors || null,
+      riskNote: details.investment?.riskNote || ''
     };
   }
 
@@ -1534,44 +1538,32 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     const fillPercent = Math.min(Math.max(parseNumber(meta.fill), 0), 100);
     const raised = amount * fillPercent / 100;
     const poolYield = amount * (apr / 100) * (dueDays / 365);
-    return `<div class="modal-metrics-grid">
-      <div class="modal-metric">
-        <span class="modal-metric-label">APR</span>
-        <strong class="modal-metric-value">${meta.apr} annual</strong>
+    return `
+    <div class="lc-apr-block">
+      <span class="lc-apr-number">${meta.apr}</span>
+      <span class="lc-apr-label">annual APR</span>
+    </div>
+    <div class="lc-progress-block">
+      <div class="lc-progress-meta">
+        <span class="lc-progress-stat">${fillPercent.toFixed(1)}% funded</span>
+        ${meta.contributors ? `<span class="lc-progress-stat">${meta.contributors} contributors</span>` : ''}
       </div>
-      <div class="modal-metric">
-        <span class="modal-metric-label">Pool yield · ${dueDays}d</span>
-        <strong class="modal-metric-value">${formatCurrency(poolYield)}</strong>
+      <div class="modal-progress" aria-hidden="true"><span style="width:${fillPercent}%"></span></div>
+      <span class="lc-progress-amounts">${formatCurrency(raised)} of ${formatCurrency(amount)}</span>
+    </div>
+    <div class="lc-metrics-row">
+      <div class="lc-metric-cell">
+        <span class="lc-metric-label">Time to repayment</span>
+        <span class="lc-metric-value">${dueDays} days${meta.dueDate ? ` · ${meta.dueDate}` : ''}</span>
       </div>
-      <div class="modal-metric modal-metric-wide">
-        <div class="modal-metric-funding-row">
-          <span class="modal-metric-label">Funded ${fillPercent.toFixed(1)}%</span>
-          <strong class="modal-metric-value">${formatCurrency(raised)} raised${meta.contributors ? ` · ${meta.contributors} contributors` : ''}</strong>
-        </div>
-        <div class="modal-progress" aria-hidden="true"><span style="width:${fillPercent}%"></span></div>
-      </div>
-      <div class="modal-metric">
-        <span class="modal-metric-label">Time to repayment</span>
-        <strong class="modal-metric-value">${dueDays} days${meta.dueDate ? ` · ${meta.dueDate}` : ''}</strong>
+      <div class="lc-metric-cell">
+        <span class="lc-metric-label">Pool yield · ${dueDays}d</span>
+        <span class="lc-metric-value">${formatCurrency(poolYield)}</span>
       </div>
     </div>
-    <div class="modal-checks">
-      <div class="modal-check-item">
-        <svg class="modal-check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="4" width="13" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><circle cx="5.5" cy="8.2" r="1.6" stroke="currentColor" stroke-width="1.3"/><path d="M9 6.8h3M9 8.8h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        <span class="modal-check-text">KYB Completed</span>
-      </div>
-      <div class="modal-check-item">
-        <svg class="modal-check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 2.5h6.5l3 3V14a.5.5 0 01-.5.5H3.5A.5.5 0 013 14V3a.5.5 0 01.5-.5z" stroke="currentColor" stroke-width="1.4"/><path d="M10 2.5v3H13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 9.5l1.5 1.5 3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="modal-check-text">Invoice Verified</span>
-      </div>
-      <div class="modal-check-item">
-        <svg class="modal-check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.5 14h13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 2.5L3.5 5.5V14M8 2.5L12.5 5.5V14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="6.5" y="10" width="3" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/></svg>
-        <span class="modal-check-text">Obligor Confirmed</span>
-      </div>
-      <div class="modal-check-item">
-        <svg class="modal-check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5L2.5 4v3.5C2.5 11 5 13.5 8 14.5c3-1 5.5-3.5 5.5-7V4L8 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5.5 8l1.8 1.8L10.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span class="modal-check-text">Bank Account Verified</span>
-      </div>
+    <div class="lc-risk-block">
+      ${renderRiskMeter(meta.risk)}
+      ${meta.riskNote ? `<p class="lc-risk-note">${meta.riskNote}</p>` : ''}
     </div>`;
   }
 
