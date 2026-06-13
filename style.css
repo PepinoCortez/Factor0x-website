@@ -4548,8 +4548,8 @@ footer {
   color: rgba(5,5,5,0.66);
 }
 .modal-card-photo .modal-summary {
-  width: fit-content;
-  max-width: 540px;
+  width: 100%;
+  max-width: none;
   padding: 16px 18px;
   border: 1px solid rgba(255,255,255,0.16);
   border-radius: 18px;
