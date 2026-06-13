@@ -1565,6 +1565,24 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       <span class="lc-metric-label">Risk level</span>
       ${renderRiskMeter(meta.risk)}
       ${meta.riskNote ? `<p class="lc-risk-note">${meta.riskNote}</p>` : ''}
+      <div class="modal-checks">
+        <div class="modal-check-item">
+          <svg class="modal-check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="4" width="13" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><circle cx="5.5" cy="8.2" r="1.6" stroke="currentColor" stroke-width="1.3"/><path d="M9 6.8h3M9 8.8h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <span class="modal-check-text">KYB Completed</span>
+        </div>
+        <div class="modal-check-item">
+          <svg class="modal-check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 2.5h6.5l3 3V14a.5.5 0 01-.5.5H3.5A.5.5 0 013 14V3a.5.5 0 01.5-.5z" stroke="currentColor" stroke-width="1.4"/><path d="M10 2.5v3H13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 9.5l1.5 1.5 3.5-3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="modal-check-text">Invoice Verified</span>
+        </div>
+        <div class="modal-check-item">
+          <svg class="modal-check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.5 14h13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M8 2.5L3.5 5.5V14M8 2.5L12.5 5.5V14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="6.5" y="10" width="3" height="4" rx=".5" stroke="currentColor" stroke-width="1.3"/></svg>
+          <span class="modal-check-text">Obligor Confirmed</span>
+        </div>
+        <div class="modal-check-item">
+          <svg class="modal-check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5L2.5 4v3.5C2.5 11 5 13.5 8 14.5c3-1 5.5-3.5 5.5-7V4L8 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5.5 8l1.8 1.8L10.5 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="modal-check-text">Bank Account Verified</span>
+        </div>
+      </div>
     </div>`;
   }
 
