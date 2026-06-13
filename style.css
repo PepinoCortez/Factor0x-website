@@ -4982,14 +4982,20 @@ footer {
   font-weight: 600;
   color: var(--black);
   background: transparent;
-  -moz-appearance: textfield;
 }
-.deal-calc-input::-webkit-outer-spin-button,
-.deal-calc-input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .deal-calc-input:focus { outline: none; box-shadow: none; }
 .deal-calc-input-wrap:focus-within {
   border-color: rgba(5,5,5,0.30);
   box-shadow: 0 0 0 3px rgba(5,5,5,0.07);
+}
+.deal-calc-hint {
+  display: block;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  margin-top: -2px;
 }
 .deal-calc-slider {
   width: 100%;
@@ -5025,6 +5031,22 @@ footer {
   font-size: 13px;
   font-weight: 600;
   text-align: right;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  justify-content: flex-end;
+}
+.calc-return-pct {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #A87C2F;
+}
+.calc-return-apr {
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text3);
 }
 
 .fact-row:nth-last-child(-n + 2) .fact-value {

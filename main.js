@@ -1569,19 +1569,19 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       <span class="deal-calc-header">Your investment</span>
       <div class="deal-calc-input-wrap">
         <span class="deal-calc-prefix" aria-hidden="true">$</span>
-        <input type="number" id="calcAmount" class="deal-calc-input"
-          min="${minInvest}" max="${maxInvest}" step="100" value="${minInvest}"
+        <input type="text" inputmode="numeric" id="calcAmount" class="deal-calc-input"
           aria-label="Investment amount in USD">
       </div>
       <input type="range" id="calcSlider" class="deal-calc-slider"
         min="${minInvest}" max="${maxInvest}" step="100" value="${minInvest}"
         aria-label="Adjust investment amount">
+      <span class="deal-calc-hint">Available: ${formatCurrency(maxInvest)} · Min: ${formatCurrency(minInvest)}</span>
       <div class="deal-calc-outputs">
         <div class="deal-calc-row">
           <span class="deal-calc-row-label">Projected profit · ${dueDays}d</span>
           <span class="deal-calc-row-value" id="calcProfit">—</span>
         </div>
-        <div class="deal-calc-row">
+        <div class="deal-calc-row deal-calc-row-return">
           <span class="deal-calc-row-label">Return · ${dueDays}d</span>
           <span class="deal-calc-row-value" id="calcReturn">—</span>
         </div>
@@ -1617,19 +1617,40 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     function clamp(val) {
       return Math.max(minInvest, Math.min(maxInvest, Math.round(val / 100) * 100));
     }
+    function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
+
     function update(rawVal) {
       const val = clamp(isNaN(rawVal) || rawVal <= 0 ? minInvest : rawVal);
-      inputEl.value  = val;
+      inputEl.value  = fmt(val);
       sliderEl.value = val;
       if (profitEl)  profitEl.textContent  = formatCurrency(val * termRatio);
-      if (returnEl)  returnEl.textContent  = `+${termPct}% · ${meta.apr} APR`;
+      if (returnEl)  returnEl.innerHTML    = `<strong class="calc-return-pct">+${termPct}%</strong><span class="calc-return-apr">${meta.apr} APR</span>`;
       if (receiveEl) receiveEl.textContent = `${formatCurrency(val + val * termRatio)}${meta.dueDate ? ` · ${meta.dueDate}` : ''}`;
-      if (ctaBtn)    ctaBtn.textContent    = `Contribute ${formatCurrency(val)}`;
+      if (ctaBtn)    ctaBtn.textContent    = `Contribute $${fmt(val)}`;
+    }
+
+    function rawFromInput() {
+      return parseFloat(inputEl.value.replace(/,/g, '')) || 0;
     }
 
     update(minInvest);
-    inputEl.addEventListener('input',  () => update(parseFloat(inputEl.value)));
-    inputEl.addEventListener('change', () => update(parseFloat(inputEl.value)));
+
+    inputEl.addEventListener('focus', () => {
+      inputEl.value = String(clamp(rawFromInput() || minInvest));
+      inputEl.select();
+    });
+    inputEl.addEventListener('blur',  () => update(rawFromInput()));
+    inputEl.addEventListener('input', () => {
+      const raw = parseFloat(inputEl.value.replace(/,/g, ''));
+      if (!isNaN(raw)) {
+        sliderEl.value = clamp(raw);
+        const val = clamp(raw);
+        if (profitEl)  profitEl.textContent  = formatCurrency(val * termRatio);
+        if (returnEl)  returnEl.innerHTML    = `<strong class="calc-return-pct">+${termPct}%</strong><span class="calc-return-apr">${meta.apr} APR</span>`;
+        if (receiveEl) receiveEl.textContent = `${formatCurrency(val + val * termRatio)}${meta.dueDate ? ` · ${meta.dueDate}` : ''}`;
+        if (ctaBtn)    ctaBtn.textContent    = `Contribute $${fmt(val)}`;
+      }
+    });
     sliderEl.addEventListener('input', () => update(parseFloat(sliderEl.value)));
   }
 
