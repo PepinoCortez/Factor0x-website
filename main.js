@@ -1564,7 +1564,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     <div class="lc-risk-block">
       <span class="lc-metric-label">Risk level</span>
       ${renderRiskMeter(meta.risk)}
-      ${meta.riskNote ? `<p class="lc-risk-note">${meta.riskNote}</p>` : ''}
       <div class="modal-checks">
         <div class="modal-check-item">
           <svg class="modal-check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.5" y="4" width="13" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><circle cx="5.5" cy="8.2" r="1.6" stroke="currentColor" stroke-width="1.3"/><path d="M9 6.8h3M9 8.8h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
