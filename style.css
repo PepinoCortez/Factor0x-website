@@ -4858,7 +4858,10 @@ footer {
   height: 8px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(5,5,5,0.08);
+  background: rgba(5,5,5,0.10);
+}
+.modal-card-photo .modal-progress {
+  background: rgba(255,255,255,0.20);
 }
 .modal-progress span {
   display: block;
@@ -4956,13 +4959,16 @@ footer {
 }
 .deal-calc-top-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
-.deal-calc-top-row .deal-calc-input-wrap {
+.deal-calc-input-col {
   width: 48%;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 .deal-calc-header {
   color: var(--text3);

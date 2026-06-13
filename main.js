@@ -1574,16 +1574,18 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     return `<div class="deal-calc" id="dealCalc">
       <div class="deal-calc-top-row">
         <span class="deal-calc-header">Your investment</span>
-        <div class="deal-calc-input-wrap">
-          <span class="deal-calc-prefix" aria-hidden="true">$</span>
-          <input type="text" inputmode="numeric" id="calcAmount" class="deal-calc-input"
-            aria-label="Investment amount in USD">
+        <div class="deal-calc-input-col">
+          <div class="deal-calc-input-wrap">
+            <span class="deal-calc-prefix" aria-hidden="true">$</span>
+            <input type="text" inputmode="numeric" id="calcAmount" class="deal-calc-input"
+              aria-label="Investment amount in USD">
+          </div>
+          <input type="range" id="calcSlider" class="deal-calc-slider"
+            min="${minInvest}" max="${maxInvest}" step="100" value="${minInvest}"
+            aria-label="Adjust investment amount">
+          <span class="deal-calc-hint">Available: ${formatCurrency(maxInvest)} · Min: ${formatCurrency(minInvest)}</span>
         </div>
       </div>
-      <input type="range" id="calcSlider" class="deal-calc-slider"
-        min="${minInvest}" max="${maxInvest}" step="100" value="${minInvest}"
-        aria-label="Adjust investment amount">
-      <span class="deal-calc-hint">Available: ${formatCurrency(maxInvest)} · Min: ${formatCurrency(minInvest)}</span>
       <div class="deal-calc-outputs">
         <div class="deal-calc-row">
           <span class="deal-calc-row-label">Projected profit · ${dueDays}d</span>
