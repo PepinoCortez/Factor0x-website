@@ -4803,19 +4803,38 @@ footer {
 }
 .risk-meter {
   display: inline-flex;
-  gap: 10px;
+  gap: 4px;
   align-items: center;
 }
 .risk-seg {
-  color: rgba(5,5,5,0.22);
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(5,5,5,0.25);
   font-family: 'Manrope', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
   white-space: nowrap;
 }
-.risk-seg.risk-low.active  { color: rgb(21,128,61);  font-weight: 700; }
-.risk-seg.risk-med.active  { color: #7A5C00;         font-weight: 700; }
-.risk-seg.risk-high.active { color: rgb(185,28,28);  font-weight: 700; }
+.risk-seg.active {
+  font-weight: 700;
+}
+.risk-seg.active::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+  margin-bottom: 1px;
+}
+.risk-seg.risk-low.active  { background: #E6F5EE; color: #0E7A52; }
+.risk-seg.risk-med.active  { background: #FCEFD8; color: #B45309; }
+.risk-seg.risk-high.active { background: #FBE7E5; color: #C0352B; }
+.risk-seg.risk-low.active::before  { background: #16A34A; }
+.risk-seg.risk-med.active::before  { background: #F59E0B; }
+.risk-seg.risk-high.active::before { background: #E04438; }
 .modal-funding {
   display: grid;
   gap: 6px;
