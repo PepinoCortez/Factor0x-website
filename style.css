@@ -4672,7 +4672,7 @@ footer {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(360px, 1fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 1fr);
   gap: 34px;
 }
 .modal-summary-head {
