@@ -1436,7 +1436,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         ['Sector', 'Trade Logistics'],
         ['Risk Level', 'Low Risk'],
         ['Jurisdiction', 'Dubai, UAE'],
-        ['Invoice Amount', '$420,000'],
+        ['Invoice Amount', '$420 000'],
         ['Due Date', '2026/07/18'],
         ['APR', '6.2% annual']
       ]
@@ -1461,7 +1461,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         ['Sector', 'Electronics'],
         ['Risk Level', 'Medium Risk'],
         ['Jurisdiction', 'Singapore'],
-        ['Invoice Amount', '$315,000'],
+        ['Invoice Amount', '$315 000'],
         ['Due Date', '2026/06/30'],
         ['APR', '9.4% annual']
       ]
@@ -1486,7 +1486,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         ['Sector', 'SaaS Contract'],
         ['Risk Level', 'Low Risk'],
         ['Jurisdiction', 'UAE Free Zone'],
-        ['Invoice Amount', '$250,000'],
+        ['Invoice Amount', '$250 000'],
         ['Due Date', '2026/06/14'],
         ['APR', '5.4% annual']
       ]
@@ -1605,9 +1605,10 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       title.textContent = details.name;
       description.textContent = details.description;
       facts.innerHTML = visibleFacts.map(([label, value]) => {
+        const safeValue = value.replace(/(\$\d+),(\d{3})/g, '$1 $2');
         const valueHtml = label === 'Risk Level'
           ? `<div style="justify-self:end">${renderRiskMeter(value)}</div>`
-          : `<div class="fact-value">${value}</div>`;
+          : `<div class="fact-value">${safeValue}</div>`;
         return `<div class="fact-row"><div class="fact-label">${label}</div>${valueHtml}</div>`;
       }).join('') + renderInvestmentPanel(investment);
 
