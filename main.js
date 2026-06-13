@@ -1427,6 +1427,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         dueDate: 'Jul 18, 2026',
         fill: '64.0%',
         risk: 'Low Risk',
+        contributors: 47,
         minContribution: '$1,000'
       },
       facts: [
@@ -1451,6 +1452,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         dueDate: 'Jun 30, 2026',
         fill: '38.5%',
         risk: 'Medium Risk',
+        contributors: 22,
         minContribution: '$500'
       },
       facts: [
@@ -1475,6 +1477,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         dueDate: 'Jun 14, 2026',
         fill: '81.0%',
         risk: 'Low Risk',
+        contributors: 83,
         minContribution: '$250'
       },
       facts: [
@@ -1495,7 +1498,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   }
 
   function formatCurrency(value) {
-    return `$${Math.round(value).toLocaleString('en-US')}`;
+    return '$' + Math.round(value).toLocaleString('en-US').replace(/,/g, ' ');
   }
 
   function normalizeMoney(value) {
@@ -1512,8 +1515,19 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       fill,
       risk: details.investment?.risk || row?.dataset.risk || 'Risk pending',
       minContribution: details.investment?.minContribution || row?.dataset.minContribution || '$100',
-      dueDate: details.investment?.dueDate || ''
+      dueDate: details.investment?.dueDate || '',
+      contributors: details.investment?.contributors || null
     };
+  }
+
+  function renderRiskMeter(riskValue) {
+    const level = riskValue.toLowerCase().includes('medium') ? 'medium'
+      : riskValue.toLowerCase().includes('high') ? 'high' : 'low';
+    return `<div class="risk-meter">
+      <div class="risk-seg risk-low${level === 'low' ? ' active' : ''}">Low</div>
+      <div class="risk-seg risk-med${level === 'medium' ? ' active' : ''}">Med</div>
+      <div class="risk-seg risk-high${level === 'high' ? ' active' : ''}">High</div>
+    </div>`;
   }
 
   function renderInvestmentPanel(meta) {
@@ -1524,7 +1538,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     const raised = amount * fillPercent / 100;
     const remaining = Math.max(amount - raised, 0);
     const expectedYield = amount * (apr / 100) * (dueDays / 365);
-    const riskClass = meta.risk.toLowerCase().includes('medium') ? 'medium' : 'low';
 
     return `
       <div class="modal-investment-panel">
@@ -1537,7 +1550,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         <div class="modal-funding">
           <div class="modal-funding-copy">
             <span>Funded ${fillPercent.toFixed(1)}%</span>
-            <strong>${formatCurrency(raised)} raised · ${formatCurrency(remaining)} left</strong>
+            <strong>${formatCurrency(raised)} raised${meta.contributors ? ` · ${meta.contributors} contributors` : ''}</strong>
           </div>
           <div class="modal-progress" aria-hidden="true"><span style="width:${fillPercent}%"></span></div>
         </div>
@@ -1593,7 +1606,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       description.textContent = details.description;
       facts.innerHTML = visibleFacts.map(([label, value]) => {
         const valueHtml = label === 'Risk Level'
-          ? `<div style="justify-self:end"><div class="modal-risk ${value.toLowerCase().includes('medium') ? 'medium' : 'low'}">${value}</div></div>`
+          ? `<div style="justify-self:end">${renderRiskMeter(value)}</div>`
           : `<div class="fact-value">${value}</div>`;
         return `<div class="fact-row"><div class="fact-label">${label}</div>${valueHtml}</div>`;
       }).join('') + renderInvestmentPanel(investment);
