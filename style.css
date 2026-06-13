@@ -4728,9 +4728,9 @@ footer {
   color: var(--text3);
 }
 .lc-progress-block {
-  margin-top: 18px;
+  margin-top: 24px;
   display: grid;
-  gap: 7px;
+  gap: 8px;
 }
 .lc-progress-meta {
   display: flex;
@@ -4739,43 +4739,43 @@ footer {
 }
 .lc-progress-stat {
   font-family: 'DM Mono', monospace;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
   color: var(--text3);
 }
 .lc-progress-amounts {
   font-family: 'Manrope', sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text3);
 }
 .lc-metrics-row {
-  margin-top: 18px;
+  margin-top: 24px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px 16px;
+  gap: 14px 16px;
 }
-.lc-metric-cell { display: grid; gap: 4px; }
+.lc-metric-cell { display: grid; gap: 5px; }
 .lc-metric-label {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--text3);
 }
 .lc-metric-value {
   font-family: 'Manrope', sans-serif;
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 600;
   color: var(--black);
 }
 .lc-risk-block {
-  margin-top: 18px;
+  margin-top: 26px;
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 .lc-risk-note {
   font-family: 'Manrope', sans-serif;
@@ -5034,31 +5034,38 @@ footer {
   text-transform: uppercase;
   color: var(--text3);
 }
-.rc-input-row {
+.rc-input-group {
   display: flex;
   align-items: stretch;
-  gap: 8px;
+  border: 1px solid rgba(5,5,5,0.14);
+  border-radius: 10px;
+  background: var(--white);
+  overflow: hidden;
+}
+.rc-input-group .deal-calc-prefix {
+  border-right: 1px solid rgba(5,5,5,0.08);
+  background: rgba(5,5,5,0.02);
 }
 .rc-max-btn {
   flex-shrink: 0;
-  height: 40px;
-  padding: 0 16px;
-  border: 1.5px solid #D7B45E;
-  border-radius: 999px;
+  padding: 0 14px;
+  border: none;
+  border-left: 1px solid rgba(5,5,5,0.08);
+  border-radius: 0;
   background: transparent;
   color: #A87C2F;
   font-family: 'Manrope', sans-serif;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  transition: background 0.18s ease, color 0.18s ease;
   white-space: nowrap;
 }
 .rc-max-btn.active,
 .rc-max-btn:hover {
   background: linear-gradient(135deg, #D7B45E 0%, #FFE59B 48%, #A87C2F 100%);
   color: #111;
-  border-color: transparent;
+  border-left-color: transparent;
 }
 .rc-hint {
   display: block;
@@ -5164,23 +5171,25 @@ footer {
 .modal-card-photo .modal-metric-label { color: rgba(255,255,255,0.52); }
 .modal-card-photo .modal-metric-value { color: rgba(255,255,255,0.92); }
 .modal-checks {
-  margin-top: 14px;
+  margin-top: 6px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px 10px;
+  gap: 12px 10px;
 }
 .modal-check-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
 }
 .modal-check-icon {
   flex-shrink: 0;
   color: #16A34A;
+  width: 18px;
+  height: 18px;
 }
 .modal-check-text {
   font-family: 'Manrope', sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   color: rgba(5,5,5,0.65);
 }

@@ -1610,12 +1610,10 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       </div>
       <div class="rc-calc">
         <span class="rc-calc-label">Your investment</span>
-        <div class="rc-input-row">
-          <div class="deal-calc-input-wrap" style="flex:1">
-            <span class="deal-calc-prefix" aria-hidden="true">$</span>
-            <input type="text" inputmode="numeric" id="calcAmount" class="deal-calc-input"
-              aria-label="Investment amount in USD">
-          </div>
+        <div class="rc-input-group">
+          <span class="deal-calc-prefix" aria-hidden="true">$</span>
+          <input type="text" inputmode="numeric" id="calcAmount" class="deal-calc-input"
+            aria-label="Investment amount in USD">
           <button type="button" id="calcMaxBtn" class="rc-max-btn">Max</button>
         </div>
         <input type="range" id="calcSlider" class="deal-calc-slider"
