@@ -206,7 +206,8 @@ em { font-style: normal; color: var(--accent); }
   visibility: visible;
   transform: translateY(0);
 }
-.language-menu button {
+.language-menu button,
+.language-menu .language-link {
   display: flex;
   align-items: center;
   border: none;
@@ -219,9 +220,15 @@ em { font-style: normal; color: var(--accent); }
   font-weight: 700;
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
 }
-.language-menu button:hover {
+.language-menu button:hover,
+.language-menu .language-link:hover {
   background: rgba(5,5,5,0.05);
+}
+.language-menu .language-link.is-active {
+  background: rgba(5,5,5,0.07);
+  color: var(--black);
 }
 .network-select { position: relative; }
 .network-trigger {
