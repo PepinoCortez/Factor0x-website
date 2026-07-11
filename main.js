@@ -951,19 +951,13 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   const moreInvoices = document.getElementById('moreInvoices');
   const languageSelect = document.querySelector('.language-select');
   const languageTrigger = document.querySelector('.language-trigger');
-  const languageOptions = document.querySelectorAll('.language-menu button');
   const networkSelect = document.querySelector('.network-select');
   const networkTrigger = document.querySelector('.network-trigger');
   const networkTriggerIcon = document.querySelector('.network-trigger .network-icon');
   const networkOptions = document.querySelectorAll('.network-menu button');
-  const supportedLangs = ['en', 'ru'];
-  const urlLang = new URLSearchParams(window.location.search).get('lang');
-  const storedLang = localStorage.getItem('factor0xLang');
-  let currentLang = supportedLangs.includes(urlLang)
-    ? urlLang
-    : supportedLangs.includes(storedLang)
-      ? storedLang
-      : 'en';
+  const pageLang = (document.documentElement.lang || 'en').toLowerCase().slice(0, 2);
+  const currentLang = pageLang === 'ru' ? 'ru' : 'en';
+  localStorage.setItem('factor0xLang', currentLang);
 
   if (walletButton) {
     walletButton.addEventListener('click', () => {
@@ -1280,223 +1274,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   }
 
   if (languageSelect && languageTrigger) {
-    const ruTextNodes = new WeakMap();
-    const ruAttributeValues = new WeakMap();
-    const translations = {
-      text: {
-        'О нас': 'About',
-        'Контакты': 'Contacts',
-        'TVL —капитал, размещённый в активных invoice financing deals.': 'TVL is capital allocated to active invoice financing deals.',
-        'Подключить кошелек': 'Connect wallet',
-        'Капитал для бизнеса': 'Capital for business',
-        'Доход для инвестора': 'Yield for investors',
-        'Платформа, где проверенные инвойсы находят ликвидность': 'A platform where verified invoices find liquidity',
-        'Получить финансирование': 'Get financing',
-        'Начать инвестировать': 'Start investing',
-        'Заявка': 'Apply',
-        'Подробнее': 'Flow',
-        'Инвестировать': 'Earn',
-        'Краткосрочное финансировании реального бизнеса.': 'Short-term financing for real businesses.',
-        'Проверенные': 'Finance verified',
-        'B2B инвойсы': 'B2B invoices',
-        'ТОП сделки': 'Top offers',
-        'Смотреть еще': 'View More',
-        'Скрыть': 'View less',
-        'Список предложений': 'Offer list',
-        'ОАЭ · Дубай': 'UAE · Dubai',
-        'Крипто-ликвидность': 'Crypto Liquidity',
-        'Активы реального сектора': 'Real World Assets',
-        'Финансирование SME': 'SME Financing',
-        'Финансирование инвойсов': 'Invoice Financing',
-        'Трансграничный B2B': 'Cross-border B2B',
-        'Как работает модель': 'How the model works',
-        'Factor0x помогает бизнесу получить оборотный капитал, а инвесторам — заработать на проверенных B2B-инвойсах.': 'Factor0x helps businesses access working capital and investors earn from verified B2B invoices.',
-        'Бизнес': 'Business',
-        'Получает финансирование': 'Receives financing',
-        'Передаёт подтверждённый B2B-инвойс и получает оборотный капитал до оплаты клиента.': 'Submits a confirmed B2B invoice and receives working capital before the customer pays.',
-        'Структурирует сделку': 'Structures the deal',
-        'Связывает бизнес, капитал и процесс выплат в единую управляемую инфраструктуру.': 'Connects business, capital, and the repayment process in one managed infrastructure.',
-        'Инвесторы': 'Investors',
-        'Предоставляют ликвидность': 'Provide liquidity',
-        'Финансируют реальные торговые сделки и получают доход после их погашения.': 'Finance real trade deals and earn after they are repaid.',
-        'Инвойс': 'Invoice',
-        'Проверка': 'Verification',
-        'Финансирование': 'Financing',
-        'Погашение': 'Repayment',
-        'Доход': 'Yield',
-        'Каждый этап фиксируется в системе и отображается инвестору в статусе сделки.': 'Every stage is recorded in the system and shown to investors in the deal status.',
-        'Factor0x работает на пересечении trade finance,': 'Factor0x operates at the intersection of trade finance,',
-        'Web3-ликвидности и реального B2B-сектора.': 'Web3 liquidity, and the real B2B sector.',
-        'Мы начинаем с ОАЭ — рынка с сильной торговлей, логистикой и спросом на оборотный капитал.': 'We start with the UAE, a market with strong trade, logistics, and demand for working capital.',
-        'Наша цель — дать бизнесу быстрый капитал, а инвестору — понятный способ заработка на проверенных B2B-инвойсах.': 'Our goal is to give businesses fast capital and investors a clear way to earn from verified B2B invoices.',
-        'Прозрачность сделок': 'Deal transparency',
-        'Проверка инвойса': 'Invoice Verification',
-        'Проверяем инвойс, документы и факт поставки.': 'We verify the invoice, documents, and delivery evidence.',
-        'Проверка компании и плательщика': 'KYB & Debtor Check',
-        'Проверяем бизнес, должника и юридические риски.': 'We check the business, debtor, and legal risks.',
-        'Степень риска': 'Risk Tier',
-        'Оцениваем срок, сумму, отрасль и качество сделки.': 'We assess term, amount, sector, and deal quality.',
-        'On-chain прослеживаемость': 'On-chain Tracking',
-        'Фиксируем статус сделки, repayment и распределения.': 'We record deal status, repayment, and distributions.',
-        'Реальный доход': 'Real Yield',
-        'Реальные активы': 'Real assets',
-        'Пулы связаны с реальными бизнес-сделками.': 'Pools are linked to real business deals.',
-        'Понятные условия': 'Clear terms',
-        'Сумма, срок, APR и контрагент видны до участия.': 'Amount, APR, term, and counterparty upfront.',
-        'Без токеномики': 'No tokenomics',
-        'Доходность связана с инвойсом, не с токеном.': 'Yield is linked to the invoice, not a token.',
-        'Безопасно': 'Secure',
-        'Регулярный аудит смарт-контрактов.': 'Regular smart contract audits.',
-        'Что такое Factor0x?': 'What is Factor0x?',
-        'Factor0x — это платформа для финансирования проверенных B2B-инвойсов. Бизнес получает оборотный капитал до оплаты клиента, а инвесторы финансируют реальные сделки из B2B-сектора.': 'Factor0x is a platform for financing verified B2B invoices. Businesses receive working capital before customer payment, while investors finance real B2B-sector deals.',
-        'Что финансируют инвесторы?': 'What do investors finance?',
-        'Инвесторы финансируют проверенные B2B-инвойсы. Каждая сделка имеет сумму, срок, степень риска, статус проверки и ожидаемый процесс погашения.': 'Investors finance verified B2B invoices. Each deal has an amount, term, risk tier, verification status, and expected repayment process.',
-        'Как инвестор получает доход?': 'How does an investor earn?',
-        'Доход формируется после погашения инвойса должником. Когда клиент бизнеса оплачивает инвойс, средства распределяются между участниками сделки согласно условиям.': 'Yield is generated after the debtor repays the invoice. When the business customer pays the invoice, funds are distributed to deal participants according to the terms.',
-        'Доходность гарантирована?': 'Is yield guaranteed?',
-        'Нет. Доходность зависит от погашения инвойса, качества должника, условий сделки и возможных задержек. Factor0x показывает ориентировочную годовую доходность, но не гарантирует доход.': 'No. Yield depends on invoice repayment, debtor quality, deal terms, and possible delays. Factor0x shows target APR but does not guarantee returns.',
-        'Что происходит, если инвойс не оплатят вовремя?': 'What happens if an invoice is not paid on time?',
-        'Сделка получает статус «просрочено». Инвесторы видят обновления по статусу погашения, а Factor0x и партнёры работают по предусмотренному процессу взыскания / урегулирования.': 'The deal receives overdue status. Investors see repayment updates, while Factor0x and partners follow the defined collection or resolution process.',
-        'Какие инвойсы подходят?': 'Which invoices are eligible?',
-        'На первом этапе Factor0x фокусируется на B2B-инвойсах компаний из ОАЭ, связанных с торговлей, логистикой, дистрибуцией, финансированием цепочек поставок и B2B-услугами.': 'At the first stage, Factor0x focuses on B2B invoices from UAE companies in trade, logistics, distribution, supply chain finance, and B2B services.',
-        'Зачем нужна проверка KYB / KYC?': 'Why are KYB / KYC checks needed?',
-        'KYB / KYC нужны для проверки бизнеса, инвесторов, источника средств, санкционных рисков и соответствия требованиям комплаенса.': 'KYB / KYC checks verify businesses, investors, source of funds, sanctions risks, and compliance requirements.',
-        'Нужен ли бизнесу криптокошелёк?': 'Does a business need a crypto wallet?',
-        'Нет. Бизнесу не обязательно использовать криптокошелёк. Для бизнеса продукт должен работать как понятное финансирование под инвойс.': 'No. A business does not have to use a crypto wallet. For businesses, the product should work as straightforward invoice financing.',
-        'В чём роль Web3?': 'What is the role of Web3?',
-        'Web3 используется для прозрачности, учёта участия инвесторов, статуса сделки и on-chain прослеживания. Factor0x не строится вокруг спекулятивного токена.': 'Web3 is used for transparency, investor participation records, deal status, and on-chain tracking. Factor0x is not built around a speculative token.',
-        'В какой валюте происходит финансирование?': 'Which currency is used for financing?',
-        'Инвесторы могут участвовать через USDT / USDC или фиат, если это доступно для конкретной сделки и соответствует требованиям комплаенс-контура.': 'Investors may participate through USDT / USDC or fiat when available for a specific deal and compliant with requirements.',
-        'Команда проекта': 'Project team',
-        'Итан Уокер': 'Ethan Walker',
-        'Генеральный директор': 'CEO',
-        'Стратегия, партнёрства, сделки': 'Strategy, partnerships, deals',
-        'Дэниел Чен': 'Daniel Chen',
-        'Главный архитектор': 'Chief Architect',
-        'Архитектура платформы, смарт-контракты, безопасность': 'Platform architecture, smart contracts, security',
-        'София Лоран': 'Sophia Laurent',
-        'Главный юрист': 'Chief Legal Officer',
-        'Юридическая структура, комплаенс, регуляция': 'Legal structure, compliance, regulation',
-        'Маркус Беннетт': 'Marcus Bennett',
-        'Риск-директор': 'Risk Director',
-        'Оценка сделок, присвоение уровней риска, анализ качества плательщиков.': 'Deal assessment, risk tiering, payer quality analysis.',
-        'Адриан Моро': 'Adrian Moreau',
-        'Стратегический советник': 'Strategic Advisor',
-        'Привлечение капитала, партнёрства, выход на новые рынки': 'Capital raising, partnerships, expansion into new markets',
-        'Майя Рейнольдс': 'Maya Reynolds',
-        'Партнер по бизнес-развитию': 'BD Partner',
-        'Развитие партнерств, бизнес-связей': 'Partnership development, business relations',
-        'Модель двух хабов': 'Dual-hub model',
-        'Дубай': 'Dubai',
-        'Операционный хаб': 'Operational hub',
-        'Благоприятная юрисдикция для цифровых активов': 'Crypto-friendly jurisdiction for digital assets',
-        'Первые инвойсы от SME из ОАЭ и плательщиков из GCC': 'First invoices from UAE-based SMEs and GCC obligors',
-        'Доступ к капиталу стран Персидского залива: family offices и crypto investors': 'Access to Gulf capital: family offices and crypto investors',
-        'Поток сделок из логистики и торговли': 'Logistics and trade deal flow',
-        'Регуляторный маршрут через UAE / VARA / ADGM / DIFC': 'UAE / VARA / ADGM / DIFC regulatory pathway',
-        'Сингапур': 'Singapore',
-        'Центр структурирования и комплаенса': 'Structuring & Compliance hub',
-        'Слой для структурирования, банковской инфраструктуры и комплаенса в SEA': 'Structuring / banking / compliance layer for SEA',
-        'Фокус на рынки: Малайзия, Индонезия, Вьетнам, Индия': 'Focus markets: Malaysia, Indonesia, Vietnam, India',
-        'Институциональная надёжность для банков и партнёров': 'Institutional credibility for banks and partners',
-        'Масштабирование операций': 'Scaling operations',
-        'Онбординг институционального капитала': 'Institutional capital onboarding',
-        'СКОРО': 'COMING SOON',
-        'Продукт': 'Product',
-        'Как работает': 'How it works',
-        'Хабы': 'Hubs',
-        'Для бизнеса': 'For business',
-        'Инвесторам': 'Investors',
-        'Контакт': 'Contact'
-      },
-      attributes: {
-        'Выбрать язык': 'Select language',
-        'Выбрать сеть': 'Select network',
-        'Открыть меню': 'Open menu',
-        'Мобильная навигация': 'Mobile navigation',
-        'Открыть список инвойсов': 'Open invoice list',
-        'Что такое TVL': 'What is TVL',
-        'Позиция инвойса': 'Invoice position',
-        'Позиция этапа': 'Step position',
-        'Закрыть': 'Close',
-        'Реальный доход': 'Real Yield',
-        'Итан Уокер': 'Ethan Walker',
-        'Дэниел Чен': 'Daniel Chen',
-        'София Лоран': 'Sophia Laurent',
-        'Маркус Беннетт': 'Marcus Bennett',
-        'Адриан Моро': 'Adrian Moreau',
-        'Майя Рейнольдс': 'Maya Reynolds',
-        'Переверните телефон горизонтально': 'Rotate your phone to landscape',
-        'Таблица сделок лучше смотрится в альбомном режиме': 'The deals table fits better in landscape mode'
-      }
-    };
-
-    function translateNodeText(node, lang) {
-      if (!ruTextNodes.has(node)) ruTextNodes.set(node, node.nodeValue);
-      const original = ruTextNodes.get(node);
-      const trimmed = original.trim();
-      if (!trimmed) return;
-      const leading = original.match(/^\s*/)?.[0] || '';
-      const trailing = original.match(/\s*$/)?.[0] || '';
-      node.nodeValue = lang === 'en' && translations.text[trimmed]
-        ? `${leading}${translations.text[trimmed]}${trailing}`
-        : original;
-    }
-
-    function updateDocumentLinks(lang) {
-      document.querySelectorAll('[data-doc-link]').forEach(link => {
-        const docType = link.dataset.docLink;
-        const baseHref = docType === 'whitepaper' && lang === 'en'
-          ? 'whitepaper-en.html'
-          : docType === 'whitepaper'
-            ? 'whitepaper.html'
-            : docType === 'privacy' && lang === 'ru'
-              ? 'privacy-policy-ru.html'
-              : docType === 'privacy'
-                ? 'privacy-policy.html'
-                : docType === 'terms' && lang === 'ru'
-                  ? 'terms-of-service-ru.html'
-                  : docType === 'terms'
-                    ? 'terms-of-service.html'
-                    : link.getAttribute('href').split('?')[0];
-        const url = new URL(baseHref, window.location.href);
-        url.searchParams.set('lang', lang);
-        link.setAttribute('href', `${url.pathname.split('/').pop()}${url.search}`);
-      });
-    }
-
-    function setLanguage(lang) {
-      currentLang = lang;
-      localStorage.setItem('factor0xLang', lang);
-      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
-        acceptNode(node) {
-          const parent = node.parentElement;
-          if (!parent || ['SCRIPT', 'STYLE', 'SVG', 'PATH'].includes(parent.tagName)) {
-            return NodeFilter.FILTER_REJECT;
-          }
-          return node.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-        }
-      });
-
-      const nodes = [];
-      while (walker.nextNode()) nodes.push(walker.currentNode);
-      nodes.forEach(node => translateNodeText(node, lang));
-
-      document.querySelectorAll('[aria-label]').forEach(element => {
-        if (!ruAttributeValues.has(element)) {
-          ruAttributeValues.set(element, element.getAttribute('aria-label'));
-        }
-        const original = ruAttributeValues.get(element);
-        element.setAttribute('aria-label', lang === 'en' && translations.attributes[original]
-          ? translations.attributes[original]
-          : original);
-      });
-
-      document.documentElement.lang = supportedLangs.includes(lang) ? lang : 'ru';
-      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
-      updateDocumentLinks(lang);
-    }
-
     languageTrigger.addEventListener('click', event => {
       event.stopPropagation();
       networkSelect?.classList.remove('open');
@@ -1504,18 +1281,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       const isOpen = languageSelect.classList.toggle('open');
       languageTrigger.setAttribute('aria-expanded', String(isOpen));
     });
-
-    languageOptions.forEach(option => {
-      option.addEventListener('click', () => {
-        const lang = option.dataset.lang;
-        if (supportedLangs.includes(lang)) setLanguage(lang);
-        languageSelect.classList.remove('open');
-        languageTrigger.setAttribute('aria-expanded', 'false');
-      });
-    });
-
-    setLanguage(currentLang);
-    document.documentElement.classList.remove('lang-pending');
 
     document.addEventListener('click', () => {
       languageSelect.classList.remove('open');
