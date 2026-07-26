@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Factor0x — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=20260615-12">
+<style>
+  body.admin-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #050505;
+  }
+  .admin-page-card {
+    text-align: center;
+    padding: 60px 48px;
+  }
+  .admin-page-logo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: #fff;
+    margin-bottom: 28px;
+  }
+  .admin-page-logo span { color: rgba(255,255,255,0.4); }
+  .admin-page-kicker {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.48);
+    margin-bottom: 18px;
+  }
+  .admin-model-btn {
+    display: inline-block;
+    padding: 16px 36px;
+    border: none;
+    border-radius: 10px;
+    background: #fff;
+    color: #050505;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .admin-model-btn:hover { opacity: 0.85; }
+  .admin-back-link {
+    display: inline-block;
+    margin-top: 40px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    text-decoration: none;
+  }
+  .admin-back-link:hover { color: rgba(255,255,255,0.7); }
+</style>
+</head>
+<body class="admin-page">
+  <div class="admin-page-card">
+    <div class="admin-page-logo">Factor<span>0x</span></div>
+    <div class="admin-page-kicker">Admin</div>
+    <a href="financial-model/" class="admin-model-btn" id="financialModelBtn">Финансовая модель</a>
+    <br>
+    <a href="index.html" class="admin-back-link">← На сайт</a>
+  </div>
+</body>
+</html>

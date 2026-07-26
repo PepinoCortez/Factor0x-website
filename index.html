@@ -834,6 +834,7 @@
         <a href="privacy-policy.html" data-doc-link="privacy">Privacy Policy</a>
         <a href="terms-of-service.html" data-doc-link="terms">Terms of Service</a>
         <a href="whitepaper.html" data-doc-link="whitepaper">Whitepaper</a>
+        <a href="#" id="adminBtn">Admin</a>
       </div>
     </div>
     <div class="footer-links">
@@ -877,6 +878,24 @@
     <p class="footer-copy">© 2026 Factor0x. All rights reserved.</p>
   </div>
 </footer>
+
+<div class="admin-modal-backdrop" id="adminModal" aria-hidden="true">
+  <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
+    <button class="admin-modal-close" type="button" aria-label="Закрыть">×</button>
+    <div class="admin-modal-head">
+      <div class="admin-modal-kicker">Restricted</div>
+      <h2 id="adminModalTitle">Admin access</h2>
+    </div>
+    <form class="admin-form" id="adminForm" autocomplete="off">
+      <label>
+        <span>Пароль</span>
+        <input type="password" name="admin_password" id="adminPasswordInput" placeholder="••••••••" autocomplete="off" required>
+      </label>
+      <p class="admin-form-error" id="adminFormError">Неверный пароль</p>
+      <button type="submit" class="admin-form-submit">Войти</button>
+    </form>
+  </div>
+</div>
 
 <div class="modal-backdrop" id="detailsModal" aria-hidden="true">
   <div class="details-modal" role="dialog" aria-modal="true" aria-labelledby="modalCompanyName">

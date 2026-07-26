@@ -453,6 +453,54 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
     if (event.key === 'Escape' && applyModal?.classList.contains('open')) closeApplyModal();
   });
 
+  const ADMIN_PASSWORD = 'Dubai';
+  const adminBtn = document.getElementById('adminBtn');
+  const adminModal = document.getElementById('adminModal');
+  const adminModalClose = adminModal?.querySelector('.admin-modal-close');
+  const adminForm = document.getElementById('adminForm');
+  const adminPasswordInput = document.getElementById('adminPasswordInput');
+  const adminFormError = document.getElementById('adminFormError');
+
+  function openAdminModal() {
+    if (!adminModal) return;
+    adminModal.classList.add('open');
+    adminModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    adminFormError?.classList.remove('visible');
+    adminForm?.reset();
+    window.setTimeout(() => adminPasswordInput?.focus(), 100);
+  }
+
+  function closeAdminModal() {
+    if (!adminModal) return;
+    adminModal.classList.remove('open');
+    adminModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  adminBtn?.addEventListener('click', event => {
+    event.preventDefault();
+    openAdminModal();
+  });
+  adminModalClose?.addEventListener('click', closeAdminModal);
+  adminModal?.addEventListener('click', event => {
+    if (event.target === adminModal) closeAdminModal();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && adminModal?.classList.contains('open')) closeAdminModal();
+  });
+
+  adminForm?.addEventListener('submit', event => {
+    event.preventDefault();
+    if (adminPasswordInput.value === ADMIN_PASSWORD) {
+      window.location.href = 'admin.html';
+    } else {
+      adminFormError?.classList.add('visible');
+      adminPasswordInput.value = '';
+      adminPasswordInput.focus();
+    }
+  });
+
   function initApplyForm(applyForm) {
     applyForm.addEventListener('submit', event => {
       event.preventDefault();
