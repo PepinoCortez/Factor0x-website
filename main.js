@@ -1323,7 +1323,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'О нас': 'About',
         'Контакты': 'Contacts',
         'TVL —капитал, размещённый в активных invoice financing deals.': 'TVL is capital allocated to active invoice financing deals.',
-        'Личный кабинет': 'Dashboard',
+        'Личный кабинет': 'My Account',
         'Капитал для бизнеса': 'Capital for business',
         'Доход для инвестора': 'Yield for investors',
         'Платформа, где проверенные инвойсы находят ликвидность': 'A platform where verified invoices find liquidity',
