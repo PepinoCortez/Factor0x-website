@@ -992,7 +992,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 
 // ── WEB3 MARKETPLACE MICRO-INTERACTIONS ─────
 (function initMarketplaceActions() {
-  const walletButton = document.querySelector('.wallet-toggle');
   const contributionButtons = document.querySelectorAll('.invoice-actions button:first-child');
   const viewMoreButtons = document.querySelectorAll('.view-more-btn');
   const invoiceListLinks = document.querySelectorAll('[data-open-invoice-list]');
@@ -1012,17 +1011,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     : supportedLangs.includes(storedLang)
       ? storedLang
       : 'en';
-
-  if (walletButton) {
-    walletButton.addEventListener('click', () => {
-      const isConnected = walletButton.classList.toggle('connected');
-      walletButton.textContent = isConnected
-        ? '0xA4...19C2'
-        : currentLang === 'en'
-          ? 'Connect wallet'
-          : 'Подключить кошелек';
-    });
-  }
 
   contributionButtons.forEach(button => {
     button.addEventListener('click', () => {
@@ -1335,7 +1323,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'О нас': 'About',
         'Контакты': 'Contacts',
         'TVL —капитал, размещённый в активных invoice financing deals.': 'TVL is capital allocated to active invoice financing deals.',
-        'Подключить кошелек': 'Connect wallet',
+        'Личный кабинет': 'Dashboard',
         'Капитал для бизнеса': 'Capital for business',
         'Доход для инвестора': 'Yield for investors',
         'Платформа, где проверенные инвойсы находят ликвидность': 'A platform where verified invoices find liquidity',
