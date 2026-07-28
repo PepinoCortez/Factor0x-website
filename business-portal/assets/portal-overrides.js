@@ -301,6 +301,28 @@
     return node && node.parentElement === parent ? node : null;
   };
 
+  // The app's persistent left navigation rail (Обзор / Новая заявка / Мои
+  // сделки / Архив) — unlike `page`, this never unmounts across route
+  // changes, which is exactly why it has room to spare below its four
+  // links. Found by walking up from the "Новая заявка" link itself (no
+  // stable test-id to anchor on here) until an ancestor's text contains all
+  // four labels, so it doesn't depend on the rail's own markup/classes.
+  const GLOBAL_NAV_LABELS = ['Обзор', 'Новая заявка', 'Мои сделки', 'Архив'];
+
+  const findGlobalNavSidebar = () => {
+    const newAppLink = Array.from(document.querySelectorAll('a, button, [role="link"]')).find(
+      (el) => el.textContent.trim() === 'Новая заявка'
+    );
+    if (!newAppLink) return null;
+    let node = newAppLink.parentElement;
+    while (node && node !== document.body) {
+      const text = node.textContent || '';
+      if (GLOBAL_NAV_LABELS.every((label) => text.includes(label))) return node;
+      node = node.parentElement;
+    }
+    return null;
+  };
+
   // The MutationObserver driving run() watches childList/subtree, and
   // `el.textContent = x` always replaces child nodes (even when the text is
   // unchanged) — writing on every tick would retrigger the observer and spin
@@ -543,50 +565,54 @@
 
   // Splits the page into "Данные по инвойсу" (left) / "Документы" (right)
   // so the documents — what the visitor actually acts on — sit next to,
-  // not below, the fields they're meant to populate. Reparents the two
-  // native cards (found via the stable test-ids already used elsewhere in
-  // this file) into a new wrapper; per the DOM-surgery note above `form`,
-  // this is the same "move an existing, already-rendered node" trick
-  // groupNewAppDocuments already relies on, just one level up. Idempotent
-  // via the wrapper's own presence, same pattern as the rest of this file.
+  // not below, the fields they're meant to populate.
+  //
+  // Deliberately does NOT reparent the two native cards into a new wrapper
+  // (an earlier version did, wrapping them the same way groupNewAppDocuments
+  // wraps individual document rows) — that broke in production: React
+  // reconciles `form`'s own direct children by position, and unlike the doc
+  // rows (a keyed list, safe to relocate per the note above `form`), these
+  // cards are plain, unkeyed sections. Nesting two of them one level deeper
+  // left React unable to find its expected child at the top level, so it
+  // mounted a second, fresh copy there — duplicated headings/intro text.
+  // Marking the cards with classes and letting CSS Grid (on `form` itself,
+  // see portal-overrides.css) place them side by side keeps every node
+  // exactly where React put it — only classList changes, nothing reparented.
   const applyNewAppColumnsLayout = (form) => {
-    let columns = form.querySelector(':scope > .portal-newapp-columns');
-    if (!columns) {
-      const amountInput = form.querySelector('[data-testid="input-invoice-amount"]');
-      const invoiceBadge = form.querySelector('[data-testid="badge-doc-status-invoice"]');
-      const dataCard = amountInput && directChildOf(form, amountInput);
-      const docsCard = invoiceBadge && directChildOf(form, invoiceBadge);
-      if (!dataCard || !docsCard || dataCard === docsCard) return null;
-
-      columns = document.createElement('div');
-      columns.className = 'portal-newapp-columns';
-      form.insertBefore(columns, dataCard);
-      dataCard.classList.add('portal-newapp-data-card');
-      docsCard.classList.add('portal-newapp-docs-card');
-      columns.appendChild(dataCard);
-      columns.appendChild(docsCard);
-
-      // If the submit button lives in its own section (not nested in either
-      // card above), push that section after the columns so it reads as a
-      // final, page-wide step rather than trailing inside whichever card it
-      // originally sat in.
-      const submitBtn = form.querySelector('[data-testid="button-submit-application"]');
-      const submitSection = submitBtn && directChildOf(form, submitBtn);
-      if (submitSection && submitSection !== columns) {
-        form.appendChild(submitSection);
-      }
-
-      const docsHeading = Array.from(docsCard.querySelectorAll('*')).find(
-        (el) => el.children.length === 0 && el.textContent.trim() === 'Документы'
-      );
-      if (docsHeading && !docsCard.querySelector('.portal-newapp-docs-intro')) {
-        const intro = document.createElement('p');
-        intro.className = 'portal-newapp-docs-intro text-sm text-muted-foreground';
-        intro.textContent = 'Приложите пакет документов сразу при подаче — или догрузите позже, в карточке этой сделки.';
-        docsHeading.insertAdjacentElement('afterend', intro);
-      }
+    if (form.dataset.portalColumnsWired) {
+      return form.querySelector('.portal-newapp-data-card');
     }
-    return columns.querySelector('.portal-newapp-data-card');
+
+    const amountInput = form.querySelector('[data-testid="input-invoice-amount"]');
+    const invoiceBadge = form.querySelector('[data-testid="badge-doc-status-invoice"]');
+    const dataCard = amountInput && directChildOf(form, amountInput);
+    const docsCard = invoiceBadge && directChildOf(form, invoiceBadge);
+    if (!dataCard || !docsCard || dataCard === docsCard) return null;
+
+    form.dataset.portalColumnsWired = 'true';
+    dataCard.classList.add('portal-newapp-data-card');
+    docsCard.classList.add('portal-newapp-docs-card');
+
+    // If the submit button lives in its own section (not nested in either
+    // card above), mark it too so it spans full width below both columns —
+    // via CSS grid-column, same as above: no move, just a class.
+    const submitBtn = form.querySelector('[data-testid="button-submit-application"]');
+    const submitSection = submitBtn && directChildOf(form, submitBtn);
+    if (submitSection && submitSection !== dataCard && submitSection !== docsCard) {
+      submitSection.classList.add('portal-newapp-submit-row');
+    }
+
+    const docsHeading = Array.from(docsCard.querySelectorAll('*')).find(
+      (el) => el.children.length === 0 && el.textContent.trim() === 'Документы'
+    );
+    if (docsHeading && !docsCard.querySelector('.portal-newapp-docs-intro')) {
+      const intro = document.createElement('p');
+      intro.className = 'portal-newapp-docs-intro text-sm text-muted-foreground';
+      intro.textContent = 'Приложите пакет документов сразу при подаче — или догрузите позже, в карточке этой сделки.';
+      docsHeading.insertAdjacentElement('afterend', intro);
+    }
+
+    return dataCard;
   };
 
   const updateNewAppLiveState = (form) => {
@@ -746,22 +772,12 @@
     const amountInput = document.querySelector('[data-testid="input-invoice-amount"]');
     if (!amountInput) {
       // The form isn't mounted (e.g. the post-submit "Заявка отправлена"
-      // screen is showing, or we navigated elsewhere) — anything we added
-      // next to it as a sibling won't get cleaned up by React, so do it
-      // ourselves.
+      // screen is showing, or we navigated elsewhere) — anything we added as
+      // a sibling of it won't get cleaned up by React, so do it ourselves.
+      // The sidebar itself now lives inside the persistent global nav rail
+      // (see below), which never unmounts, so it has to be removed here
+      // explicitly rather than going away with the rest of the page.
       document.querySelectorAll('.portal-newapp-sidebar, .portal-newapp-summary-backdrop').forEach((el) => el.remove());
-      // ...including the layout-parent's grid class: leaving it on leaves the
-      // sidebar's 280px column reserved with nothing in it, so on the next
-      // visit the `!layoutParent.classList.contains(...)` guard below sees
-      // the class already there and skips rebuilding the sidebar — the form
-      // then lands in that empty first column instead of the wide one next
-      // to it, reading as the whole page having shifted left.
-      const layoutParent = document.querySelector('.portal-newapp-layout');
-      if (layoutParent) layoutParent.classList.remove('portal-newapp-layout');
-      // ...including the scoped scroll-container override on <main> (see
-      // below) — leaving it on would silently affect every other page.
-      const scrollFixMain = document.querySelector('.portal-newapp-main-scroll-fix');
-      if (scrollFixMain) scrollFixMain.classList.remove('portal-newapp-main-scroll-fix');
       return false;
     }
 
@@ -786,23 +802,14 @@
     const dataCard = applyNewAppColumnsLayout(form);
     wireNewAppFieldMuting(dataCard);
 
-    const layoutParent = page.parentElement;
-    if (layoutParent && !layoutParent.classList.contains('portal-newapp-layout')) {
-      layoutParent.classList.add('portal-newapp-layout');
-      layoutParent.insertBefore(buildNewAppSidebar(), page);
+    // "Что будет после подачи" / "Подсказки" / mini-summary now live in the
+    // spare room below the four links of the persistent nav rail instead of
+    // a dedicated 280px column next to the form — that column is freed up
+    // for the Данные/Документы split below to actually breathe.
+    const navSidebar = findGlobalNavSidebar();
+    if (navSidebar && !navSidebar.querySelector('.portal-newapp-sidebar')) {
+      navSidebar.appendChild(buildNewAppSidebar());
     }
-
-    // The sidebar's position:sticky is inert without this: <main> carries
-    // Tailwind's overflow-auto, which makes it *a* CSS scroll container
-    // regardless of whether it ever actually overflows — and here it never
-    // does (its height just grows to fit content), so it never scrolls and
-    // sticky has nothing to track. The real scrolling happens on the
-    // document itself. Overriding <main>'s overflow to visible only while
-    // this page is showing lets sticky bind to that real scroll instead;
-    // scoped to this page (and reverted above) so no other route's scroll
-    // behavior changes.
-    const scrollFixMain = form.closest('main');
-    if (scrollFixMain) scrollFixMain.classList.add('portal-newapp-main-scroll-fix');
 
     updateNewAppLiveState(form);
     return true;

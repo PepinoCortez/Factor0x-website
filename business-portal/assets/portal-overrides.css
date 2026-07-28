@@ -444,6 +444,16 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    submit). Fields/layout are untouched on purpose — this is a visual
    pass only, scoped to .portal-new-application-page so it can't leak
    into other forms across the app. */
+
+/* Wider than the page's own max-w-2xl (672px): now that "Что будет после
+   подачи"/"Подсказки" moved into the nav rail instead of a column next to
+   the form, that freed-up width goes here so the Данные/Документы split
+   below has room to actually read as two columns instead of two cramped
+   half-columns. */
+.portal-new-application-page {
+  max-width: 960px !important;
+}
+
 .portal-new-application-page .bg-card {
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
@@ -644,16 +654,40 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    Documents are the active thing the visitor works on; the data fields are
    a byproduct of them, so they sit next to (not above/below) each other. ---- */
 
-.portal-newapp-columns {
-  display: grid;
+/* `form` itself becomes the grid — the data/docs cards stay exactly where
+   React put them among its direct children (see the comment above
+   applyNewAppColumnsLayout in portal-overrides.js for why: no reparenting,
+   only these classes + grid-column placement). */
+.portal-new-application-page form {
+  display: grid !important;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 24px;
   align-items: start;
 }
 
 @media (max-width: 640px) {
-  .portal-newapp-columns {
+  .portal-new-application-page form {
     grid-template-columns: 1fr;
+  }
+}
+
+.portal-new-application-page form > .portal-newapp-upload-first,
+.portal-new-application-page form > .portal-newapp-submit-row {
+  grid-column: 1 / -1;
+}
+
+.portal-new-application-page form > .portal-newapp-data-card {
+  grid-column: 1;
+}
+
+.portal-new-application-page form > .portal-newapp-docs-card {
+  grid-column: 2;
+}
+
+@media (max-width: 640px) {
+  .portal-new-application-page form > .portal-newapp-data-card,
+  .portal-new-application-page form > .portal-newapp-docs-card {
+    grid-column: 1;
   }
 }
 
@@ -697,35 +731,16 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   pointer-events: none;
 }
 
-/* ---- Two-column layout: sidebar + form, without touching the form's own
-   parent (see the DOM-surgery note in portal-overrides.js) ---- */
-
-.portal-newapp-layout {
-  display: grid;
-  /* Second column matches the form's own max-w-2xl (672px) exactly, so it
-     fills the column instead of floating centered inside a wider flexible
-     track — that mismatch was what read as the whole block being shifted
-     right. The layout itself is then centered as one unit. */
-  grid-template-columns: 280px minmax(0, 672px);
-  gap: 24px;
-  max-width: 976px;
-  margin: 0 auto;
-  align-items: start;
-}
+/* ---- "Что будет после подачи" / "Подсказки" — injected into the spare
+   room below the persistent global nav rail's own links (see
+   findGlobalNavSidebar in portal-overrides.js) rather than a dedicated
+   column next to the form, so the form gets the full content width. ---- */
 
 .portal-newapp-sidebar {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  position: sticky;
-  top: 16px;
-}
-
-/* Makes the sidebar's sticky actually track page scroll instead of sitting
-   inert — see the comment in portal-overrides.js next to where this class
-   gets added/removed. Scoped to this one page's <main> instance only. */
-.portal-newapp-main-scroll-fix {
-  overflow: visible !important;
+  margin-top: 20px;
 }
 
 .portal-newapp-side-card {
@@ -842,15 +857,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: var(--success);
 }
 
-@media (max-width: 900px) {
-  .portal-newapp-layout {
-    grid-template-columns: 1fr;
-  }
-  .portal-newapp-sidebar {
-    position: static;
-    order: 2;
-  }
-}
 
 /* ---- Pre-submit summary overlay ---- */
 
