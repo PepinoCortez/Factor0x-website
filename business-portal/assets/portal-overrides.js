@@ -666,6 +666,14 @@
       // next to it as a sibling won't get cleaned up by React, so do it
       // ourselves.
       document.querySelectorAll('.portal-newapp-sidebar, .portal-newapp-summary-backdrop').forEach((el) => el.remove());
+      // ...including the layout-parent's grid class: leaving it on leaves the
+      // sidebar's 280px column reserved with nothing in it, so on the next
+      // visit the `!layoutParent.classList.contains(...)` guard below sees
+      // the class already there and skips rebuilding the sidebar — the form
+      // then lands in that empty first column instead of the wide one next
+      // to it, reading as the whole page having shifted left.
+      const layoutParent = document.querySelector('.portal-newapp-layout');
+      if (layoutParent) layoutParent.classList.remove('portal-newapp-layout');
       // ...including the scoped scroll-container override on <main> (see
       // below) — leaving it on would silently affect every other page.
       const scrollFixMain = document.querySelector('.portal-newapp-main-scroll-fix');
