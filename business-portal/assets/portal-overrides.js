@@ -351,13 +351,8 @@
   // the real, already-working invoice upload button/input so the actual
   // Документы row still does the real work and stays the source of truth;
   // this block only mirrors that row's own status text back to the top of
-  // the page. The "field filled from a document" badges are shown purely
-  // from whether a field currently has a value (real typing counts too —
-  // there's no way to tell a real keystroke from a demo value without
-  // actually parsing the file, which is explicitly out of scope here).
+  // the page.
   // ---------------------------------------------------------------------
-
-  const AUTOFILL_BADGE_FIELD_IDS = ['invoiceAmount', 'obligorName', 'invoiceDate', 'dueDate', 'description'];
 
   const buildUploadFirstBlock = () => {
     const card = document.createElement('div');
@@ -394,31 +389,6 @@
     const uploaded = badge.textContent.trim() === 'Загружено';
     setTextIfChanged(statusEl, uploaded ? 'Инвойс загружен — можно проверить данные ниже.' : 'Пока не загружен — поля ниже можно заполнить и вручную.');
     statusEl.classList.toggle('is-done', uploaded);
-  };
-
-  const CHECK_ICON_SVG =
-    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>';
-
-  const wireAutofillBadges = (form) => {
-    AUTOFILL_BADGE_FIELD_IDS.forEach((id) => {
-      const field = form.querySelector('#' + id);
-      if (!field || field.dataset.portalAutofillWired) return;
-      field.dataset.portalAutofillWired = 'true';
-
-      const wrapper = newAppFieldWrapper(field);
-      const label = wrapper && wrapper.querySelector('label');
-      if (label && !label.querySelector('.portal-autofill-badge')) {
-        const badge = document.createElement('span');
-        badge.className = 'portal-autofill-badge';
-        badge.innerHTML = CHECK_ICON_SVG + '<span>Из документа</span>';
-        label.appendChild(badge);
-      }
-
-      const sync = () => wrapper && wrapper.classList.toggle('portal-field-has-value', field.value.trim() !== '');
-      field.addEventListener('input', sync);
-      field.addEventListener('change', sync);
-      sync();
-    });
   };
 
   // The per-document "Загрузить"/"Заменить" buttons never set type="button",
@@ -710,7 +680,6 @@
     page.classList.add('portal-new-application-page');
     markRequiredLabels(form);
     wireRequiredFieldClearing(form);
-    wireAutofillBadges(form);
     fixNonSubmitButtonTypes(form);
     groupNewAppDocuments();
     wireNewAppSubmit(form);

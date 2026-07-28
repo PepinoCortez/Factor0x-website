@@ -580,46 +580,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: var(--success);
 }
 
-/* ---- "Filled from a document" field badge — purely a reflection of
-   whether the field currently has a value (see wireAutofillBadges in
-   portal-overrides.js); shows for a real keystroke exactly the same as
-   for a demo value, since telling those apart would require actually
-   reading the file, which is explicitly out of scope. ---- */
-
-.portal-autofill-badge {
-  display: none;
-  align-items: center;
-  gap: 4px;
-  margin-left: 8px;
-  padding: 1px 8px 1px 6px;
-  border-radius: 999px;
-  background: var(--success-bg);
-  color: var(--success);
-  font-size: 0.7rem;
-  font-weight: 600;
-  vertical-align: middle;
-}
-
-.portal-field-has-value .portal-autofill-badge {
-  display: inline-flex;
-}
-
-.portal-autofill-badge svg {
-  width: 11px;
-  height: 11px;
-  flex-shrink: 0;
-}
-
-/* Alternate badge for a field the user has edited after autofill —
-   available for use, not applied automatically anywhere (see the brief:
-   showing the look is enough, no detection logic). Swap
-   .portal-autofill-badge for .portal-autofill-badge--edited on a field's
-   badge span to preview it. */
-.portal-autofill-badge--edited {
-  background: var(--warning-bg);
-  color: var(--warning);
-}
-
 /* ---- More readable field labels (was 10px all-caps DM Mono) ---- */
 
 .portal-new-application-page label {
