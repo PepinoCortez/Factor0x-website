@@ -449,9 +449,10 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    подачи"/"Подсказки" moved into the nav rail instead of a column next to
    the form, that freed-up width goes here so the Данные/Документы split
    below has room to actually read as two columns instead of two cramped
-   half-columns. */
+   half-columns — and, combined with the document rows going 2-up (below),
+   keeps the whole page short enough to need no scroll on typical screens. */
 .portal-new-application-page {
-  max-width: 960px !important;
+  max-width: 1200px !important;
 }
 
 .portal-new-application-page .bg-card {
@@ -702,8 +703,24 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   flex-direction: column !important;
 }
 
-.portal-newapp-docs-intro {
-  margin: 4px 0 16px;
+/* The 7 document rows stacked one-per-line were the single biggest
+   contributor to this page needing a scroll; 2-up per group (heading
+   spanning both) keeps "Можно догрузить позже" (5 rows) to 3 lines tall
+   instead of 5, without touching the row's own markup/component. */
+.portal-newapp-docs-card .portal-doc-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 16px;
+}
+
+.portal-newapp-docs-card .portal-doc-group-heading {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .portal-newapp-docs-card .portal-doc-group {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Data fields read as "will fill itself in from the documents" until

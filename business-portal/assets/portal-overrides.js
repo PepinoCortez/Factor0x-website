@@ -574,7 +574,7 @@
   // rows (a keyed list, safe to relocate per the note above `form`), these
   // cards are plain, unkeyed sections. Nesting two of them one level deeper
   // left React unable to find its expected child at the top level, so it
-  // mounted a second, fresh copy there — duplicated headings/intro text.
+  // mounted a second, fresh copy there — duplicated heading/text.
   // Marking the cards with classes and letting CSS Grid (on `form` itself,
   // see portal-overrides.css) place them side by side keeps every node
   // exactly where React put it — only classList changes, nothing reparented.
@@ -600,16 +600,6 @@
     const submitSection = submitBtn && directChildOf(form, submitBtn);
     if (submitSection && submitSection !== dataCard && submitSection !== docsCard) {
       submitSection.classList.add('portal-newapp-submit-row');
-    }
-
-    const docsHeading = Array.from(docsCard.querySelectorAll('*')).find(
-      (el) => el.children.length === 0 && el.textContent.trim() === 'Документы'
-    );
-    if (docsHeading && !docsCard.querySelector('.portal-newapp-docs-intro')) {
-      const intro = document.createElement('p');
-      intro.className = 'portal-newapp-docs-intro text-sm text-muted-foreground';
-      intro.textContent = 'Приложите пакет документов сразу при подаче — или догрузите позже, в карточке этой сделки.';
-      docsHeading.insertAdjacentElement('afterend', intro);
     }
 
     return dataCard;
