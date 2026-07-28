@@ -1,0 +1,449 @@
+:root {
+  --background: 240 5% 4.5%;
+  --foreground: 44 44% 95%;
+  --card: 240 6% 8.25%;
+  --card-foreground: 44 44% 95%;
+  --muted: 240 6% 11%;
+  --muted-foreground: 44 16% 72%;
+  --border: 240 7% 14%;
+  --sidebar: 240 8% 6%;
+  --sidebar-foreground: 44 44% 95%;
+  --primary: 44 93% 60%;
+  --primary-foreground: 240 7% 6%;
+
+  --grid-line: rgba(255, 255, 255, 0.04);
+  --surface-dark: rgba(255, 255, 255, 0.035);
+  --surface-dark-raised: rgba(255, 255, 255, 0.065);
+
+  --success: #3DA35D;
+  --success-bg: rgba(61, 163, 93, 0.14);
+  --warning: #D97A34;
+  --warning-bg: rgba(217, 122, 52, 0.14);
+  --warning-border: rgba(217, 122, 52, 0.32);
+  --danger: #E5484D;
+  --danger-bg: rgba(229, 72, 77, 0.14);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: #0A0A0B;
+}
+
+body {
+  margin: 0;
+  position: relative;
+  background: #0A0A0B;
+  color: #F5F2E9;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 84px 84px, 84px 84px;
+  pointer-events: none;
+}
+
+body,
+#root,
+main,
+[data-slot='sidebar'] {
+  background: transparent;
+}
+
+
+/* The real source of the persistent dark rounded panel: shadcn's
+   SidebarInset renders <main data-slot="sidebar-inset"> with a
+   "bg-background" class (and rounded-xl/shadow-sm on the inset variant).
+   A plain "main" tag selector loses to that class on specificity, so it
+   has to be beaten explicitly. */
+main[data-slot='sidebar-inset'] {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+/* The app's own .portal-grid-bg draws a grid overlay masked with a
+   radial-gradient fade (mask-image: radial-gradient) plus a bg-muted/30
+   tint on the <main> box itself — the background "fog" effect. Killed
+   outright per request; the page background is now a flat solid color. */
+main.portal-grid-bg {
+  background: transparent !important;
+}
+
+main.portal-grid-bg::before {
+  content: none !important;
+}
+
+.portal-overview-page {
+  padding-top: 0.3rem;
+}
+
+/* Top "Обзор" block: kpi-dark-card is the app's own class for this container.
+   Targeted directly (not only via the portal-overview-card marker) so the fix
+   holds even if the marker class gets stripped by a React re-render. */
+.portal-overview-card,
+.kpi-dark-card {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 0 1.5rem 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  /* The base app's own .kpi-dark-card rule sets
+     "transition: background .28s, box-shadow .28s, ...". Without killing
+     that here too, the browser keeps the pre-override gradient/shadow
+     visually painted as a stuck transition frame even though the
+     computed value above is already transparent — the gray "plate" this
+     override is supposed to remove. */
+  transition: none !important;
+}
+
+.kpi-dark-card:hover {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.kpi-dark-card::before {
+  content: none !important;
+}
+
+.portal-overview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 0 1.25rem;
+  margin-bottom: 0;
+}
+
+.portal-overview-header h1 {
+  margin: 0;
+  color: #F5F2E9;
+  font-size: clamp(1.75rem, 2.2rem, 2.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.portal-overview-header p {
+  margin: 0.35rem 0 0;
+  color: rgba(245, 242, 233, 0.72);
+}
+
+.portal-overview-header a,
+.portal-overview-header button {
+  margin-top: 0.15rem;
+}
+
+.portal-overview-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  border: 0 !important;
+  padding: 0;
+  margin-top: 0;
+}
+
+/* "Всего профинансировано" is the borrower's key figure: promote it to a
+   full-width row above the other three, which stay compact underneath. */
+.portal-metric-card:has([data-testid="kpi-total-financed"]),
+.kpi-dark-card div[class*="divide-y"] > div:has([data-testid="kpi-total-financed"]) {
+  grid-column: 1 / -1;
+  order: -1;
+  padding: 1.6rem 1.9rem;
+}
+
+.portal-metric-card:has([data-testid="kpi-total-financed"]) [data-testid="kpi-total-financed"] {
+  font-size: clamp(2.25rem, 4vw, 3rem);
+  line-height: 1.05;
+  margin-top: 0.5rem;
+}
+
+.portal-metric-card:has([data-testid="kpi-total-financed"]) [data-testid="kpi-total-financed"] {
+  display: flex;
+  align-items: baseline;
+}
+
+.metric-currency-tag {
+  font-weight: 500;
+  font-size: 0.5em;
+  color: rgba(245, 242, 233, 0.5);
+  margin-right: 0.5rem;
+}
+
+/* Structural fallback selector for the four metric cells (works even if the
+   portal-metric-card marker class is stripped by a React re-render). */
+.kpi-dark-card div[class*="divide-y"] > div {
+  position: relative;
+  overflow: hidden;
+}
+
+.portal-metric-card,
+.kpi-dark-card div[class*="divide-y"] > div {
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)), #0D0D0F;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 6px 14px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 18px 26px rgba(255, 255, 255, 0.04);
+  padding: 1rem 1.1rem;
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.portal-metric-card:hover,
+.kpi-dark-card div[class*="divide-y"] > div:hover {
+  background: linear-gradient(180deg, var(--surface-dark-raised), rgba(255, 255, 255, 0.03)), #0D0D0F;
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 18px 26px rgba(255, 255, 255, 0.05);
+  transform: translateY(-3px);
+}
+
+.portal-metric-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 48%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.portal-metric-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.portal-metric-card .text-white\/60,
+.portal-metric-card .text-white\/50,
+.portal-metric-card .text-muted-foreground {
+  color: rgba(245, 242, 233, 0.72) !important;
+}
+
+.portal-metric-card .text-2xl,
+.portal-metric-card .text-3xl {
+  color: #F5F2E9 !important;
+}
+
+/* "Последние события": target both the JS marker class and, robustly, the
+   Card element that wraps the activity list directly by its data-testid, so
+   the border/shadow fix holds even without the marker class. */
+.portal-activity-card,
+main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activity"]) {
+  margin-top: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)), #0D0D0F !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  box-shadow:
+    0 24px 44px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Bottom two-column layout: activity feed on the left, secondary widgets
+   stacked on the right — built by portal-overrides.js, which moves the
+   existing activity card into .portal-bottom-left and appends the new
+   widgets to .portal-bottom-right. */
+/* Same fix as .portal-overview-metrics above: fill the gutter between the
+   two bottom columns with a solid panel so the grid doesn't show through it. */
+.portal-bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 1rem;
+  align-items: start;
+  margin-top: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)), #0D0D0F;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 24px 44px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.portal-bottom-left,
+.portal-bottom-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.portal-widget-title {
+  margin: 0 0 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #F5F2E9;
+}
+
+/* "Требует внимания" / "Ближайшие погашения" are not themselves clickable —
+   only the action button and list rows inside them are — so they get the
+   same static surface treatment as "Последние события" on the left: no
+   border, no hover motion, just --surface-dark + a soft shadow. The warning
+   semantic for attention items lives on the action button, not the card. */
+.portal-attention-card,
+.portal-repayments-card {
+  border: 0 !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)), #0D0D0F !important;
+  box-shadow:
+    0 24px 44px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.portal-attention-card:hover,
+.portal-repayments-card:hover {
+  transform: none !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)), #0D0D0F !important;
+  box-shadow:
+    0 24px 44px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.portal-attention-list,
+.portal-repayments-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.portal-attention-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.portal-attention-item:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.portal-attention-text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(245, 242, 233, 0.9);
+}
+
+.portal-attention-action {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.portal-attention-action:hover {
+  background: var(--warning-bg);
+}
+
+.portal-repayment-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.15rem 0.5rem;
+  font-size: 0.82rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.portal-repayment-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.portal-repayment-obligor {
+  grid-column: 1;
+  color: #F5F2E9;
+  font-weight: 500;
+}
+
+.portal-repayment-amount {
+  grid-column: 2;
+  grid-row: 1;
+  color: #F5F2E9;
+  font-weight: 600;
+  text-align: right;
+}
+
+.portal-repayment-date {
+  grid-column: 1 / -1;
+  color: rgba(245, 242, 233, 0.55);
+  font-size: 0.75rem;
+}
+
+.portal-repayment-overdue .portal-repayment-obligor,
+.portal-repayment-overdue .portal-repayment-amount {
+  color: var(--warning);
+}
+
+.portal-repayment-overdue .portal-repayment-date {
+  color: var(--warning);
+  font-weight: 600;
+}
+
+/* Activity feed color-coding: warnings/overdue and success events get a
+   semantic accent so money-relevant items stand out from routine ones. */
+.portal-feed-warning,
+.portal-feed-success {
+  border-radius: 10px;
+  padding: 0.4rem 0.5rem;
+  margin: 0 -0.5rem;
+}
+
+.portal-feed-warning {
+  background: var(--warning-bg);
+}
+
+.portal-feed-warning svg {
+  color: var(--warning) !important;
+}
+
+.portal-feed-warning > div:first-child {
+  background: var(--warning-bg) !important;
+}
+
+.portal-feed-success {
+  background: var(--success-bg);
+}
+
+.portal-feed-success svg {
+  color: var(--success) !important;
+}
+
+.portal-feed-success > div:first-child {
+  background: var(--success-bg) !important;
+}
+
+@media (max-width: 900px) {
+  .portal-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .portal-overview-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .portal-overview-metrics {
+    grid-template-columns: 1fr;
+  }
+}
