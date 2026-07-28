@@ -254,8 +254,19 @@
     return true;
   };
 
+  const applyNewApplicationTheme = () => {
+    const amountInput = document.querySelector('[data-testid="input-invoice-amount"]');
+    if (!amountInput) return false;
+    const page = amountInput.closest('.mx-auto');
+    if (!page) return false;
+    page.classList.add('portal-new-application-page');
+    return true;
+  };
+
   const run = () => {
-    if (!applyOverviewTheme()) {
+    const overviewDone = applyOverviewTheme();
+    const newApplicationDone = applyNewApplicationTheme();
+    if (!overviewDone && !newApplicationDone) {
       window.setTimeout(run, 120);
     }
   };
