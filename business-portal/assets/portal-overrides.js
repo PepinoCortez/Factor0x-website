@@ -291,6 +291,16 @@
 
   const newAppFieldWrapper = (field) => field.closest('.flex.flex-col.gap-2') || field.parentElement;
 
+  // Walks up from a known, stable descendant (a data-testid'd input/badge)
+  // to whichever ancestor is a direct child of `parent`. Lets us grab a
+  // whole native card (e.g. "Данные по инвойсу") without knowing its own
+  // markup/class names — only the stable test-id buried inside it.
+  const directChildOf = (parent, descendant) => {
+    let node = descendant;
+    while (node && node.parentElement && node.parentElement !== parent) node = node.parentElement;
+    return node && node.parentElement === parent ? node : null;
+  };
+
   // The MutationObserver driving run() watches childList/subtree, and
   // `el.textContent = x` always replaces child nodes (even when the text is
   // unchanged) — writing on every tick would retrigger the observer and spin
@@ -506,10 +516,84 @@
     docsEl.classList.toggle('is-done', docsDone);
   };
 
+  // Data fields are a byproduct of the documents, not the other way round —
+  // they're shown dim (still fully editable) until the visitor actually
+  // touches one, signaling "this will fill itself in" rather than "locked".
+  const wireNewAppFieldMuting = (dataCard) => {
+    if (!dataCard) return;
+    dataCard.querySelectorAll('input, select, textarea, [role="combobox"]').forEach((field) => {
+      if (field.dataset.portalMuteWired) return;
+      field.dataset.portalMuteWired = 'true';
+      const wrapper = newAppFieldWrapper(field);
+      const activate = () => wrapper && wrapper.classList.add('portal-field-active');
+      field.addEventListener('focus', activate);
+      field.addEventListener('click', activate);
+      field.addEventListener('input', activate);
+      field.addEventListener('change', activate);
+    });
+  };
+
+  // Submit only needs the two documents that actually block underwriting —
+  // the other five, and every data field, stay optional at this stage.
+  const updateNewAppSubmitGate = (form) => {
+    const submitBtn = form.querySelector('[data-testid="button-submit-application"]');
+    if (!submitBtn) return;
+    submitBtn.disabled = newAppDocStatus().missingRequired.length > 0;
+  };
+
+  // Splits the page into "Данные по инвойсу" (left) / "Документы" (right)
+  // so the documents — what the visitor actually acts on — sit next to,
+  // not below, the fields they're meant to populate. Reparents the two
+  // native cards (found via the stable test-ids already used elsewhere in
+  // this file) into a new wrapper; per the DOM-surgery note above `form`,
+  // this is the same "move an existing, already-rendered node" trick
+  // groupNewAppDocuments already relies on, just one level up. Idempotent
+  // via the wrapper's own presence, same pattern as the rest of this file.
+  const applyNewAppColumnsLayout = (form) => {
+    let columns = form.querySelector(':scope > .portal-newapp-columns');
+    if (!columns) {
+      const amountInput = form.querySelector('[data-testid="input-invoice-amount"]');
+      const invoiceBadge = form.querySelector('[data-testid="badge-doc-status-invoice"]');
+      const dataCard = amountInput && directChildOf(form, amountInput);
+      const docsCard = invoiceBadge && directChildOf(form, invoiceBadge);
+      if (!dataCard || !docsCard || dataCard === docsCard) return null;
+
+      columns = document.createElement('div');
+      columns.className = 'portal-newapp-columns';
+      form.insertBefore(columns, dataCard);
+      dataCard.classList.add('portal-newapp-data-card');
+      docsCard.classList.add('portal-newapp-docs-card');
+      columns.appendChild(dataCard);
+      columns.appendChild(docsCard);
+
+      // If the submit button lives in its own section (not nested in either
+      // card above), push that section after the columns so it reads as a
+      // final, page-wide step rather than trailing inside whichever card it
+      // originally sat in.
+      const submitBtn = form.querySelector('[data-testid="button-submit-application"]');
+      const submitSection = submitBtn && directChildOf(form, submitBtn);
+      if (submitSection && submitSection !== columns) {
+        form.appendChild(submitSection);
+      }
+
+      const docsHeading = Array.from(docsCard.querySelectorAll('*')).find(
+        (el) => el.children.length === 0 && el.textContent.trim() === 'Документы'
+      );
+      if (docsHeading && !docsCard.querySelector('.portal-newapp-docs-intro')) {
+        const intro = document.createElement('p');
+        intro.className = 'portal-newapp-docs-intro text-sm text-muted-foreground';
+        intro.textContent = 'Приложите пакет документов сразу при подаче — или догрузите позже, в карточке этой сделки.';
+        docsHeading.insertAdjacentElement('afterend', intro);
+      }
+    }
+    return columns.querySelector('.portal-newapp-data-card');
+  };
+
   const updateNewAppLiveState = (form) => {
     updateNewAppProgressCopy();
     updateNewAppMiniSummary(form);
     updateUploadFirstStatus();
+    updateNewAppSubmitGate(form);
   };
 
   const buildNewAppSidebar = () => {
@@ -698,6 +782,9 @@
       wireUploadFirstShortcut(uploadBlock);
     }
     updateUploadFirstStatus();
+
+    const dataCard = applyNewAppColumnsLayout(form);
+    wireNewAppFieldMuting(dataCard);
 
     const layoutParent = page.parentElement;
     if (layoutParent && !layoutParent.classList.contains('portal-newapp-layout')) {

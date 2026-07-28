@@ -640,6 +640,63 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(245, 242, 233, 0.5);
 }
 
+/* ---- Inside the form: "Данные по инвойсу" / "Документы" side by side.
+   Documents are the active thing the visitor works on; the data fields are
+   a byproduct of them, so they sit next to (not above/below) each other. ---- */
+
+.portal-newapp-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .portal-newapp-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The data card's own field pairs (Сумма/Валюта, Дебитор/Страна, ...) were
+   laid out via Tailwind's grid-cols-2 for the old full-width column; at
+   half that width there isn't room for two up, so collapse to one. Matched
+   by the utility class substring rather than an exact class list, since the
+   compiled markup's exact Tailwind combo isn't something this file owns. */
+.portal-newapp-data-card [class*="grid-cols-2"],
+.portal-newapp-data-card [class*="grid-cols-3"] {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.portal-newapp-docs-intro {
+  margin: 4px 0 16px;
+}
+
+/* Data fields read as "will fill itself in from the documents" until
+   touched, without actually being disabled — dim, not locked. */
+.portal-newapp-data-card .flex.flex-col.gap-2 input,
+.portal-newapp-data-card .flex.flex-col.gap-2 select,
+.portal-newapp-data-card .flex.flex-col.gap-2 textarea,
+.portal-newapp-data-card .flex.flex-col.gap-2 [role="combobox"] {
+  opacity: 0.55;
+  transition: opacity 0.15s ease;
+}
+
+.portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active input,
+.portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active select,
+.portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active textarea,
+.portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active [role="combobox"] {
+  opacity: 1;
+}
+
+/* Submit stays inert (not just visually muted) until the two documents that
+   actually gate underwriting — Invoice + Contract — are attached. */
+.portal-new-application-page [data-testid="button-submit-application"]:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ---- Two-column layout: sidebar + form, without touching the form's own
    parent (see the DOM-surgery note in portal-overrides.js) ---- */
 
