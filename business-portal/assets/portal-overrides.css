@@ -188,26 +188,26 @@ main.portal-grid-bg::before {
   overflow: hidden;
 }
 
+/* Same dark-glass recipe as .portal-new-application-page .bg-card, so
+   Обзор's containers read as the same visual system as Новая заявка's. */
 .portal-metric-card,
 .kpi-dark-card div[class*="divide-y"] > div {
-  border-radius: 16px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)), #0D0D0F;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow:
-    0 6px 14px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    inset 0 18px 26px rgba(255, 255, 255, 0.04);
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 48px rgba(0, 0, 0, 0.16);
   padding: 1rem 1.1rem;
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
 .portal-metric-card:hover,
 .kpi-dark-card div[class*="divide-y"] > div:hover {
-  background: linear-gradient(180deg, var(--surface-dark-raised), rgba(255, 255, 255, 0.03)), #0D0D0F;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)), #111113;
   box-shadow:
-    0 10px 20px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 18px 26px rgba(255, 255, 255, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 22px 54px rgba(0, 0, 0, 0.2);
   transform: translateY(-3px);
 }
 
@@ -233,12 +233,12 @@ main.portal-grid-bg::before {
 .portal-activity-card,
 main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activity"]) {
   margin-top: 0;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)), #0D0D0F !important;
-  border: 0 !important;
-  border-radius: 16px !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 12px !important;
   box-shadow:
-    0 24px 44px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 48px rgba(0, 0, 0, 0.16) !important;
 }
 
 /* Bottom two-column layout: activity feed on the left, secondary widgets
