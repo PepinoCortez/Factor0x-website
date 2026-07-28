@@ -605,6 +605,10 @@
       // next to it as a sibling won't get cleaned up by React, so do it
       // ourselves.
       document.querySelectorAll('.portal-newapp-sidebar, .portal-newapp-summary-backdrop').forEach((el) => el.remove());
+      // ...including the scoped scroll-container override on <main> (see
+      // below) — leaving it on would silently affect every other page.
+      const scrollFixMain = document.querySelector('.portal-newapp-main-scroll-fix');
+      if (scrollFixMain) scrollFixMain.classList.remove('portal-newapp-main-scroll-fix');
       return false;
     }
 
@@ -623,6 +627,18 @@
       layoutParent.classList.add('portal-newapp-layout');
       layoutParent.insertBefore(buildNewAppSidebar(), page);
     }
+
+    // The sidebar's position:sticky is inert without this: <main> carries
+    // Tailwind's overflow-auto, which makes it *a* CSS scroll container
+    // regardless of whether it ever actually overflows — and here it never
+    // does (its height just grows to fit content), so it never scrolls and
+    // sticky has nothing to track. The real scrolling happens on the
+    // document itself. Overriding <main>'s overflow to visible only while
+    // this page is showing lets sticky bind to that real scroll instead;
+    // scoped to this page (and reverted above) so no other route's scroll
+    // behavior changes.
+    const scrollFixMain = form.closest('main');
+    if (scrollFixMain) scrollFixMain.classList.add('portal-newapp-main-scroll-fix');
 
     updateNewAppLiveState(form);
     return true;

@@ -603,8 +603,14 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-newapp-layout {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
+  /* Second column matches the form's own max-w-2xl (672px) exactly, so it
+     fills the column instead of floating centered inside a wider flexible
+     track — that mismatch was what read as the whole block being shifted
+     right. The layout itself is then centered as one unit. */
+  grid-template-columns: 280px minmax(0, 672px);
   gap: 24px;
+  max-width: 976px;
+  margin: 0 auto;
   align-items: start;
 }
 
@@ -613,7 +619,14 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   flex-direction: column;
   gap: 16px;
   position: sticky;
-  top: 24px;
+  top: 16px;
+}
+
+/* Makes the sidebar's sticky actually track page scroll instead of sitting
+   inert — see the comment in portal-overrides.js next to where this class
+   gets added/removed. Scoped to this one page's <main> instance only. */
+.portal-newapp-main-scroll-fix {
+  overflow: visible !important;
 }
 
 .portal-newapp-side-card {
