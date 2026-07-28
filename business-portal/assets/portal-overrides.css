@@ -553,6 +553,24 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    invoice upload button/input (see portal-overrides.js) — no file
    reading, no invented data. ---- */
 
+.portal-newapp-upload-first {
+  padding: 24px;
+}
+
+.portal-newapp-upload-first-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+@media (max-width: 640px) {
+  .portal-newapp-upload-first-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 .portal-newapp-upload-cta {
   display: inline-flex;
   align-items: center;
@@ -564,6 +582,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: rgba(255, 255, 255, 0.06);
   color: #F5F2E9;
   font-size: 0.85rem;
+  flex-shrink: 0;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
@@ -701,26 +720,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-newapp-data-card [class*="grid-cols-3"] {
   display: flex !important;
   flex-direction: column !important;
-}
-
-/* The 7 document rows stacked one-per-line were the single biggest
-   contributor to this page needing a scroll; 2-up per group (heading
-   spanning both) keeps "Можно догрузить позже" (5 rows) to 3 lines tall
-   instead of 5, without touching the row's own markup/component. */
-.portal-newapp-docs-card .portal-doc-group {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 4px 16px;
-}
-
-.portal-newapp-docs-card .portal-doc-group-heading {
-  grid-column: 1 / -1;
-}
-
-@media (max-width: 640px) {
-  .portal-newapp-docs-card .portal-doc-group {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Data fields read as "will fill itself in from the documents" until

@@ -385,17 +385,17 @@
     const card = document.createElement('div');
     card.className = 'rounded-xl border bg-card text-card-foreground shadow portal-newapp-upload-first';
     card.innerHTML =
-      '<div class="flex flex-col space-y-1.5 p-6">' +
-        '<div class="font-semibold tracking-tight text-base">Начните с инвойса</div>' +
-        '<p class="text-sm text-muted-foreground">Загрузите инвойс — данные ниже заполнятся автоматически. Останется только проверить.</p>' +
-      '</div>' +
-      '<div class="p-6 pt-0">' +
+      '<div class="portal-newapp-upload-first-row">' +
+        '<div class="flex flex-col space-y-1.5">' +
+          '<div class="font-semibold tracking-tight text-base">Начните с инвойса</div>' +
+          '<p class="text-sm text-muted-foreground">Загрузите инвойс — данные ниже заполнятся автоматически. Останется только проверить.</p>' +
+        '</div>' +
         '<button type="button" class="portal-newapp-upload-cta">' +
           '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg>' +
           '<span>Загрузить инвойс</span>' +
         '</button>' +
-        '<p class="portal-newapp-upload-status"></p>' +
-      '</div>';
+      '</div>' +
+      '<p class="portal-newapp-upload-status"></p>';
     return card;
   };
 
