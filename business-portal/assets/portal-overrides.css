@@ -211,15 +211,6 @@ main.portal-grid-bg::before {
   transform: translateY(-3px);
 }
 
-.portal-metric-card::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 48%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
-  pointer-events: none;
-}
-
 .portal-metric-card > * {
   position: relative;
   z-index: 1;
