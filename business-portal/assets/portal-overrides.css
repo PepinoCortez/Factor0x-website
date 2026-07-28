@@ -549,65 +549,12 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(245, 242, 233, 0.92) !important;
 }
 
-/* ---- "Upload first" shortcut card: visual-only, proxies to the real
-   invoice upload button/input (see portal-overrides.js) — no file
-   reading, no invented data. ---- */
+/* ---- Upload intro line: plain text above the two columns, no card/button
+   — the only upload entry point is the Инвойс row in Документы (see
+   .portal-doc-row-primary below). ---- */
 
-.portal-newapp-upload-first {
-  padding: 24px;
-}
-
-.portal-newapp-upload-first-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-@media (max-width: 640px) {
-  .portal-newapp-upload-first-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-.portal-newapp-upload-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 46px;
-  padding: 0 22px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #F5F2E9;
-  font-size: 0.85rem;
-  flex-shrink: 0;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
-}
-
-.portal-newapp-upload-cta:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-}
-
-.portal-newapp-upload-cta svg {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-}
-
-.portal-newapp-upload-status {
-  margin: 12px 0 0;
-  font-size: 0.8rem;
-  color: rgba(245, 242, 233, 0.55);
-}
-
-.portal-newapp-upload-status.is-done {
-  color: var(--success);
+.portal-newapp-upload-intro {
+  margin: 0 0 4px;
 }
 
 /* ---- More readable field labels (was 10px all-caps DM Mono) ---- */
@@ -679,6 +626,25 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(245, 242, 233, 0.5);
 }
 
+/* Invoice is the one document upload entry point now (the old top card is
+   gone) — a plain background tint, no padding/margin changes, so it can't
+   shift this native row's own spacing relative to its siblings. */
+.portal-doc-row-primary {
+  background: rgba(255, 255, 255, 0.045);
+  border-radius: 10px;
+}
+
+.portal-doc-row-primary-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.7rem;
+  color: rgba(245, 242, 233, 0.7);
+}
+
 /* ---- Inside the form: "Данные по инвойсу" / "Документы" side by side.
    Documents are the active thing the visitor works on; the data fields are
    a byproduct of them, so they sit next to (not above/below) each other. ---- */
@@ -700,7 +666,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   }
 }
 
-.portal-new-application-page form > .portal-newapp-upload-first,
+.portal-new-application-page form > .portal-newapp-upload-intro,
 .portal-new-application-page form > .portal-newapp-submit-row {
   grid-column: 1 / -1;
 }

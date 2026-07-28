@@ -373,49 +373,18 @@
   };
 
   // ---------------------------------------------------------------------
-  // Visual-only "upload → autofill → review" framing. No file is read and
-  // no data is invented here: the shortcut card just proxies a click to
-  // the real, already-working invoice upload button/input so the actual
-  // Документы row still does the real work and stays the source of truth;
-  // this block only mirrors that row's own status text back to the top of
-  // the page.
+  // Invoice upload has exactly one entry point: the "Инвойс" row in
+  // Документы (highlighted below as the primary document). This is just the
+  // explanatory line above the two columns — no card, no button, no second
+  // upload path to confuse with the real one.
   // ---------------------------------------------------------------------
 
-  const buildUploadFirstBlock = () => {
-    const card = document.createElement('div');
-    card.className = 'rounded-xl border bg-card text-card-foreground shadow portal-newapp-upload-first';
-    card.innerHTML =
-      '<div class="portal-newapp-upload-first-row">' +
-        '<div class="flex flex-col space-y-1.5">' +
-          '<div class="font-semibold tracking-tight text-base">Начните с инвойса</div>' +
-          '<p class="text-sm text-muted-foreground">Загрузите инвойс — данные ниже заполнятся автоматически. Останется только проверить.</p>' +
-        '</div>' +
-        '<button type="button" class="portal-newapp-upload-cta">' +
-          '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg>' +
-          '<span>Загрузить инвойс</span>' +
-        '</button>' +
-      '</div>' +
-      '<p class="portal-newapp-upload-status"></p>';
-    return card;
-  };
-
-  const wireUploadFirstShortcut = (block) => {
-    const cta = block.querySelector('.portal-newapp-upload-cta');
-    if (!cta || cta.dataset.portalWired) return;
-    cta.dataset.portalWired = 'true';
-    cta.addEventListener('click', () => {
-      const realButton = document.querySelector('[data-testid="button-upload-invoice"]');
-      if (realButton) realButton.click();
-    });
-  };
-
-  const updateUploadFirstStatus = () => {
-    const statusEl = document.querySelector('.portal-newapp-upload-status');
-    const badge = document.querySelector('[data-testid="badge-doc-status-invoice"]');
-    if (!statusEl || !badge) return;
-    const uploaded = badge.textContent.trim() === 'Загружено';
-    setTextIfChanged(statusEl, uploaded ? 'Инвойс загружен — можно проверить данные ниже.' : 'Пока не загружен — поля ниже можно заполнить и вручную.');
-    statusEl.classList.toggle('is-done', uploaded);
+  const buildUploadIntroText = () => {
+    const intro = document.createElement('p');
+    intro.className = 'portal-newapp-upload-intro text-sm text-muted-foreground';
+    intro.textContent =
+      'Загрузите инвойс — данные ниже заполнятся автоматически, останется только проверить. Пока не загружен — поля можно заполнить и вручную.';
+    return intro;
   };
 
   // The per-document "Загрузить"/"Заменить" buttons never set type="button",
@@ -580,12 +549,26 @@
       submitSection.classList.add('portal-newapp-submit-row');
     }
 
+    // Invoice upload now lives in exactly one place — this row — so it's
+    // marked as the primary document: it's what autofill will eventually
+    // key off of, and the visitor should reach for it first.
+    const invoiceRow = invoiceBadge.closest('.flex.flex-col.gap-3');
+    if (invoiceRow) {
+      invoiceRow.classList.add('portal-doc-row-primary');
+      const invoiceLabel = form.querySelector('[data-testid="text-doc-label-invoice"]');
+      if (invoiceLabel) {
+        const tag = document.createElement('span');
+        tag.className = 'portal-doc-row-primary-tag';
+        tag.textContent = 'Главный документ';
+        invoiceLabel.insertAdjacentElement('afterend', tag);
+      }
+    }
+
     return dataCard;
   };
 
   const updateNewAppLiveState = (form) => {
     updateNewAppProgressCopy();
-    updateUploadFirstStatus();
     updateNewAppSubmitGate(form);
   };
 
@@ -731,12 +714,9 @@
     groupNewAppDocuments();
     wireNewAppSubmit(form);
 
-    if (!form.querySelector('.portal-newapp-upload-first')) {
-      const uploadBlock = buildUploadFirstBlock();
-      form.insertBefore(uploadBlock, form.firstElementChild);
-      wireUploadFirstShortcut(uploadBlock);
+    if (!form.querySelector('.portal-newapp-upload-intro')) {
+      form.insertBefore(buildUploadIntroText(), form.firstElementChild);
     }
-    updateUploadFirstStatus();
 
     const dataCard = applyNewAppColumnsLayout(form);
     wireNewAppFieldMuting(dataCard);
