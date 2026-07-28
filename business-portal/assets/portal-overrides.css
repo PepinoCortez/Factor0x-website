@@ -453,6 +453,18 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    keeps the whole page short enough to need no scroll on typical screens. */
 .portal-new-application-page {
   max-width: 1200px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* `page`'s only two children are the header (title + subtitle) and the
+   <form> (see the DOM-surgery note in portal-overrides.js). The header
+   kept its own original width cap from before the form was widened above,
+   so it sat narrower than — and flush left of — the two columns instead of
+   spanning the same width as the whole layout below it. */
+.portal-new-application-page > :not(form) {
+  max-width: none !important;
+  width: 100%;
 }
 
 .portal-new-application-page .bg-card {
@@ -685,13 +697,30 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-new-application-page form > .portal-newapp-data-card {
   grid-column: 1;
+  /* Документы (7 rows) runs taller than Данные (a handful of fields) —
+     sticking the shorter column means it tracks the scroll instead of
+     leaving a growing gap of empty space under it once its own content
+     runs out. Needs .portal-newapp-main-scroll-fix below, same reason
+     the old content-sidebar needed it: <main>'s own overflow-auto makes
+     it *a* scroll container regardless of whether it overflows, which
+     makes sticky inert without an explicit override. */
+  position: sticky;
+  top: 16px;
 }
 
 .portal-new-application-page form > .portal-newapp-docs-card {
   grid-column: 2;
 }
 
+.portal-newapp-main-scroll-fix {
+  overflow: visible !important;
+}
+
 @media (max-width: 640px) {
+  .portal-new-application-page form > .portal-newapp-data-card {
+    position: static;
+  }
+
   .portal-new-application-page form > .portal-newapp-data-card,
   .portal-new-application-page form > .portal-newapp-docs-card {
     grid-column: 1;
