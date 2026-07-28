@@ -455,15 +455,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 12px !important;
 }
 
-.portal-new-application-page label {
-  color: rgba(255, 255, 255, 0.68) !important;
-  font-family: 'DM Mono', monospace;
-  font-size: 10px !important;
-  font-weight: 500 !important;
-  letter-spacing: 1.3px !important;
-  text-transform: uppercase !important;
-}
-
 .portal-new-application-page .border-input {
   border: 1px solid rgba(255, 255, 255, 0.18) !important;
   border-radius: 7px !important;
@@ -496,21 +487,31 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-new-application-page [data-testid="button-submit-application"] {
+  position: relative;
   background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124) !important;
-  color: #171008 !important;
+  color: transparent !important;
   border: 1px solid rgba(244, 210, 132, 0.62) !important;
   border-radius: 999px !important;
-  font-family: 'DM Mono', monospace;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  letter-spacing: 1.1px !important;
-  text-transform: uppercase !important;
-  min-height: 46px !important;
-  padding: 0 28px !important;
+  font-size: 0 !important;
+  min-height: 52px !important;
+  padding: 0 34px !important;
   box-shadow:
     0 10px 26px rgba(199, 154, 54, 0.20),
     inset 0 1px 0 rgba(255, 255, 255, 0.52) !important;
   transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+/* The button's own React-rendered text ("Отправить") is hidden above via
+   font-size/color; the visible brand label is injected here instead so we
+   never have to mutate a node React still owns. */
+.portal-new-application-page [data-testid="button-submit-application"]::after {
+  content: 'Отправить заявку';
+  color: #171008;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
 }
 
 .portal-new-application-page [data-testid="button-submit-application"]:hover {
@@ -519,4 +520,338 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   box-shadow:
     0 14px 34px rgba(199, 154, 54, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.58) !important;
+}
+
+/* ---- Required-field marks + inline validation ---- */
+
+.portal-required-mark {
+  margin-left: 3px;
+  color: #E8B44E;
+}
+
+.portal-field-invalid .border-input {
+  border-color: rgba(229, 72, 77, 0.6) !important;
+  background: rgba(229, 72, 77, 0.08) !important;
+}
+
+.portal-field-invalid label {
+  color: rgba(245, 242, 233, 0.92) !important;
+}
+
+/* ---- More readable field labels (was 10px all-caps DM Mono) ---- */
+
+.portal-new-application-page label {
+  color: rgba(255, 255, 255, 0.78) !important;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+/* ---- Document checklist: "needed to start" vs "can wait" ---- */
+
+.portal-doc-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.portal-doc-group-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0 10px;
+}
+
+.portal-doc-group-required:not(:first-child) .portal-doc-group-heading {
+  padding-top: 18px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.portal-doc-group-later .portal-doc-group-heading {
+  padding-top: 18px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.portal-doc-group-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #F5F2E9;
+}
+
+.portal-doc-group-required .portal-doc-group-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--warning);
+  vertical-align: middle;
+}
+
+.portal-doc-group-hint {
+  font-size: 0.78rem;
+  color: rgba(245, 242, 233, 0.5);
+}
+
+/* ---- Two-column layout: sidebar + form, without touching the form's own
+   parent (see the DOM-surgery note in portal-overrides.js) ---- */
+
+.portal-newapp-layout {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.portal-newapp-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 24px;
+}
+
+.portal-newapp-side-card {
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 18px 48px rgba(0, 0, 0, 0.16);
+  padding: 20px;
+}
+
+.portal-newapp-side-title {
+  margin: 0 0 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #F5F2E9;
+}
+
+.portal-newapp-steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  counter-reset: portal-step;
+}
+
+.portal-newapp-steps li {
+  position: relative;
+  padding-left: 30px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: rgba(245, 242, 233, 0.78);
+  counter-increment: portal-step;
+}
+
+.portal-newapp-steps li::before {
+  content: counter(portal-step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #171008;
+  background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124);
+}
+
+.portal-newapp-steps li:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 22px;
+  width: 1px;
+  height: calc(100% - 6px);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.portal-newapp-tips {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.portal-newapp-tips li {
+  position: relative;
+  padding-left: 14px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: rgba(245, 242, 233, 0.68);
+}
+
+.portal-newapp-tips li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(245, 242, 233, 0.4);
+}
+
+.portal-newapp-mini-summary {
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.portal-newapp-mini-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: rgba(245, 242, 233, 0.6);
+}
+
+.portal-newapp-mini-row span:last-child {
+  font-weight: 600;
+  color: rgba(245, 242, 233, 0.85);
+}
+
+.portal-newapp-mini-row span.is-done {
+  color: var(--success);
+}
+
+@media (max-width: 900px) {
+  .portal-newapp-layout {
+    grid-template-columns: 1fr;
+  }
+  .portal-newapp-sidebar {
+    position: static;
+    order: 2;
+  }
+}
+
+/* ---- Pre-submit summary overlay ---- */
+
+.portal-newapp-summary-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(5, 5, 5, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.portal-newapp-summary-card {
+  width: min(440px, 100%);
+  border-radius: 16px;
+  padding: 28px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.portal-newapp-summary-kicker {
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.portal-newapp-summary-card h3 {
+  margin: 0 0 20px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #F5F2E9;
+}
+
+.portal-newapp-summary-list {
+  margin: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.portal-newapp-summary-list > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.portal-newapp-summary-list dt {
+  font-size: 0.8rem;
+  color: rgba(245, 242, 233, 0.55);
+}
+
+.portal-newapp-summary-list dd {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #F5F2E9;
+  text-align: right;
+}
+
+.portal-newapp-summary-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.portal-newapp-summary-back {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(245, 242, 233, 0.85);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0 20px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.portal-newapp-summary-back:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.portal-newapp-summary-confirm {
+  border: 1px solid rgba(244, 210, 132, 0.62);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124);
+  color: #171008;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
+  padding: 0 28px;
+  min-height: 44px;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(199, 154, 54, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.52);
+  transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.portal-newapp-summary-confirm:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
 }
