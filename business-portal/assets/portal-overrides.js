@@ -345,6 +345,96 @@
     });
   };
 
+  // ---------------------------------------------------------------------
+  // Visual-only "upload → autofill → review" framing. No file is read and
+  // no data is invented here: the shortcut card just proxies a click to
+  // the real, already-working invoice upload button/input so the actual
+  // Документы row still does the real work and stays the source of truth;
+  // this block only mirrors that row's own status text back to the top of
+  // the page. The "field filled from a document" badges are shown purely
+  // from whether a field currently has a value (real typing counts too —
+  // there's no way to tell a real keystroke from a demo value without
+  // actually parsing the file, which is explicitly out of scope here).
+  // ---------------------------------------------------------------------
+
+  const AUTOFILL_BADGE_FIELD_IDS = ['invoiceAmount', 'obligorName', 'invoiceDate', 'dueDate', 'description'];
+
+  const buildUploadFirstBlock = () => {
+    const card = document.createElement('div');
+    card.className = 'rounded-xl border bg-card text-card-foreground shadow portal-newapp-upload-first';
+    card.innerHTML =
+      '<div class="flex flex-col space-y-1.5 p-6">' +
+        '<div class="font-semibold tracking-tight text-base">Начните с инвойса</div>' +
+        '<p class="text-sm text-muted-foreground">Загрузите инвойс — данные ниже заполнятся автоматически. Останется только проверить.</p>' +
+      '</div>' +
+      '<div class="p-6 pt-0">' +
+        '<button type="button" class="portal-newapp-upload-cta">' +
+          '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"></path><path d="m17 8-5-5-5 5"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path></svg>' +
+          '<span>Загрузить инвойс</span>' +
+        '</button>' +
+        '<p class="portal-newapp-upload-status"></p>' +
+      '</div>';
+    return card;
+  };
+
+  const wireUploadFirstShortcut = (block) => {
+    const cta = block.querySelector('.portal-newapp-upload-cta');
+    if (!cta || cta.dataset.portalWired) return;
+    cta.dataset.portalWired = 'true';
+    cta.addEventListener('click', () => {
+      const realButton = document.querySelector('[data-testid="button-upload-invoice"]');
+      if (realButton) realButton.click();
+    });
+  };
+
+  const updateUploadFirstStatus = () => {
+    const statusEl = document.querySelector('.portal-newapp-upload-status');
+    const badge = document.querySelector('[data-testid="badge-doc-status-invoice"]');
+    if (!statusEl || !badge) return;
+    const uploaded = badge.textContent.trim() === 'Загружено';
+    setTextIfChanged(statusEl, uploaded ? 'Инвойс загружен — можно проверить данные ниже.' : 'Пока не загружен — поля ниже можно заполнить и вручную.');
+    statusEl.classList.toggle('is-done', uploaded);
+  };
+
+  const CHECK_ICON_SVG =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>';
+
+  const wireAutofillBadges = (form) => {
+    AUTOFILL_BADGE_FIELD_IDS.forEach((id) => {
+      const field = form.querySelector('#' + id);
+      if (!field || field.dataset.portalAutofillWired) return;
+      field.dataset.portalAutofillWired = 'true';
+
+      const wrapper = newAppFieldWrapper(field);
+      const label = wrapper && wrapper.querySelector('label');
+      if (label && !label.querySelector('.portal-autofill-badge')) {
+        const badge = document.createElement('span');
+        badge.className = 'portal-autofill-badge';
+        badge.innerHTML = CHECK_ICON_SVG + '<span>Из документа</span>';
+        label.appendChild(badge);
+      }
+
+      const sync = () => wrapper && wrapper.classList.toggle('portal-field-has-value', field.value.trim() !== '');
+      field.addEventListener('input', sync);
+      field.addEventListener('change', sync);
+      sync();
+    });
+  };
+
+  // The per-document "Загрузить"/"Заменить" buttons never set type="button",
+  // so inside a <form> they default to type="submit" — clicking one (a real
+  // click, or our upload-first shortcut proxying .click() to it) submits the
+  // form as a side effect. Harmless before this page had a submit gate, but
+  // now it pops the review summary or a validation error every time someone
+  // attaches a document. Force type="button" on every in-form button that
+  // isn't the actual submit button.
+  const fixNonSubmitButtonTypes = (form) => {
+    form.querySelectorAll('button').forEach((btn) => {
+      if (btn.dataset.testid === 'button-submit-application') return;
+      if (btn.getAttribute('type') !== 'button') btn.setAttribute('type', 'button');
+    });
+  };
+
   const newAppDocStatus = () => {
     const rows = NEWAPP_DOC_ORDER.map(({ key, required }) => {
       const badge = document.querySelector('[data-testid="badge-doc-status-' + key + '"]');
@@ -449,6 +539,7 @@
   const updateNewAppLiveState = (form) => {
     updateNewAppProgressCopy();
     updateNewAppMiniSummary(form);
+    updateUploadFirstStatus();
   };
 
   const buildNewAppSidebar = () => {
@@ -619,8 +710,17 @@
     page.classList.add('portal-new-application-page');
     markRequiredLabels(form);
     wireRequiredFieldClearing(form);
+    wireAutofillBadges(form);
+    fixNonSubmitButtonTypes(form);
     groupNewAppDocuments();
     wireNewAppSubmit(form);
+
+    if (!form.querySelector('.portal-newapp-upload-first')) {
+      const uploadBlock = buildUploadFirstBlock();
+      form.insertBefore(uploadBlock, form.firstElementChild);
+      wireUploadFirstShortcut(uploadBlock);
+    }
+    updateUploadFirstStatus();
 
     const layoutParent = page.parentElement;
     if (layoutParent && !layoutParent.classList.contains('portal-newapp-layout')) {

@@ -538,6 +538,88 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(245, 242, 233, 0.92) !important;
 }
 
+/* ---- "Upload first" shortcut card: visual-only, proxies to the real
+   invoice upload button/input (see portal-overrides.js) — no file
+   reading, no invented data. ---- */
+
+.portal-newapp-upload-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 22px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #F5F2E9;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.portal-newapp-upload-cta:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.portal-newapp-upload-cta svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.portal-newapp-upload-status {
+  margin: 12px 0 0;
+  font-size: 0.8rem;
+  color: rgba(245, 242, 233, 0.55);
+}
+
+.portal-newapp-upload-status.is-done {
+  color: var(--success);
+}
+
+/* ---- "Filled from a document" field badge — purely a reflection of
+   whether the field currently has a value (see wireAutofillBadges in
+   portal-overrides.js); shows for a real keystroke exactly the same as
+   for a demo value, since telling those apart would require actually
+   reading the file, which is explicitly out of scope. ---- */
+
+.portal-autofill-badge {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 1px 8px 1px 6px;
+  border-radius: 999px;
+  background: var(--success-bg);
+  color: var(--success);
+  font-size: 0.7rem;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.portal-field-has-value .portal-autofill-badge {
+  display: inline-flex;
+}
+
+.portal-autofill-badge svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+/* Alternate badge for a field the user has edited after autofill —
+   available for use, not applied automatically anywhere (see the brief:
+   showing the look is enough, no detection logic). Swap
+   .portal-autofill-badge for .portal-autofill-badge--edited on a field's
+   badge span to preview it. */
+.portal-autofill-badge--edited {
+  background: var(--warning-bg);
+  color: var(--warning);
+}
+
 /* ---- More readable field labels (was 10px all-caps DM Mono) ---- */
 
 .portal-new-application-page label {
