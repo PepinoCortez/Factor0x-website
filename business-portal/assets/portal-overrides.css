@@ -665,6 +665,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   vertical-align: middle;
 }
 
+/* The document label sat a couple pixels above the row's own icon/status/
+   button, which all already center against each other — this only nudges
+   the label into that same center, it doesn't touch the row's own
+   direction/structure (see the doc-row grid revert above for why that's
+   off-limits without seeing the live markup). */
+.portal-newapp-docs-card [data-testid^="text-doc-label-"] {
+  align-self: center;
+}
+
 .portal-doc-group-hint {
   font-size: 0.78rem;
   color: rgba(245, 242, 233, 0.5);
