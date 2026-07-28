@@ -345,11 +345,6 @@
     });
   };
 
-  const newAppRequiredFieldsFilled = (form) => {
-    const required = Array.from(form.querySelectorAll('[required]'));
-    return required.length > 0 && required.every((field) => field.checkValidity());
-  };
-
   const validateNewAppForm = (form) => {
     let firstInvalid = null;
     form.querySelectorAll('[required]').forEach((field) => {
@@ -521,23 +516,6 @@
     setTextIfChanged(textEl, parts.join(' · '));
   };
 
-  const updateNewAppMiniSummary = (form) => {
-    const dataEl = document.querySelector('.portal-newapp-mini-data');
-    const docsEl = document.querySelector('.portal-newapp-mini-docs');
-    if (!dataEl || !docsEl) return;
-    const dataDone = newAppRequiredFieldsFilled(form);
-    setTextIfChanged(dataEl, dataDone ? 'Готово ✓' : 'В процессе');
-    dataEl.classList.toggle('is-done', dataDone);
-    const docs = newAppDocStatus();
-    const requiredDone = docs.requiredTotal - docs.missingRequired.length;
-    const docsDone = docs.missingRequired.length === 0;
-    setTextIfChanged(
-      docsEl,
-      requiredDone + ' из ' + docs.requiredTotal + (docs.totalUploaded > requiredDone ? ' (+' + (docs.totalUploaded - requiredDone) + ')' : '')
-    );
-    docsEl.classList.toggle('is-done', docsDone);
-  };
-
   // Data fields are a byproduct of the documents, not the other way round —
   // they're shown dim (still fully editable) until the visitor actually
   // touches one, signaling "this will fill itself in" rather than "locked".
@@ -607,7 +585,6 @@
 
   const updateNewAppLiveState = (form) => {
     updateNewAppProgressCopy();
-    updateNewAppMiniSummary(form);
     updateUploadFirstStatus();
     updateNewAppSubmitGate(form);
   };
@@ -636,34 +613,6 @@
     });
     stepsCard.appendChild(stepsList);
     sidebar.appendChild(stepsCard);
-
-    const helpCard = document.createElement('div');
-    helpCard.className = 'portal-newapp-side-card';
-    const helpTitle = document.createElement('h2');
-    helpTitle.className = 'portal-newapp-side-title';
-    helpTitle.textContent = 'Подсказки';
-    helpCard.appendChild(helpTitle);
-
-    const tipsList = document.createElement('ul');
-    tipsList.className = 'portal-newapp-tips';
-    [
-      'Указывайте точную сумму — от неё зависит расчёт ставки.',
-      'Название дебитора — как в договоре, это ускорит проверку.',
-      'Не хватает документа? Можно приложить его позже, в карточке сделки.',
-    ].forEach((text) => {
-      const li = document.createElement('li');
-      li.textContent = text;
-      tipsList.appendChild(li);
-    });
-    helpCard.appendChild(tipsList);
-
-    const miniSummary = document.createElement('div');
-    miniSummary.className = 'portal-newapp-mini-summary';
-    miniSummary.innerHTML =
-      '<div class="portal-newapp-mini-row"><span>Данные</span><span class="portal-newapp-mini-data">—</span></div>' +
-      '<div class="portal-newapp-mini-row"><span>Документы</span><span class="portal-newapp-mini-docs">—</span></div>';
-    helpCard.appendChild(miniSummary);
-    sidebar.appendChild(helpCard);
 
     return sidebar;
   };

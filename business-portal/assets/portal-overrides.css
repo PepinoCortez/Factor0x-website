@@ -821,60 +821,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: rgba(255, 255, 255, 0.14);
 }
 
-.portal-newapp-tips {
-  margin: 0 0 16px;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.portal-newapp-tips li {
-  position: relative;
-  padding-left: 14px;
-  font-size: 0.8rem;
-  line-height: 1.45;
-  color: rgba(245, 242, 233, 0.68);
-}
-
-.portal-newapp-tips li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.5em;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(245, 242, 233, 0.4);
-}
-
-.portal-newapp-mini-summary {
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.portal-newapp-mini-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.78rem;
-  color: rgba(245, 242, 233, 0.6);
-}
-
-.portal-newapp-mini-row span:last-child {
-  font-weight: 600;
-  color: rgba(245, 242, 233, 0.85);
-}
-
-.portal-newapp-mini-row span.is-done {
-  color: var(--success);
-}
-
-
 /* ---- Pre-submit summary overlay ---- */
 
 .portal-newapp-summary-backdrop {
