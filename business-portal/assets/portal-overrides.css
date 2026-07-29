@@ -556,40 +556,46 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   box-shadow: 0 0 0 3px rgba(244, 210, 132, 0.08) !important;
 }
 
+/* Exact recipe of .gold-cta (the "Подать новую заявку" button on Обзор,
+   see index-Fw-zsoxe.css) instead of this page's own bespoke pill/mono-
+   uppercase treatment — same gold CTA look everywhere it appears. Real
+   button text shows through normally now (no more hide-text-inject-::after
+   trick, which only existed to force the old pill's mono/uppercase style). */
 .portal-new-application-page [data-testid="button-submit-application"] {
   position: relative;
+  overflow: hidden;
+  color: #171008 !important;
   background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124) !important;
-  color: transparent !important;
-  border: 1px solid rgba(244, 210, 132, 0.62) !important;
-  border-radius: 999px !important;
-  font-size: 0 !important;
-  min-height: 52px !important;
-  padding: 0 34px !important;
-  box-shadow:
-    0 10px 26px rgba(199, 154, 54, 0.20),
-    inset 0 1px 0 rgba(255, 255, 255, 0.52) !important;
-  transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease !important;
-}
-
-/* The button's own React-rendered text ("Отправить") is hidden above via
-   font-size/color; the visible brand label is injected here instead so we
-   never have to mutate a node React still owns. */
-.portal-new-application-page [data-testid="button-submit-application"]::after {
-  content: 'Отправить заявку';
-  color: #171008;
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 1.1px;
-  text-transform: uppercase;
+  border: 1px solid #F4D28494 !important;
+  border-radius: 8px !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  min-height: 0 !important;
+  padding: 12px 24px !important;
+  box-shadow: none !important;
+  transition: transform 0.2s, background 0.2s, border-color 0.2s !important;
 }
 
 .portal-new-application-page [data-testid="button-submit-application"]:hover {
+  background: linear-gradient(135deg, #D1A540, #FFE8B2 48%, #A97928) !important;
   transform: translateY(-1px);
-  filter: brightness(1.04);
-  box-shadow:
-    0 14px 34px rgba(199, 154, 54, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.58) !important;
+}
+
+.portal-new-application-page [data-testid="button-submit-application"]::after {
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.52), transparent);
+  width: 34%;
+  height: 220%;
+  position: absolute;
+  top: -60%;
+  left: -45%;
+  transform: skew(-18deg);
+}
+
+.portal-new-application-page [data-testid="button-submit-application"]:hover::after {
+  animation: 0.85s forwards cta-shine;
 }
 
 /* ---- Required-field marks + inline validation ---- */
@@ -743,20 +749,18 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   }
 }
 
-.portal-new-application-page form > .portal-newapp-submit-row {
-  grid-column: 1 / -1;
-}
-
 /* Документы is the action (upload happens there); Данные is its result
    (fields fill in from what got uploaded) — left-to-right reading order
    should match that, so Документы sits in the first column now. */
 .portal-new-application-page form > .portal-newapp-docs-card {
   grid-column: 1;
+  grid-row: 1;
   order: 1;
 }
 
 .portal-new-application-page form > .portal-newapp-data-card {
   grid-column: 2;
+  grid-row: 1;
   order: 2;
   /* Документы (7 rows) runs taller than Данные (a handful of fields) —
      sticking the shorter column means it tracks the scroll instead of
@@ -767,6 +771,28 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
      makes sticky inert without an explicit override. */
   position: sticky;
   top: 16px;
+}
+
+/* Submit overlaps Заявка на финансирование's own grid cell (same column
+   and row as .portal-newapp-data-card) instead of sitting in a separate
+   full-width row — landing near its heading, top-right, offset to roughly
+   match the card's own 24px header padding (CardHeader is p-6 natively).
+   Deliberately NOT moved into that card's actual DOM subtree: the last
+   time two of form's top-level sections got nested a level deeper (the
+   old columns-wrapper attempt), React's reconciliation for form's direct
+   children broke and duplicated content — self-alignment inside the same
+   grid cell gets the same visual result without touching the DOM tree.
+   Sticks in lockstep with the card it overlaps. */
+.portal-new-application-page form > .portal-newapp-submit-row {
+  grid-column: 2;
+  grid-row: 1;
+  order: 3;
+  justify-self: end;
+  align-self: start;
+  margin: 20px 20px 0 0;
+  position: sticky;
+  top: 36px;
+  z-index: 2;
 }
 
 .portal-newapp-main-scroll-fix {
@@ -781,6 +807,16 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   .portal-new-application-page form > .portal-newapp-data-card,
   .portal-new-application-page form > .portal-newapp-docs-card {
     grid-column: 1;
+  }
+
+  /* Single column: no card left to overlap, so submit goes back to being
+     its own full-width row instead of overlaid on Данные's corner. */
+  .portal-new-application-page form > .portal-newapp-submit-row {
+    grid-column: 1;
+    justify-self: stretch;
+    align-self: auto;
+    margin: 0;
+    position: static;
   }
 }
 
