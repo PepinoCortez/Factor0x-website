@@ -173,6 +173,34 @@
     return { left, right };
   };
 
+  // Заявок на рассмотрении / Активных сделок / Ближайшее погашение all lead
+  // to the same place a borrower would actually go to act on them — Мои
+  // сделки — so they become links to it. Всего профинансировано is left
+  // alone (a pure summary figure, nothing to drill into).
+  const METRIC_CARD_LINKS = ['Заявок на рассмотрении', 'Активных сделок', 'Ближайшее погашение'];
+
+  const wireMetricCardLinks = (metricsShell) => {
+    Array.from(metricsShell.children).forEach((metricCard) => {
+      if (!(metricCard instanceof HTMLElement) || metricCard.dataset.portalLinkWired) return;
+      if (!METRIC_CARD_LINKS.some((label) => metricCard.textContent.includes(label))) return;
+      metricCard.dataset.portalLinkWired = 'true';
+      metricCard.classList.add('portal-metric-card-clickable');
+      metricCard.setAttribute('role', 'link');
+      metricCard.tabIndex = 0;
+      const go = () => {
+        const dealsLink = findNavLink('Мои сделки');
+        if (dealsLink) dealsLink.click();
+      };
+      metricCard.addEventListener('click', go);
+      metricCard.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          go();
+        }
+      });
+    });
+  };
+
   const applyOverviewTheme = () => {
     const overviewRoot = document.querySelector('main .mx-auto.flex.max-w-5xl.flex-col.gap-6');
     if (!overviewRoot) return false;
@@ -219,6 +247,7 @@
             metricCard.classList.add('portal-metric-card');
           }
         });
+        wireMetricCardLinks(metricsShell);
       }
 
       splitCurrencyTag(document.querySelector('[data-testid="kpi-total-financed"]'));
@@ -322,6 +351,14 @@
     }
     return null;
   };
+
+  // Proxies to the app's own SPA routing (same trick as the old upload
+  // shortcut card): clicking the real nav link gets client-side navigation
+  // for free, instead of a full-page window.location reload.
+  const findNavLink = (label) =>
+    Array.from(document.querySelectorAll('a, button, [role="link"]')).find(
+      (el) => el.textContent.trim() === label
+    );
 
   // The MutationObserver driving run() watches childList/subtree, and
   // `el.textContent = x` always replaces child nodes (even when the text is
