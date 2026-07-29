@@ -418,6 +418,26 @@
     };
   };
 
+  // Softens the repeated "Нужно загрузить" status: 7 identical prompts read
+  // as a list of things the visitor failed to do. The required docs keep a
+  // neutral, un-urgent status word instead; the optional ones drop the
+  // status altogether while nothing's attached — just the icon, name and
+  // upload button, "here's what you could add" rather than "here's what
+  // you didn't do". Reuses newAppDocStatus's own uploaded-detection (based
+  // on the native "Загружено" text, which this never touches) rather than
+  // re-deriving it, so it stays correct after this rewrites the other text.
+  const softenDocStatusTone = () => {
+    newAppDocStatus().rows.forEach(({ key, required, uploaded }) => {
+      const badge = document.querySelector('[data-testid="badge-doc-status-' + key + '"]');
+      if (!badge) return;
+      if (required) {
+        if (!uploaded) setTextIfChanged(badge, 'Не загружено');
+      } else {
+        badge.classList.toggle('portal-doc-badge-hidden', !uploaded);
+      }
+    });
+  };
+
   // Groups the 7 document rows in place (same parent, no reparenting of the
   // rows container itself) into "needed to start" vs "can wait" sections.
   const groupNewAppDocuments = () => {
@@ -570,6 +590,7 @@
   const updateNewAppLiveState = (form) => {
     updateNewAppProgressCopy();
     updateNewAppSubmitGate(form);
+    softenDocStatusTone();
   };
 
   const buildNewAppSidebar = () => {
@@ -712,6 +733,12 @@
     if (!page || !form) return false;
 
     page.classList.add('portal-new-application-page');
+    // "0.00" reads as "already zero/empty" before the visitor's typed
+    // anything — swap it for a non-zero example, same convention the other
+    // fields already use ("Например, Carrefour UAE" etc.).
+    if (amountInput.placeholder === '0.00') {
+      amountInput.placeholder = 'Например, 12500.00';
+    }
     markRequiredLabels(form);
     wireRequiredFieldClearing(form);
     fixNonSubmitButtonTypes(form);

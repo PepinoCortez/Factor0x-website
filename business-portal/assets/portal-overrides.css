@@ -457,6 +457,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   margin-right: auto !important;
 }
 
+/* Same title size/weight as Обзор's h1 (.portal-overview-header h1) —
+   native Tailwind text-2xl here read noticeably smaller than that page. */
+.portal-new-application-page h1 {
+  font-size: clamp(1.75rem, 2.2rem, 2.5rem) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.03em !important;
+  color: #F5F2E9;
+}
+
 /* `page`'s only two children are the header (title + subtitle) and the
    <form> (see the DOM-surgery note in portal-overrides.js). The header
    kept its own original width cap from before the form was widened above,
@@ -489,11 +498,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-new-application-page input.border-input,
 .portal-new-application-page button.border-input {
-  min-height: 46px;
+  min-height: 38px;
 }
 
 .portal-new-application-page textarea.border-input {
-  min-height: 90px;
+  min-height: 72px;
 }
 
 /* Hide the native number-input spinner (Сумма инвойса) — it clashes with
@@ -561,7 +570,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-required-mark {
   margin-left: 3px;
-  color: #E8B44E;
+  color: rgba(245, 242, 233, 0.42);
 }
 
 .portal-field-invalid .border-input {
@@ -608,15 +617,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-doc-group-required:not(:first-child) .portal-doc-group-heading {
-  padding-top: 18px;
-  margin-top: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 28px;
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .portal-doc-group-later .portal-doc-group-heading {
-  padding-top: 18px;
-  margin-top: 4px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 28px;
+  margin-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .portal-doc-group-title {
@@ -658,15 +667,41 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 10px;
 }
 
+/* Brighter/more contrasty than the first pass — it blended into the
+   background before. Kept neutral (not gold: gold stays reserved for
+   "Отправить") but bright enough to read as "start here". */
 .portal-doc-row-primary-tag {
   display: inline-flex;
   align-items: center;
   margin-left: 8px;
-  padding: 2px 8px;
+  padding: 2px 9px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   font-size: 0.7rem;
-  color: rgba(245, 242, 233, 0.7);
+  font-weight: 600;
+  color: #F5F2E9;
+}
+
+/* Document icons: soften the identical 7-in-a-row look, then bring
+   invoice's back to full strength since it's the primary document. Both
+   classes (rounded-lg + bg-muted) together are unique to the icon's own
+   box in this row (confirmed against the compiled component); nothing
+   else in this card pairs them. */
+.portal-newapp-docs-card .rounded-lg.bg-muted {
+  opacity: 0.55;
+}
+
+.portal-newapp-docs-card .portal-doc-row-primary .rounded-lg.bg-muted {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+
+/* "Можно догрузить позже": no status badge while nothing's attached yet —
+   just icon, name, button (see softenDocStatusTone in portal-overrides.js).
+   Still shows "Загружено" once it actually is one. */
+.portal-doc-badge-hidden {
+  display: none;
 }
 
 /* ---- Inside the form: "Данные по инвойсу" / "Документы" side by side.
@@ -695,8 +730,17 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   grid-column: 1 / -1;
 }
 
-.portal-new-application-page form > .portal-newapp-data-card {
+/* Документы is the action (upload happens there); Данные is its result
+   (fields fill in from what got uploaded) — left-to-right reading order
+   should match that, so Документы sits in the first column now. */
+.portal-new-application-page form > .portal-newapp-docs-card {
   grid-column: 1;
+  order: 1;
+}
+
+.portal-new-application-page form > .portal-newapp-data-card {
+  grid-column: 2;
+  order: 2;
   /* Документы (7 rows) runs taller than Данные (a handful of fields) —
      sticking the shorter column means it tracks the scroll instead of
      leaving a growing gap of empty space under it once its own content
@@ -706,10 +750,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
      makes sticky inert without an explicit override. */
   position: sticky;
   top: 16px;
-}
-
-.portal-new-application-page form > .portal-newapp-docs-card {
-  grid-column: 2;
 }
 
 .portal-newapp-main-scroll-fix {
@@ -736,6 +776,18 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-newapp-data-card [class*="grid-cols-3"] {
   display: flex !important;
   flex-direction: column !important;
+}
+
+/* Tighter vertical rhythm between field rows (native gap-5 = 20px, gap-4 =
+   16px) — shorter inputs above and a denser stack read as a more composed
+   form instead of a padded-out one. Exact class names, confirmed from the
+   compiled component, not a guess. */
+.portal-newapp-data-card .gap-5 {
+  gap: 14px;
+}
+
+.portal-newapp-data-card .gap-4 {
+  gap: 10px;
 }
 
 /* Data fields read as "will fill itself in from the documents" until
