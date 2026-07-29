@@ -551,7 +551,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-deals-header {
   margin: 0;
   padding: 0.85rem 1.25rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 /* Removes the gap-3 between row-cards so they sit flush against each
@@ -565,15 +565,19 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    click behavior. */
 .portal-deals-list [data-testid^="card-deal-"] {
   border-radius: 0 !important;
-  border: 0 !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-width: 0 !important;
+  border-bottom-width: 1px !important;
+  border-bottom-style: solid !important;
+  /* Matches the outer table frame's own 0.16 border — 0.1 read as
+     basically invisible against the near-black card background. */
+  border-bottom-color: rgba(255, 255, 255, 0.18) !important;
   box-shadow: none !important;
   background: transparent !important;
   transition: background 0.15s ease;
 }
 
 .portal-deals-list [data-testid^="card-deal-"]:last-child {
-  border-bottom: 0 !important;
+  border-bottom-width: 0 !important;
 }
 
 .portal-deals-list [data-testid^="card-deal-"]:hover {
