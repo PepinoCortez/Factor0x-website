@@ -820,10 +820,39 @@
     return true;
   };
 
+  // "Мои сделки": each deal is its own separate, individually-rounded card
+  // with a gap to the next one — Архив (a real <table> in one bordered
+  // card) reads as denser and more unified. Can't turn this into an actual
+  // <table> without rewriting how the app renders it, so this reskins the
+  // existing cards in place: one shared frame around the header + list,
+  // gaps removed, and each card flattened to a border-bottom row instead
+  // of its own rounded/shadowed box — same visual result as Архив without
+  // touching the DOM structure (list-deals's own cards, and their onClick/
+  // Link navigation, are untouched).
+  const applyDealsTheme = () => {
+    const list = document.querySelector('[data-testid="list-deals"]');
+    if (!list) return false;
+    if (list.dataset.portalDealsWired) return true;
+
+    const tableWrap = list.parentElement;
+    if (!tableWrap) return false;
+    list.dataset.portalDealsWired = 'true';
+
+    tableWrap.classList.add('portal-deals-table');
+    list.classList.add('portal-deals-list');
+    const headerRow = tableWrap.firstElementChild;
+    if (headerRow && headerRow !== list) {
+      headerRow.classList.add('portal-deals-header');
+    }
+
+    return true;
+  };
+
   const run = () => {
     const overviewDone = applyOverviewTheme();
     const newApplicationDone = applyNewApplicationTheme();
-    if (!overviewDone && !newApplicationDone) {
+    const dealsDone = applyDealsTheme();
+    if (!overviewDone && !newApplicationDone && !dealsDone) {
       window.setTimeout(run, 120);
     }
   };

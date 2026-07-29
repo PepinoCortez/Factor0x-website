@@ -534,6 +534,52 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   }
 }
 
+/* "Мои сделки": reads as one dense table frame, matching Архив's actual
+   <table>, instead of a stack of individually-rounded cards with gaps
+   between them (see applyDealsTheme in portal-overrides.js — same dark
+   card recipe used everywhere else in this file). */
+.portal-deals-table {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 48px rgba(0, 0, 0, 0.16);
+  overflow: hidden;
+}
+
+.portal-deals-header {
+  margin: 0;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Removes the gap-3 between row-cards so they sit flush against each
+   other, like a table's rows. */
+.portal-deals-list {
+  gap: 0;
+}
+
+/* Flattens each deal's own card (rounded-xl border shadow) to a plain
+   border-bottom row — same idea as a <tr>, without touching its Link/
+   click behavior. */
+.portal-deals-list [data-testid^="card-deal-"] {
+  border-radius: 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  transition: background 0.15s ease;
+}
+
+.portal-deals-list [data-testid^="card-deal-"]:last-child {
+  border-bottom: 0 !important;
+}
+
+.portal-deals-list [data-testid^="card-deal-"]:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
 /* "Новая заявка": restyle to match the landing page's "Get financing"
    apply-form look (dark glass panels, mono uppercase labels, gold pill
    submit). Fields/layout are untouched on purpose — this is a visual
