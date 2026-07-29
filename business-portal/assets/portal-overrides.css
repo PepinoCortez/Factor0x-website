@@ -288,7 +288,10 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: 1rem;
-  align-items: start;
+  /* stretch (not start): lets .portal-repayments-card below grow to reach
+     the same bottom edge as Последние события instead of stopping short
+     at its own natural content height. */
+  align-items: stretch;
   /* No extra margin here — the 1rem bottom padding on .portal-overview-card
      above is the only gap source now, matching .portal-overview-metrics's
      own 1rem row-gap so the rhythm is consistent top to bottom instead of
@@ -333,6 +336,18 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
     0 18px 48px rgba(0, 0, 0, 0.16) !important;
 }
 
+/* Grows to close the gap down to Последние события's bottom edge (see
+   align-items:stretch on .portal-bottom-grid above) instead of stopping at
+   its own short, 3-row natural height. Требует внимания above it (if
+   present) keeps its own natural height — only this one absorbs the
+   stretched space. */
+.portal-repayments-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
 .portal-attention-card:hover,
 .portal-repayments-card:hover {
   transform: none !important;
@@ -350,6 +365,35 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+}
+
+/* Grows with .portal-repayments-card (see above) and scrolls internally
+   once its content is taller than the space that stretch gives it —
+   .portal-attention-list keeps its own natural, un-scrolled height. */
+.portal-repayments-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) rgba(255, 255, 255, 0.06);
+}
+
+/* Same thin, rounded scrollbar recipe as the landing page's apply-form
+   file list (.apply-form .file-list-items), for a consistent look
+   wherever a scroll appears in this app. */
+.portal-repayments-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.portal-repayments-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+
+.portal-repayments-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
 }
 
 .portal-attention-item {
