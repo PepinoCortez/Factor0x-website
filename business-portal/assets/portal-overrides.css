@@ -788,13 +788,19 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   vertical-align: middle;
 }
 
-/* The document label sat a couple pixels above the row's own icon/status/
-   button, which all already center against each other — this only nudges
-   the label into that same center, it doesn't touch the row's own
+/* The icon+label wrapper (confirmed from the compiled component: a plain
+   `flex items-start gap-3` div — icon box, then a second div holding the
+   label <p> and an optional note/filename <p>) top-aligns its two
+   children instead of centering them, so a single-line label (no note)
+   sits near the icon's top edge instead of centered against its 36px
+   height. align-self on the label itself did nothing (it isn't a direct
+   child of this flex row — the surrounding div is), so this targets the
+   actual flex container. Doesn't touch the row's own outer
    direction/structure (see the doc-row grid revert above for why that's
-   off-limits without seeing the live markup). */
-.portal-newapp-docs-card [data-testid^="text-doc-label-"] {
-  align-self: center;
+   off-limits without seeing the live markup) — just this one wrapper's
+   cross-axis alignment. */
+.portal-newapp-docs-card .flex.items-start.gap-3 {
+  align-items: center;
 }
 
 .portal-doc-group-hint {
