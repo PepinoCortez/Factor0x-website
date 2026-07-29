@@ -560,6 +560,11 @@
     dataCard.classList.add('portal-newapp-data-card');
     docsCard.classList.add('portal-newapp-docs-card');
 
+    const dataHeading = Array.from(dataCard.querySelectorAll('*')).find(
+      (el) => el.children.length === 0 && el.textContent.trim() === 'Данные по инвойсу'
+    );
+    if (dataHeading) setTextIfChanged(dataHeading, 'Заявка на финансирование');
+
     // If the submit button lives in its own section (not nested in either
     // card above), mark it too so it spans full width below both columns —
     // via CSS grid-column, same as above: no move, just a class.
@@ -738,6 +743,13 @@
     // fields already use ("Например, Carrefour UAE" etc.).
     if (amountInput.placeholder === '0.00') {
       amountInput.placeholder = 'Например, 12500.00';
+    }
+    // Header subtitle: page's first (and only non-form) child is the
+    // "mb-6" div holding just the h1 and this one <p> — reworded now that
+    // Документы sits on the left and is the actual point of entry.
+    const subtitleEl = page.querySelector(':scope > div > p');
+    if (subtitleEl) {
+      setTextIfChanged(subtitleEl, 'Загрузите документы — форма справа заполнится автоматически.');
     }
     markRequiredLabels(form);
     wireRequiredFieldClearing(form);
