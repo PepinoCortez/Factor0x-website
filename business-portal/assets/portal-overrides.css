@@ -534,6 +534,12 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   }
 }
 
+/* Page root is native max-w-5xl (1024px) — 15% wider, same page-specific
+   override pattern as .portal-new-application-page's own max-width. */
+.portal-deals-page {
+  max-width: 1178px !important;
+}
+
 /* "Мои сделки": reads as one dense table frame, matching Архив's actual
    <table>, instead of a stack of individually-rounded cards with gaps
    between them (see applyDealsTheme in portal-overrides.js — same dark

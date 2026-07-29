@@ -1170,6 +1170,14 @@
     const tableWrap = list.parentElement;
     if (!tableWrap) return false;
 
+    // The page root is shared markup with Обзор (same "mx-auto max-w-5xl"
+    // combo, which is why applyOverviewTheme's own generic selector also
+    // tags it "portal-overview-page" harmlessly) — this class is the
+    // deals-page-specific hook for widening just this page (see CSS).
+    const overflowWrap = tableWrap.parentElement;
+    const pageRoot = overflowWrap && overflowWrap.parentElement;
+    if (pageRoot) pageRoot.classList.add('portal-deals-page');
+
     tableWrap.classList.add('portal-deals-table');
     list.classList.add('portal-deals-list');
     const headerRow = tableWrap.firstElementChild;
