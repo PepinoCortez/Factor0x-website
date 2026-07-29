@@ -548,9 +548,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   overflow: hidden;
 }
 
+/* Extra left padding here reserves the same gutter width the chevron
+   overlay below claims on each row (2rem, matching Архив's own w-8
+   chevron column) — otherwise these header labels would sit 2rem left
+   of the data they label, since both share the same grid template. */
 .portal-deals-header {
   margin: 0;
-  padding: 0.85rem 1.25rem;
+  padding: 0.85rem 1.25rem 0.85rem 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
@@ -582,6 +586,25 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-deals-list [data-testid^="card-deal-"]:hover {
   background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Moves the row's chevron (data grid's last item, native class
+   justify-self-end, confirmed from the compiled component) to the start
+   of the row instead of the end — matching Архив's own chevron column,
+   which sits before ID. Done as a reserved-gutter + absolute-position
+   overlay rather than reordering the grid, so the other 7 columns keep
+   their exact original grid-column tracks (shared with the header row's
+   own template) instead of every column needing to shift over one slot. */
+.portal-deals-list [data-testid^="card-deal-"] > div {
+  position: relative;
+  padding-left: 2rem !important;
+}
+
+.portal-deals-list [data-testid^="card-deal-"] > div > .justify-self-end {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 /* "Новая заявка": restyle to match the landing page's "Get financing"
