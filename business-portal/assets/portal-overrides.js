@@ -621,7 +621,10 @@
         const tag = document.createElement('span');
         tag.className = 'portal-doc-row-primary-tag';
         tag.textContent = 'Главный документ';
-        invoiceLabel.insertAdjacentElement('afterend', tag);
+        // Appended *inside* the label (not as a sibling after it) so the
+        // inline-flex tag sits on the same line as "Инвойс" instead of
+        // wrapping to its own line below.
+        invoiceLabel.appendChild(tag);
       }
     }
 

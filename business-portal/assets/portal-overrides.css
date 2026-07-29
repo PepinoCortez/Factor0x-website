@@ -766,6 +766,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-doc-row-primary-tag {
   display: inline-flex;
   align-items: center;
+  vertical-align: middle;
   margin-left: 8px;
   padding: 2px 9px;
   border-radius: 999px;
