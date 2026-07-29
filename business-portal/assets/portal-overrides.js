@@ -372,20 +372,9 @@
     });
   };
 
-  // ---------------------------------------------------------------------
   // Invoice upload has exactly one entry point: the "Инвойс" row in
-  // Документы (highlighted below as the primary document). This is just the
-  // explanatory line above the two columns — no card, no button, no second
-  // upload path to confuse with the real one.
-  // ---------------------------------------------------------------------
-
-  const buildUploadIntroText = () => {
-    const intro = document.createElement('p');
-    intro.className = 'portal-newapp-upload-intro text-sm text-muted-foreground';
-    intro.textContent =
-      'Загрузите инвойс — данные ниже заполнятся автоматически, останется только проверить. Пока не загружен — поля можно заполнить и вручную.';
-    return intro;
-  };
+  // Документы (highlighted as the primary document). The header subtitle
+  // already explains the autofill flow, so no separate intro line here.
 
   // The per-document "Загрузить"/"Заменить" buttons never set type="button",
   // so inside a <form> they default to type="submit" — clicking one (a real
@@ -756,10 +745,6 @@
     fixNonSubmitButtonTypes(form);
     groupNewAppDocuments();
     wireNewAppSubmit(form);
-
-    if (!form.querySelector('.portal-newapp-upload-intro')) {
-      form.insertBefore(buildUploadIntroText(), form.firstElementChild);
-    }
 
     const dataCard = applyNewAppColumnsLayout(form);
     wireNewAppFieldMuting(dataCard);

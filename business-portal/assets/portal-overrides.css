@@ -582,14 +582,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(245, 242, 233, 0.92) !important;
 }
 
-/* ---- Upload intro line: plain text above the two columns, no card/button
-   — the only upload entry point is the Инвойс row in Документы (see
-   .portal-doc-row-primary below). ---- */
-
-.portal-newapp-upload-intro {
-  margin: 0 0 4px;
-}
-
 /* ---- More readable field labels (was 10px all-caps DM Mono) ---- */
 
 .portal-new-application-page label {
@@ -725,7 +717,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   }
 }
 
-.portal-new-application-page form > .portal-newapp-upload-intro,
 .portal-new-application-page form > .portal-newapp-submit-row {
   grid-column: 1 / -1;
 }
