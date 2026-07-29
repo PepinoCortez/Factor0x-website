@@ -998,6 +998,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(245, 242, 233, 0.5);
 }
 
+/* "Комплектность пакета / Загружено N из M документов" + its progress bar
+   (hideNewAppPackageProgress in portal-overrides.js) — the document list
+   right below already shows this row by row. */
+.portal-hidden-package-progress {
+  display: none;
+}
+
 /* Invoice is the one document upload entry point now (the old top card is
    gone) — a plain background tint. The highlight used to sit flush against
    the icon and the "Загрузить" button (zero side padding), reading as if it

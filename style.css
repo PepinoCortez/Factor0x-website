@@ -2956,7 +2956,7 @@ body.landscape-modal-open .invoice-table th {
   min-height: 60px;
   margin-top: 26px;
   padding: 15px 34px;
-  border-radius: 999px;
+  border-radius: 10px;
   text-decoration: none;
   cursor: pointer;
   font-family: 'Manrope', sans-serif;
@@ -3516,7 +3516,7 @@ body.landscape-modal-open .invoice-table th {
   align-self: end;
   min-height: 46px;
   border: 1px solid rgba(244,210,132,0.62);
-  border-radius: 999px;
+  border-radius: 10px;
   background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124);
   color: #171008;
   font-family: 'DM Mono', monospace;

@@ -548,6 +548,22 @@
     });
   };
 
+  // "Комплектность пакета / Загружено N из M документов" + its progress bar
+  // duplicated what the document list right below it already shows row by
+  // row — hidden rather than removed (a plain display:none on nodes React
+  // still owns is harmless and survives re-renders on its own).
+  const hideNewAppPackageProgress = (form) => {
+    const label = Array.from(form.querySelectorAll('span')).find(
+      (el) => el.children.length === 0 && el.textContent.trim() === 'Комплектность пакета'
+    );
+    if (!label) return;
+    const row = label.parentElement;
+    if (!row || row.classList.contains('portal-hidden-package-progress')) return;
+    row.classList.add('portal-hidden-package-progress');
+    const progressBar = row.nextElementSibling;
+    if (progressBar) progressBar.classList.add('portal-hidden-package-progress');
+  };
+
   // Groups the 7 document rows in place (same parent, no reparenting of the
   // rows container itself) into "needed to start" vs "can wait" sections.
   const groupNewAppDocuments = () => {
@@ -863,6 +879,7 @@
       setTextIfChanged(subtitleEl, 'Загрузите документы — остальные поля определятся автоматически. Что-то не так — укажите в комментарии.');
     }
     fixNonSubmitButtonTypes(form);
+    hideNewAppPackageProgress(form);
     groupNewAppDocuments();
     wireNewAppSubmit(form);
 
