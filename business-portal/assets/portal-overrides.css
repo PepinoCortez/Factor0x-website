@@ -1246,19 +1246,28 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   pointer-events: none;
 }
 
-/* The lock glyph (addNewAppLockIcons in portal-overrides.js) sits as a
-   plain flex sibling after the field instead of an icon floated inside it —
-   works the same way for a text input and a <select> trigger without
-   reaching inside either. */
+/* An <input> can't hold the lock icon as a real child (void element), so
+   this wrapper is purely a positioning anchor — same visual bounds as the
+   input itself (it fills the wrapper via its own w-full) — and the icon is
+   absolutely placed at its right edge, inside that one box, instead of
+   sitting in a second box next to it (see addNewAppLockIcons in
+   portal-overrides.js). The <select> trigger case (addNewAppSelectLockIcons)
+   doesn't need this wrapper at all — the icon there is a real child of the
+   button, laid out by the button's own flex row. */
 .portal-lock-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  position: relative;
 }
 
 .portal-lock-wrap > .portal-field-locked {
-  flex: 1;
-  min-width: 0;
+  padding-right: 34px !important;
+}
+
+.portal-lock-wrap > .portal-lock-icon {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 .portal-lock-icon {
