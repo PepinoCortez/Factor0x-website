@@ -368,28 +368,54 @@
     if (el.textContent !== value) el.textContent = value;
   };
 
-  const addRequiredMark = (label) => {
-    if (label && !label.querySelector('.portal-required-mark')) {
-      const mark = document.createElement('span');
-      mark.className = 'portal-required-mark';
-      mark.textContent = '*';
-      mark.setAttribute('aria-hidden', 'true');
-      label.appendChild(mark);
-    }
+  // Every field but the comment is filled from the uploaded documents, not
+  // typed in by the visitor — locked (disabled) rather than editable. A
+  // disabled field is automatically excluded from native constraint
+  // validation, so this alone is enough to keep the old required-field gate
+  // from blocking submit on these; the submit gate that actually matters now
+  // is the document checklist (see updateNewAppSubmitGate).
+  const NEWAPP_LOCKED_FIELD_IDS = ['invoiceAmount', 'currency', 'obligorName', 'obligorCountry', 'invoiceDate', 'dueDate'];
+
+  // The two free-text fields shipped with "Например, ..." typing hints —
+  // wrong tone now that nobody types into them.
+  const NEWAPP_LOCKED_PLACEHOLDER = 'Определится автоматически';
+
+  const lockNewAppDataFields = (form) => {
+    NEWAPP_LOCKED_FIELD_IDS.forEach((id) => {
+      const field = form.querySelector('#' + id);
+      if (!field) return;
+      if (field.tagName === 'INPUT' && field.placeholder !== NEWAPP_LOCKED_PLACEHOLDER) {
+        field.placeholder = NEWAPP_LOCKED_PLACEHOLDER;
+      }
+      if (field.disabled) return;
+      field.disabled = true;
+      field.classList.add('portal-field-locked');
+    });
   };
 
-  const markRequiredLabels = (form) => {
-    form.querySelectorAll('[required]').forEach((field) => {
-      if (!field.id) return;
-      addRequiredMark(form.querySelector('label[for="' + field.id + '"]'));
-    });
-    // Валюта / Страна дебитора aren't HTML-required (both already default
-    // to a real value, AED / United Arab Emirates) — the mark here is
-    // cosmetic only, matching the other fields' look, not a new validation
-    // rule.
-    ['currency', 'obligorCountry'].forEach((id) => {
-      addRequiredMark(form.querySelector('label[for="' + id + '"]'));
-    });
+  // "Краткое описание товаров/услуг" is repurposed as the one thing left for
+  // the visitor to actually do here: flag it if the auto-filled data above
+  // is wrong. No real document parsing exists yet (see lockNewAppDataFields)
+  // — until it does, this comment is how a visitor corrects a bad value.
+  const repurposeNewAppComment = (form) => {
+    const textarea = form.querySelector('#description');
+    if (!textarea || textarea.dataset.portalRepurposed) return;
+    textarea.dataset.portalRepurposed = 'true';
+    const label = form.querySelector('label[for="description"]');
+    if (label) setTextIfChanged(label, 'Комментарий (необязательно)');
+    textarea.placeholder = 'Если что-то из данных выше определено неверно — опишите здесь, и мы это учтём';
+  };
+
+  const ensureNewAppAutoFillNote = (dataCard) => {
+    if (!dataCard || dataCard.querySelector('.portal-newapp-autofill-note')) return;
+    const heading = Array.from(dataCard.querySelectorAll('*')).find(
+      (el) => el.children.length === 0 && el.textContent.trim() === 'Заявка на финансирование'
+    );
+    if (!heading) return;
+    const note = document.createElement('p');
+    note.className = 'portal-newapp-autofill-note';
+    note.textContent = 'Поля ниже определяются автоматически по загруженным документам.';
+    heading.insertAdjacentElement('afterend', note);
   };
 
   const validateNewAppForm = (form) => {
@@ -404,19 +430,6 @@
       }
     });
     return firstInvalid;
-  };
-
-  const wireRequiredFieldClearing = (form) => {
-    form.querySelectorAll('[required]').forEach((field) => {
-      if (field.dataset.portalValidationWired) return;
-      field.dataset.portalValidationWired = 'true';
-      field.addEventListener('input', () => {
-        if (field.checkValidity()) {
-          newAppFieldWrapper(field).classList.remove('portal-field-invalid');
-        }
-        updateNewAppLiveState(form);
-      });
-    });
   };
 
   // Invoice upload has exactly one entry point: the "Инвойс" row in
@@ -682,6 +695,7 @@
           '<div><dt>Дебитор</dt><dd data-slot="obligor">—</dd></div>' +
           '<div><dt>Срок оплаты</dt><dd data-slot="dueDate">—</dd></div>' +
           '<div><dt>Документы</dt><dd data-slot="docs">—</dd></div>' +
+          '<div><dt>Комментарий</dt><dd data-slot="comment">—</dd></div>' +
         '</dl>' +
         '<div class="portal-newapp-summary-actions">' +
           '<button type="button" class="portal-newapp-summary-back">Вернуться к правке</button>' +
@@ -707,6 +721,9 @@
     overlay.querySelector('[data-slot="dueDate"]').textContent = formatNewAppDate(dueDate);
     overlay.querySelector('[data-slot="docs"]').textContent =
       docs.totalUploaded + ' из ' + docs.total + (docs.missingRequired.length ? ' (не хватает: ' + docs.missingRequired.join(', ') + ')' : '');
+
+    const comment = form.querySelector('#description') && form.querySelector('#description').value.trim();
+    overlay.querySelector('[data-slot="comment"]').textContent = comment || '—';
   };
 
   // Gates the real submit behind a review step. `confirmed` lets the second,
@@ -777,27 +794,22 @@
     if (!page || !form) return false;
 
     page.classList.add('portal-new-application-page');
-    // "0.00" reads as "already zero/empty" before the visitor's typed
-    // anything — swap it for a non-zero example, same convention the other
-    // fields already use ("Например, Carrefour UAE" etc.).
-    if (amountInput.placeholder === '0.00') {
-      amountInput.placeholder = 'Например, 12500.00';
-    }
     // Header subtitle: page's first (and only non-form) child is the
     // "mb-6" div holding just the h1 and this one <p> — reworded now that
     // Документы sits on the left and is the actual point of entry.
     const subtitleEl = page.querySelector(':scope > div > p');
     if (subtitleEl) {
-      setTextIfChanged(subtitleEl, 'Загрузите документы — форма справа заполнится автоматически.');
+      setTextIfChanged(subtitleEl, 'Загрузите документы — остальные поля определятся автоматически. Что-то не так — укажите в комментарии.');
     }
-    markRequiredLabels(form);
-    wireRequiredFieldClearing(form);
     fixNonSubmitButtonTypes(form);
     groupNewAppDocuments();
     wireNewAppSubmit(form);
 
     const dataCard = applyNewAppColumnsLayout(form);
     wireNewAppFieldMuting(dataCard);
+    lockNewAppDataFields(form);
+    repurposeNewAppComment(form);
+    ensureNewAppAutoFillNote(dataCard);
 
     // Makes the Данные column's position:sticky (see portal-overrides.css)
     // actually track scroll: <main> carries Tailwind's overflow-auto, which
@@ -829,21 +841,265 @@
   // of its own rounded/shadowed box — same visual result as Архив without
   // touching the DOM structure (list-deals's own cards, and their onClick/
   // Link navigation, are untouched).
+
+  // Status badges that are self-explanatory on their own — the "i" next to
+  // them is pure noise. Left alone: "Ожидает загрузки документов" /
+  // "Расчёт ставки" (both benefit from the explainer) and the rate's own
+  // "i" (untouched, native to the app).
+  const DEAL_STATUS_HIDE_INFO = new Set(['Профинансировано', 'Готов к финансированию']);
+
+  // The status badge's own "i" tooltip button is always its next sibling
+  // inside the native "flex shrink-0 items-center gap-1" wrapper (see q_ in
+  // the compiled bundle) — Radix only portals the tooltip's *content* into
+  // the DOM while open, so this sibling is reliably just the trigger button.
+  const trimDealStatusInfo = (row) => {
+    const badge = row.querySelector('[data-testid^="badge-status-"]');
+    if (!badge) return;
+    const infoBtn = badge.nextElementSibling;
+    if (infoBtn && DEAL_STATUS_HIDE_INFO.has(badge.textContent.trim())) {
+      infoBtn.style.display = 'none';
+    }
+  };
+
+  // Дефолт/Просрочка ship with no explainer at all in the native component —
+  // these two are exactly the statuses worth explaining, so one gets added.
+  const DEAL_FLAG_INFO = {
+    'Дефолт': 'Сделка не погашена в установленный срок и переведена в статус дефолта. Пеня продолжает начисляться до полного погашения.',
+    'Просрочка': 'Срок оплаты по сделке прошёл. Идёт начисление пени — свяжитесь с дебитором или с нами, если нужна помощь.',
+  };
+
+  // Same visual recipe as the app's own tooltip trigger button (identical
+  // Tailwind classes, so it matches pixel-for-pixel) — just a plain
+  // hover/focus CSS tooltip instead of a Radix portal, since we can't wire
+  // real Radix state onto a node React doesn't own.
+  const DEAL_INFO_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>';
+
+  const buildDealInfoIcon = (text) => {
+    const wrap = document.createElement('span');
+    wrap.className =
+      'portal-i-icon inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-muted-foreground hover-elevate active-elevate-2';
+    wrap.tabIndex = 0;
+    wrap.setAttribute('role', 'button');
+    wrap.setAttribute('aria-label', 'Пояснение');
+    wrap.innerHTML = DEAL_INFO_ICON_SVG;
+    wrap.addEventListener('click', (event) => event.stopPropagation());
+    const tip = document.createElement('span');
+    tip.className =
+      'portal-i-tip z-50 w-72 rounded-md border bg-popover p-4 text-sm leading-relaxed text-popover-foreground shadow-md';
+    tip.textContent = text;
+    wrap.appendChild(tip);
+    return wrap;
+  };
+
+  // A flagged deal (Дефолт/Просрочка) is the one main status for that row —
+  // "Профинансировано" is still true, but it belongs in the deal's own
+  // detail view, not competing for attention here. Hides the whole native
+  // status-badge+info pair (not just the badge) since its "i" would now be
+  // explaining a badge nobody can see. Returns whether this row is flagged,
+  // so the caller can tally it into the summary bar.
+  const simplifyFlaggedStatus = (row) => {
+    const badge = row.querySelector('[data-testid^="badge-status-"]');
+    if (!badge) return false;
+    const primaryWrap = badge.parentElement;
+    const badgeGroup = primaryWrap && primaryWrap.parentElement;
+    if (!badgeGroup) return false;
+    const flagBadge = Array.from(badgeGroup.children).find(
+      (el) => el !== primaryWrap && (el.textContent.trim() === 'Дефолт' || el.textContent.trim() === 'Просрочка')
+    );
+    if (!flagBadge) return false;
+
+    if (!badgeGroup.dataset.portalFlagSimplified) {
+      badgeGroup.dataset.portalFlagSimplified = 'true';
+      primaryWrap.style.display = 'none';
+      const infoText = DEAL_FLAG_INFO[flagBadge.textContent.trim()];
+      if (infoText) {
+        flagBadge.insertAdjacentElement('afterend', buildDealInfoIcon(infoText));
+      }
+    }
+    return true;
+  };
+
+  // "Мои сделки" has no raw ISO due date anywhere in the DOM, only the
+  // already-formatted "12 май 2026" text (see pn() in the compiled bundle) —
+  // this is that same formatter run in reverse, so month abbreviations must
+  // stay in sync with the app's own Mj array if it's ever touched.
+  const DEAL_MONTH_ABBR = ['янв', 'февр', 'март', 'апр', 'май', 'июн', 'июл', 'авг', 'сент', 'окт', 'нояб', 'дек'];
+
+  const parseDealDate = (text) => {
+    const parts = (text || '').trim().split(/\s+/);
+    if (parts.length !== 3) return null;
+    const day = parseInt(parts[0], 10);
+    const monthIndex = DEAL_MONTH_ABBR.indexOf(parts[1]);
+    const year = parseInt(parts[2], 10);
+    if (Number.isNaN(day) || monthIndex === -1 || Number.isNaN(year)) return null;
+    return new Date(year, monthIndex, day);
+  };
+
+  const dealStartOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+  const dealDaysUntil = (date) => Math.round((dealStartOfDay(date) - dealStartOfDay(new Date())) / 86400000);
+
+  // These two statuses don't have a real repayment obligation yet (no
+  // disbursement has happened), so a countdown against their due date would
+  // be misleading — a dash instead, per spec.
+  const DEAL_COUNTDOWN_DASH_STATUSES = new Set(['Ожидает загрузки документов', 'Расчёт ставки']);
+  const DEAL_COUNTDOWN_SOON_DAYS = 7;
+
+  // Both selectors are exact Tailwind class combos confirmed from the
+  // compiled component (see q_) — Погашение carries whitespace-nowrap,
+  // Срок doesn't, which is the only thing that tells the two apart.
+  const DEAL_DUE_DATE_SELECTOR = '.whitespace-nowrap.text-right.text-muted-foreground.tabular-nums';
+  const DEAL_TERM_SELECTOR = '.text-right.text-muted-foreground.tabular-nums:not(.whitespace-nowrap)';
+
+  // Срок ("30 days") is dropped from the list to make room for the new
+  // countdown column — still visible in the deal's own detail view. Hidden
+  // rather than removed: a plain display:none on a node React still owns is
+  // harmless and survives re-renders on its own.
+  const hideDealTermCell = (row) => {
+    const cell = row.querySelector(DEAL_TERM_SELECTOR);
+    if (cell) cell.classList.add('portal-deal-term-cell');
+  };
+
+  // The "60 дн. · пеня AED 3,240" line used to render as its own wrapped row
+  // under the status badge, which is what made flagged rows taller than the
+  // rest — relocated into its own column instead (right next to Погашение,
+  // which it explains), and the badge cell goes back to holding just one
+  // line, same as every other row.
+  const ensureDealCountdownCell = (row) => {
+    const dueDateCell = row.querySelector(DEAL_DUE_DATE_SELECTOR);
+    if (!dueDateCell) return;
+    if (dueDateCell.nextElementSibling && dueDateCell.nextElementSibling.classList.contains('portal-deal-countdown')) {
+      return;
+    }
+
+    const cell = document.createElement('div');
+    cell.className = 'portal-deal-countdown';
+
+    const badge = row.querySelector('[data-testid^="badge-status-"]');
+    const badgeGroup = badge && badge.closest('.flex.flex-wrap.items-center.gap-2');
+    const statusCell = badgeGroup && badgeGroup.parentElement;
+    const note = statusCell && Array.from(statusCell.children).find((el) => el !== badgeGroup);
+
+    if (note) {
+      // Reuses the app's own already-computed overdueDays/latePenaltyAmount
+      // text instead of re-deriving anything — just hides the original (kept
+      // in the DOM, not removed, so React never notices) and reformats its
+      // text into this column's two-part layout.
+      note.style.display = 'none';
+      const isDefault = note.classList.contains('text-status-danger');
+      const match = note.textContent.match(/^(\d+\s*дн\.)\s*(?:·\s*(.+))?$/);
+      const daysPhrase = match ? match[1] : note.textContent.trim();
+      const penaltyPhrase = match ? match[2] : null;
+
+      cell.classList.add(isDefault ? 'text-status-danger' : 'text-status-warning');
+      const daysSpan = document.createElement('span');
+      daysSpan.className = 'portal-deal-countdown-days';
+      daysSpan.textContent = 'просрочено ' + daysPhrase;
+      cell.appendChild(daysSpan);
+
+      if (penaltyPhrase) {
+        const penaltySpan = document.createElement('span');
+        penaltySpan.className = 'portal-deal-countdown-penalty';
+        penaltySpan.textContent = '· ' + penaltyPhrase;
+        cell.appendChild(penaltySpan);
+      }
+    } else {
+      const statusText = badge ? badge.textContent.trim() : '';
+      const dueDate = DEAL_COUNTDOWN_DASH_STATUSES.has(statusText) ? null : parseDealDate(dueDateCell.textContent);
+      if (dueDate) {
+        const days = dealDaysUntil(dueDate);
+        cell.textContent = days <= 0 ? 'сегодня' : `через ${days} дн.`;
+        cell.classList.add(
+          days >= 0 && days <= DEAL_COUNTDOWN_SOON_DAYS ? 'portal-deal-countdown-soon' : 'text-muted-foreground'
+        );
+      } else {
+        cell.textContent = '—';
+        cell.classList.add('text-muted-foreground');
+      }
+    }
+
+    dueDateCell.insertAdjacentElement('afterend', cell);
+  };
+
+  const hideDealTermHeader = (headerRow) => {
+    const termHeader = Array.from(headerRow.children).find((el) => el.textContent.trim() === 'Срок');
+    if (termHeader) termHeader.classList.add('portal-deal-term-cell');
+  };
+
+  const ensureDealCountdownHeader = (headerRow) => {
+    if (headerRow.querySelector('.portal-deal-countdown-header')) return;
+    const dueHeader = Array.from(headerRow.children).find((el) => el.textContent.trim() === 'Погашение');
+    if (!dueHeader) return;
+    const header = document.createElement('span');
+    header.className = 'portal-deal-countdown-header';
+    header.textContent = 'Отсчёт';
+    dueHeader.insertAdjacentElement('afterend', header);
+  };
+
+  const DEAL_WORD_FORMS = {
+    deal: ['сделка', 'сделки', 'сделок'],
+    require: ['требует', 'требуют', 'требуют'],
+  };
+
+  // Standard Russian plural-form selection (1/2-4/5+, with the 11-14 teens
+  // exception) — used only for the summary bar's deal count.
+  const ruPlural = (n, forms) => {
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    if (mod10 === 1 && mod100 !== 11) return forms[0];
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return forms[1];
+    return forms[2];
+  };
+
+  const buildDealsSummaryText = (problemCount, totalCount) => {
+    if (problemCount === 0) return 'Все сделки в порядке';
+    const rest = totalCount - problemCount;
+    const base = `${problemCount} ${ruPlural(problemCount, DEAL_WORD_FORMS.deal)} ${ruPlural(problemCount, DEAL_WORD_FORMS.require)} внимания`;
+    return rest > 0 ? `${base} · остальные в порядке` : base;
+  };
+
+  // Gives the borrower context before the list itself — which may open on a
+  // red "Дефолт" row — is the first thing they see. Inserted as a plain new
+  // sibling next to tableWrap's own overflow wrapper (same "add next to,
+  // don't reparent" rule the rest of this file follows around React-owned
+  // subtrees), so it survives re-renders without fighting React for the node.
+  const ensureDealsSummaryBar = (tableWrap, problemCount, totalCount) => {
+    const overflowWrap = tableWrap.parentElement;
+    if (!overflowWrap || !overflowWrap.parentElement) return;
+    let bar = overflowWrap.previousElementSibling;
+    if (!bar || !bar.classList.contains('portal-deals-summary')) {
+      bar = document.createElement('div');
+      bar.className = 'portal-deals-summary';
+      overflowWrap.parentElement.insertBefore(bar, overflowWrap);
+    }
+    setTextIfChanged(bar, buildDealsSummaryText(problemCount, totalCount));
+  };
+
   const applyDealsTheme = () => {
     const list = document.querySelector('[data-testid="list-deals"]');
     if (!list) return false;
-    if (list.dataset.portalDealsWired) return true;
 
     const tableWrap = list.parentElement;
     if (!tableWrap) return false;
-    list.dataset.portalDealsWired = 'true';
 
     tableWrap.classList.add('portal-deals-table');
     list.classList.add('portal-deals-list');
     const headerRow = tableWrap.firstElementChild;
     if (headerRow && headerRow !== list) {
       headerRow.classList.add('portal-deals-header');
+      hideDealTermHeader(headerRow);
+      ensureDealCountdownHeader(headerRow);
     }
+
+    let problemCount = 0;
+    const rows = Array.from(list.querySelectorAll('[data-testid^="card-deal-"]'));
+    rows.forEach((row) => {
+      trimDealStatusInfo(row);
+      if (simplifyFlaggedStatus(row)) problemCount++;
+      hideDealTermCell(row);
+      ensureDealCountdownCell(row);
+    });
+    ensureDealsSummaryBar(tableWrap, problemCount, rows.length);
 
     return true;
   };

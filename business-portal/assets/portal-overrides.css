@@ -614,6 +614,127 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   transform: translateY(-50%);
 }
 
+/* Column widths: 8 visible tracks — ID, Дебитор, Сумма, Ставка, Погашение,
+   the new Отсчёт (see ensureDealCountdownCell in portal-overrides.js),
+   Статус, and a near-zero trailing track that used to size the chevron
+   before it moved to the left overlay (see the rule below this one). Срок
+   is dropped from the visible list entirely (hideDealTermCell adds
+   .portal-deal-term-cell, display:none below) — a display:none child isn't
+   a grid item at all, so the remaining 8 visible children auto-place into
+   these 8 tracks in DOM order with no gap left behind. ID/Ставка/Погашение/
+   Отсчёт/Статус get fixed-ish widths sized for their actual longest content
+   (see each column's own comment below); Статус now only ever holds ONE
+   badge (see simplifyFlaggedStatus), so it needs far less than it used to.
+   Every leftover pixel goes to Дебитор (the only fr column) — obligor names
+   were truncating before, and are what actually benefits from extra room.
+   Shared by the header row and every data row (both use this exact
+   template — see NS in the compiled component) so columns stay aligned. */
+.portal-deals-header,
+.portal-deals-list [data-testid^="card-deal-"] > div {
+  grid-template-columns: 88px minmax(0, 1fr) 118px 72px 90px 152px 210px 2px !important;
+  column-gap: 0.375rem !important;
+}
+
+.portal-deals-list [data-testid^="card-deal-"] > div {
+  padding-right: 0.5rem !important;
+}
+
+.portal-deals-list [data-testid^="text-deal-id-"] {
+  overflow: visible;
+  text-overflow: clip;
+}
+
+/* Defensive: the native "Сумма инвойса" header span already carries
+   text-right, this just guarantees it stays flush with the numbers below
+   even if that class ever changes. */
+.portal-deals-header span:nth-child(3) {
+  text-align: right;
+}
+
+/* Every row is back to a single content line now that the overdue note has
+   its own column instead of wrapping under the status badge — this is just
+   a comfortable padding floor, not what forces rows to match anymore. */
+.portal-deals-list [data-testid^="card-deal-"] > div {
+  min-height: 3rem;
+}
+
+/* Срок ("30 days") — hidden in the list to make room for Отсчёт; still
+   visible in the deal's own detail view. */
+.portal-deal-term-cell {
+  display: none;
+}
+
+/* Отсчёт: "просрочено 60 дн." must never truncate (it's the one thing this
+   column exists to show); the trailing "· пеня AED 3,240" is secondary and
+   free to ellipsis under real width pressure instead of wrapping the row
+   onto a second line. */
+.portal-deal-countdown {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  min-width: 0;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.portal-deal-countdown-days {
+  flex-shrink: 0;
+}
+
+.portal-deal-countdown-penalty {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.82;
+}
+
+/* "Через N дн." when the due date is close but not yet overdue — a muted
+   amber, deliberately softer than Просрочка's full-strength warning color
+   (that one's an actual problem; this is just "coming up soon"). */
+.portal-deal-countdown-soon {
+  color: var(--warning);
+  opacity: 0.8;
+}
+
+/* Custom hover/focus tooltip for the Дефолт/Просрочка "i" (added by
+   buildDealInfoIcon in portal-overrides.js) — the native badge ships with
+   no explainer at all, so this can't reuse a real Radix tooltip instance.
+   The trigger reuses the app's own tooltip-button classes for a pixel match;
+   only the popup itself (position/visibility) is bespoke, its colors still
+   come from the shared bg-popover/text-popover-foreground/shadow-md classes
+   set directly on the element in JS, not duplicated here. */
+.portal-i-icon {
+  position: relative;
+}
+
+.portal-i-tip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.portal-i-icon:hover .portal-i-tip,
+.portal-i-icon:focus-visible .portal-i-tip {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Summary line above the table (ensureDealsSummaryBar in
+   portal-overrides.js) — gives context ("2 сделки требуют внимания ·
+   остальные в порядке") before a red Дефолт row is the first thing seen. */
+.portal-deals-summary {
+  margin: -0.5rem 0 0.75rem;
+  font-size: 0.85rem;
+  color: rgba(245, 242, 233, 0.65);
+}
+
 /* "Новая заявка": restyle to match the landing page's "Get financing"
    apply-form look (dark glass panels, mono uppercase labels, gold pill
    submit). Fields/layout are untouched on purpose — this is a visual
@@ -747,12 +868,9 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   animation: 0.85s forwards cta-shine;
 }
 
-/* ---- Required-field marks + inline validation ---- */
-
-.portal-required-mark {
-  margin-left: 3px;
-  color: rgba(245, 242, 233, 0.42);
-}
+/* ---- Inline validation (kept as a safety net for any future required
+   field; none of the current data fields are required anymore — see the
+   locked-field styles further down) ---- */
 
 .portal-field-invalid .border-input {
   border-color: rgba(229, 72, 77, 0.6) !important;
@@ -839,11 +957,16 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 /* Invoice is the one document upload entry point now (the old top card is
-   gone) — a plain background tint, no padding/margin changes, so it can't
-   shift this native row's own spacing relative to its siblings. */
+   gone) — a plain background tint. The highlight used to sit flush against
+   the icon and the "Загрузить" button (zero side padding), reading as if it
+   ended right at the first letter of "Инвойс" — negative margin + matching
+   padding bleeds the tint further out on both sides without shifting the
+   icon/text/button themselves or disturbing the other rows' alignment. */
 .portal-doc-row-primary {
   background: rgba(255, 255, 255, 0.045);
   border-radius: 10px;
+  margin: 0 -14px;
+  padding: 0 14px;
 }
 
 /* Brighter/more contrasty than the first pass — it blended into the
@@ -1001,8 +1124,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   gap: 10px;
 }
 
-/* Data fields read as "will fill itself in from the documents" until
-   touched, without actually being disabled — dim, not locked. */
+/* Every field here except the comment is now genuinely locked (disabled —
+   see lockNewAppDataFields in portal-overrides.js), so this dim-until-
+   touched treatment only ever applies to them in practice: they can't be
+   focused/touched, so they stay dim permanently, reading as "system value",
+   not "empty field waiting for input". #description is excluded below —
+   it's the one field a visitor actually uses, so it stays at full
+   brightness from the start instead of waiting for a first touch. */
 .portal-newapp-data-card .flex.flex-col.gap-2 input,
 .portal-newapp-data-card .flex.flex-col.gap-2 select,
 .portal-newapp-data-card .flex.flex-col.gap-2 textarea,
@@ -1016,6 +1144,24 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active textarea,
 .portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active [role="combobox"] {
   opacity: 1;
+}
+
+.portal-newapp-data-card #description {
+  opacity: 1 !important;
+}
+
+/* Locked fields (Сумма/Валюта/Дебитор/Страна/Даты): truly inert, not just
+   dim — no hover feedback, no cursor implying you could click into it. */
+.portal-newapp-data-card .portal-field-locked {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.portal-newapp-autofill-note {
+  margin: 2px 0 14px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgba(245, 242, 233, 0.5);
 }
 
 /* Валюта / Страна дебитора show a real selected value (AED / United Arab
