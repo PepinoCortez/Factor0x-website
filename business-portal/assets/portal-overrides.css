@@ -564,28 +564,35 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   gap: 0;
 }
 
-/* Flattens each deal's own card (rounded-xl border shadow) to a plain
-   border-bottom row — same idea as a <tr>, without touching its Link/
-   click behavior. */
-.portal-deals-list [data-testid^="card-deal-"] {
-  border-radius: 0 !important;
-  border-width: 0 !important;
-  border-bottom-width: 1px !important;
-  border-bottom-style: solid !important;
-  /* Matches the outer table frame's own 0.16 border — 0.1 read as
-     basically invisible against the near-black card background. */
-  border-bottom-color: rgba(255, 255, 255, 0.18) !important;
-  box-shadow: none !important;
-  background: transparent !important;
+/* The divider/hover live on .portal-deals-list's actual direct children —
+   the <a> Link wrapping each deal's Card, one level above the Card itself
+   (list-deals > Link > Card[data-testid=card-deal-N]). Putting :last-child
+   on the Card directly was the bug in the previous version: a Card is
+   always the only/last child of its own Link, so that rule matched every
+   single row instead of just the final one, cancelling the border-bottom
+   everywhere. */
+.portal-deals-list > * {
+  display: block;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
   transition: background 0.15s ease;
 }
 
-.portal-deals-list [data-testid^="card-deal-"]:last-child {
-  border-bottom-width: 0 !important;
+.portal-deals-list > *:last-child {
+  border-bottom: none;
 }
 
-.portal-deals-list [data-testid^="card-deal-"]:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
+.portal-deals-list > *:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Flattens each deal's own card (rounded-xl border shadow) to a plain
+   transparent box — the row's actual border/hover now come from the Link
+   wrapper above — without touching its Link/click behavior. */
+.portal-deals-list [data-testid^="card-deal-"] {
+  border-radius: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
 }
 
 /* Moves the row's chevron (data grid's last item, native class
