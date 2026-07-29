@@ -1300,20 +1300,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(245, 242, 233, 0.5);
 }
 
-/* Reserves room for the sticky "Отправить" button (measured: button ~124px
-   + its own 20px right margin = 144px from the card's true right edge;
-   minus the card's native 24px CardHeader padding already covering part of
-   that = 120px needed here, +10px safety) so no line of the heading/note
-   ever runs under it — regardless of how many lines it wraps to, at any
-   width this column renders at (see the 1100px breakpoint above — below it
-   this column doesn't exist at all). Padding alone isn't enough on its own:
-   "финансирование" is a single 14-character word with no natural break
-   point, so once the reserved width shrinks past its own rendered width it
-   overflows straight through the padding no matter how much more of it you
-   add — overflow-wrap lets it break mid-word as a last resort instead. */
+/* Used to reserve room for "Отправить" when it sat top-right, overlapping
+   this header — now that it's pinned to the bottom of the card instead
+   (see .portal-newapp-submit-row), the header has the card's full width to
+   itself. overflow-wrap stays as a cheap safety net regardless — no reason
+   to drop it now that it isn't load-bearing for anything. */
 .portal-newapp-data-header {
   overflow-wrap: break-word;
-  padding-right: 144px;
 }
 
 /* Reserves clearance at the bottom of the card's own content for
