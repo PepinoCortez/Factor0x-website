@@ -1164,20 +1164,35 @@
   };
 
   // Gives the borrower context before the list itself — which may open on a
-  // red "Дефолт" row — is the first thing they see. Inserted as a plain new
-  // sibling next to tableWrap's own overflow wrapper (same "add next to,
-  // don't reparent" rule the rest of this file follows around React-owned
-  // subtrees), so it survives re-renders without fighting React for the node.
-  const ensureDealsSummaryBar = (tableWrap, problemCount, totalCount) => {
-    const overflowWrap = tableWrap.parentElement;
-    if (!overflowWrap || !overflowWrap.parentElement) return;
-    let bar = overflowWrap.previousElementSibling;
-    if (!bar || !bar.classList.contains('portal-deals-summary')) {
-      bar = document.createElement('div');
-      bar.className = 'portal-deals-summary';
-      overflowWrap.parentElement.insertBefore(bar, overflowWrap);
+  // red "Дефолт" row — is the first thing they see. Rendered as a badge on
+  // the same line as the page subtitle (row wraps the native <p>, moving it
+  // — not replacing it — into a flex row alongside the badge; same
+  // "reparent, don't rebuild" rule the rest of this file follows around
+  // React-owned nodes, so React keeps its own reference to the <p> and
+  // never notices it changed parents).
+  const ensureDealsSummaryBar = (pageRoot, problemCount, totalCount) => {
+    const headerBlock = pageRoot && pageRoot.firstElementChild;
+    const subtitle = headerBlock && headerBlock.querySelector('p');
+    if (!subtitle) return;
+
+    let row = subtitle.parentElement;
+    if (!row || !row.classList.contains('portal-deals-subtitle-row')) {
+      row = document.createElement('div');
+      row.className = 'portal-deals-subtitle-row';
+      subtitle.insertAdjacentElement('beforebegin', row);
+      row.appendChild(subtitle);
     }
-    setTextIfChanged(bar, buildDealsSummaryText(problemCount, totalCount));
+
+    let badge = row.querySelector('.portal-deals-summary');
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'portal-deals-summary';
+      row.appendChild(badge);
+    }
+
+    setTextIfChanged(badge, buildDealsSummaryText(problemCount, totalCount));
+    badge.classList.toggle('portal-deals-summary-warning', problemCount > 0);
+    badge.classList.toggle('portal-deals-summary-ok', problemCount === 0);
   };
 
   const applyDealsTheme = () => {
@@ -1213,7 +1228,7 @@
       ensureDealCountdownCell(row);
       tagDealRowSeverity(row);
     });
-    ensureDealsSummaryBar(tableWrap, problemCount, rows.length);
+    ensureDealsSummaryBar(pageRoot, problemCount, rows.length);
 
     return true;
   };

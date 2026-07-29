@@ -534,10 +534,12 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   }
 }
 
-/* Page root is native max-w-5xl (1024px) — 15% wider, same page-specific
-   override pattern as .portal-new-application-page's own max-width. */
+/* Page root is native max-w-5xl (1024px) — was already widened 15% to
+   1178px, this is another 10% on top of that (1178 * 1.1 ≈ 1296px), same
+   page-specific override pattern as .portal-new-application-page's own
+   max-width. */
 .portal-deals-page {
-  max-width: 1178px !important;
+  max-width: 1296px !important;
 }
 
 /* "Мои сделки": reads as one dense table frame, matching Архив's actual
@@ -647,17 +649,20 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    is dropped from the visible list entirely (hideDealTermCell adds
    .portal-deal-term-cell, display:none below) — a display:none child isn't
    a grid item at all, so the remaining 8 visible children auto-place into
-   these 8 tracks in DOM order with no gap left behind. ID/Ставка/Погашение/
-   Отсчёт/Статус get fixed-ish widths sized for their actual longest content
-   (see each column's own comment below); Статус now only ever holds ONE
-   badge (see simplifyFlaggedStatus), so it needs far less than it used to.
-   Every leftover pixel goes to Дебитор (the only fr column) — obligor names
-   were truncating before, and are what actually benefits from extra room.
-   Shared by the header row and every data row (both use this exact
-   template — see NS in the compiled component) so columns stay aligned. */
+   these 8 tracks in DOM order with no gap left behind.
+   Дебитор already fit every obligor name at the previous (narrower) page
+   width, including the longest one (Carrefour's full legal name), so the
+   extra width from widening the page another 10% is spread deliberately
+   across several columns instead of just dumping it all into Дебитор again
+   — Сумма/Ставка/Погашение get a little breathing room, Отсчёт gets enough
+   that "через N дн." + the penalty line basically never need to ellipsis,
+   Статус gets a bit more too, and Дебитор (still the only fr column, still
+   the largest single column) absorbs whatever's left. Shared by the header
+   row and every data row (both use this exact template — see NS in the
+   compiled component) so columns stay aligned. */
 .portal-deals-header,
 .portal-deals-list [data-testid^="card-deal-"] > div {
-  grid-template-columns: 88px minmax(0, 1fr) 118px 84px 84px 128px 210px 2px !important;
+  grid-template-columns: 90px minmax(0, 1fr) 122px 86px 92px 158px 218px 2px !important;
   column-gap: 0.375rem !important;
 }
 
@@ -768,13 +773,43 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   pointer-events: auto;
 }
 
-/* Summary line above the table (ensureDealsSummaryBar in
-   portal-overrides.js) — gives context ("2 сделки требуют внимания ·
-   остальные в порядке") before a red Дефолт row is the first thing seen. */
+/* Subtitle + summary badge share one line (ensureDealsSummaryBar in
+   portal-overrides.js wraps the native <p> in this row rather than
+   replacing it) — badge pinned to the end via space-between, gives context
+   ("2 сделки требуют внимания · остальные в порядке") right where the eye
+   already lands reading the subtitle, before a red Дефолт row further down
+   is the first *row* seen. */
+.portal-deals-subtitle-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .portal-deals-summary {
-  margin: -0.5rem 0 0.75rem;
-  font-size: 0.85rem;
-  color: rgba(245, 242, 233, 0.65);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(245, 242, 233, 0.85);
+}
+
+.portal-deals-summary-warning {
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+  color: var(--warning);
+}
+
+.portal-deals-summary-ok {
+  background: var(--success-bg);
+  border-color: rgba(61, 163, 93, 0.32);
+  color: var(--success);
 }
 
 /* "Новая заявка": restyle to match the landing page's "Get financing"
