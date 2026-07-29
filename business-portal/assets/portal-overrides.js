@@ -437,7 +437,20 @@
   const addNewAppSelectLockIcons = (form) => {
     NEWAPP_LOCKED_SELECT_IDS.forEach((id) => {
       const trigger = form.querySelector('#' + id);
-      if (!trigger || trigger.querySelector('.portal-lock-icon')) return;
+      if (!trigger) return;
+
+      // AED / United Arab Emirates are real defaults, not empty placeholders
+      // — reads as data already determined, unlike Сумма/Дебитор's honest
+      // "Определится автоматически". Overwriting the value span's text (its
+      // color already inherits the trigger's own dim placeholder tone — see
+      // the [role="combobox"] color rule in portal-overrides.css) makes all
+      // locked fields read the same way.
+      const valueSpan = trigger.querySelector('span');
+      if (valueSpan && valueSpan.textContent !== NEWAPP_LOCKED_PLACEHOLDER) {
+        valueSpan.textContent = NEWAPP_LOCKED_PLACEHOLDER;
+      }
+
+      if (trigger.querySelector('.portal-lock-icon')) return;
       const chevron = trigger.querySelector('.lucide-chevron-down');
       if (chevron) chevron.style.display = 'none';
       const icon = document.createElement('span');
@@ -859,10 +872,6 @@
       // (see below), which never unmounts, so it has to be removed here
       // explicitly rather than going away with the rest of the page.
       document.querySelectorAll('.portal-newapp-sidebar, .portal-newapp-summary-backdrop').forEach((el) => el.remove());
-      // ...including the scoped scroll-container override on <main> (see
-      // below) — leaving it on would silently affect every other page.
-      const scrollFixMain = document.querySelector('.portal-newapp-main-scroll-fix');
-      if (scrollFixMain) scrollFixMain.classList.remove('portal-newapp-main-scroll-fix');
       return false;
     }
 
@@ -890,14 +899,6 @@
     addNewAppSelectLockIcons(form);
     repurposeNewAppComment(form);
     ensureNewAppAutoFillNote(dataCard);
-
-    // Makes the Данные column's position:sticky (see portal-overrides.css)
-    // actually track scroll: <main> carries Tailwind's overflow-auto, which
-    // makes it *a* CSS scroll container regardless of whether it ever
-    // actually overflows, and that alone is enough to make sticky inert.
-    // Scoped to this page's <main> instance and reverted above.
-    const scrollFixMain = form.closest('main');
-    if (scrollFixMain) scrollFixMain.classList.add('portal-newapp-main-scroll-fix');
 
     // "Что будет после подачи" / "Подсказки" / mini-summary now live in the
     // spare room below the four links of the persistent nav rail instead of

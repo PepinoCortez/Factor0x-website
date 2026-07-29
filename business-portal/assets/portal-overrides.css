@@ -1105,7 +1105,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
      (column 2) 15 points narrower than the even 50/50 split. */
   grid-template-columns: minmax(0, 65fr) minmax(0, 35fr);
   gap: 24px;
-  align-items: start;
+  /* stretch (not start): both cards share row 1, so this is what makes the
+     shorter Заявка card match Документы's height exactly, top and bottom —
+     see .portal-newapp-data-card below for what fills the resulting extra
+     space. */
+  align-items: stretch;
 }
 
 /* 640px was too low for this specific 65/35 split: at anything below
@@ -1132,61 +1136,74 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   grid-column: 2;
   grid-row: 1;
   order: 2;
-  /* Документы (7 rows) runs taller than Данные (a handful of fields) —
-     sticking the shorter column means it tracks the scroll instead of
-     leaving a growing gap of empty space under it once its own content
-     runs out. Needs .portal-newapp-main-scroll-fix below, same reason
-     the old content-sidebar needed it: <main>'s own overflow-auto makes
-     it *a* scroll container regardless of whether it overflows, which
-     makes sticky inert without an explicit override. */
-  position: sticky;
-  top: 16px;
+  /* Документы (7 rows) runs taller than Заявка (a handful of fields) —
+     align-items:stretch on the grid (above) is what makes this card match
+     that height exactly, top and bottom, instead of stopping short at its
+     own natural content height. The resulting empty space at the bottom is
+     deliberate — that's where .portal-newapp-submit-row lands (see below). */
 }
 
 /* Submit overlaps Заявка на финансирование's own grid cell (same column
    and row as .portal-newapp-data-card) instead of sitting in a separate
-   full-width row — landing near its heading, top-right, offset to roughly
-   match the card's own 24px header padding (CardHeader is p-6 natively).
-   Deliberately NOT moved into that card's actual DOM subtree: the last
-   time two of form's top-level sections got nested a level deeper (the
-   old columns-wrapper attempt), React's reconciliation for form's direct
-   children broke and duplicated content — self-alignment inside the same
-   grid cell gets the same visual result without touching the DOM tree.
-   Sticks in lockstep with the card it overlaps. */
+   full-width row, or actually inside the card's DOM — the last time two of
+   form's top-level sections got nested a level deeper (the old columns-
+   wrapper attempt), React's reconciliation for form's direct children
+   broke and duplicated content. Self-alignment inside the same grid cell
+   gets the same visual result without touching the DOM tree: pinned to the
+   bottom of the now-stretched cell, centered at 2/3 of the column's width. */
 .portal-new-application-page form > .portal-newapp-submit-row {
   grid-column: 2;
   grid-row: 1;
   order: 3;
-  justify-self: end;
-  align-self: start;
-  margin: 20px 20px 0 0;
-  position: sticky;
-  top: 36px;
+  justify-self: stretch;
+  align-self: end;
+  /* Native classes are "flex justify-end" — the button itself doesn't
+     stretch to fill a flex row just because the row is wide, so centering
+     lives here on the row and the actual 2/3 width lives on the button
+     below, not on this row. */
+  justify-content: center;
+  margin: 0 0 24px;
   z-index: 2;
 }
 
-.portal-newapp-main-scroll-fix {
-  overflow: visible !important;
+.portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"] {
+  width: 66.67%;
 }
 
 @media (max-width: 1100px) {
-  .portal-new-application-page form > .portal-newapp-data-card {
-    position: static;
+  /* All three still carry an explicit grid-row: 1 from the desktop rules
+     above (never overridden here before) — at a single column that pins
+     all three into the exact same cell, stacked on top of each other
+     instead of one below another. grid-row: auto lets normal top-to-bottom
+     flow take over, so order (1/2/3, already set above) is what actually
+     determines the stacking order here. */
+  .portal-new-application-page form > .portal-newapp-data-card,
+  .portal-new-application-page form > .portal-newapp-docs-card,
+  .portal-new-application-page form > .portal-newapp-submit-row {
+    grid-column: 1;
+    grid-row: auto;
   }
 
-  .portal-new-application-page form > .portal-newapp-data-card,
-  .portal-new-application-page form > .portal-newapp-docs-card {
-    grid-column: 1;
+  .portal-new-application-page form > .portal-newapp-data-card {
+    align-self: auto;
+  }
+
+  /* The card's own bottom padding no longer needs to reserve clearance for
+     the button — it's its own row below the card now, not overlapping it. */
+  .portal-newapp-data-card > .p-6.pt-0 {
+    padding-bottom: 24px;
   }
 
   /* Single column: no card left to overlap, so submit goes back to being
-     its own full-width row instead of overlaid on Данные's corner. */
+     its own full-width row instead of overlaid on Заявка's corner. */
   .portal-new-application-page form > .portal-newapp-submit-row {
-    grid-column: 1;
     justify-self: stretch;
     align-self: auto;
     margin: 0;
-    position: static;
+  }
+
+  .portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"] {
+    width: 100%;
   }
 }
 
@@ -1297,6 +1314,16 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-newapp-data-header {
   overflow-wrap: break-word;
   padding-right: 144px;
+}
+
+/* Reserves clearance at the bottom of the card's own content for
+   .portal-newapp-submit-row, which sits at the bottom of this now-stretched
+   card (see align-items:stretch above) as a separate overlapping sibling,
+   not as a DOM child — without this, the button (≈44px + its own 24px
+   bottom margin) can overlap the last field (Комментарий) whenever the
+   stretched height doesn't leave quite enough natural gap below it. */
+.portal-newapp-data-card > .p-6.pt-0 {
+  padding-bottom: 84px;
 }
 
 /* Валюта / Страна дебитора show a real selected value (AED / United Arab
