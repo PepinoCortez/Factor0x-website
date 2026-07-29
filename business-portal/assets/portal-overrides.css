@@ -750,7 +750,9 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    only these classes + grid-column placement). */
 .portal-new-application-page form {
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  /* Документы (column 1) 15 points wider, Заявка на финансирование
+     (column 2) 15 points narrower than the even 50/50 split. */
+  grid-template-columns: minmax(0, 65fr) minmax(0, 35fr);
   gap: 24px;
   align-items: start;
 }
