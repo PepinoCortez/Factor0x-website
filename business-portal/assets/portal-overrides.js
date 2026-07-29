@@ -393,6 +393,35 @@
     });
   };
 
+  // A lucide "lock" glyph — same visual family as the rest of this file's
+  // hand-built icons (see DEAL_INFO_ICON_SVG). Sits next to each locked
+  // field as a plain visual cue ("this fills itself in, don't reach for it"),
+  // distinct from the disabled-cursor styling alone, which is easy to miss
+  // until you've already clicked in.
+  const NEWAPP_LOCK_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
+
+  // Inputs and the <select> trigger button can't hold a floating icon inside
+  // themselves without either breaking void-element markup (<input> has no
+  // children) or reaching into Radix's own internal child structure (risky
+  // on the select trigger) — wrapping the field in a flex row and placing
+  // the icon as a plain sibling after it sidesteps both, and works
+  // identically for every locked field regardless of tag.
+  const addNewAppLockIcons = (form) => {
+    NEWAPP_LOCKED_FIELD_IDS.forEach((id) => {
+      const field = form.querySelector('#' + id);
+      if (!field || (field.parentElement && field.parentElement.classList.contains('portal-lock-wrap'))) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'portal-lock-wrap';
+      field.insertAdjacentElement('beforebegin', wrap);
+      wrap.appendChild(field);
+      const icon = document.createElement('span');
+      icon.className = 'portal-lock-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = NEWAPP_LOCK_ICON_SVG;
+      wrap.appendChild(icon);
+    });
+  };
+
   // "Краткое описание товаров/услуг" is repurposed as the one thing left for
   // the visitor to actually do here: flag it if the auto-filled data above
   // is wrong. No real document parsing exists yet (see lockNewAppDataFields)
@@ -808,6 +837,7 @@
     const dataCard = applyNewAppColumnsLayout(form);
     wireNewAppFieldMuting(dataCard);
     lockNewAppDataFields(form);
+    addNewAppLockIcons(form);
     repurposeNewAppComment(form);
     ensureNewAppAutoFillNote(dataCard);
 
