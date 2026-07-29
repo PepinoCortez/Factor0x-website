@@ -482,7 +482,7 @@
     if (!heading) return;
     const note = document.createElement('p');
     note.className = 'portal-newapp-autofill-note';
-    note.textContent = 'Поля ниже определяются автоматически по загруженным документам.';
+    note.textContent = 'Поля определяются автоматически по загруженным документам.';
     heading.insertAdjacentElement('afterend', note);
     // Submit overlaps this same header area (position: sticky, top-right —
     // see .portal-newapp-submit-row) instead of sitting in flow; without a
