@@ -400,14 +400,13 @@
   // until you've already clicked in.
   const NEWAPP_LOCK_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
 
-  // Inputs and the <select> trigger button can't hold a floating icon inside
-  // themselves without either breaking void-element markup (<input> has no
-  // children) or reaching into Radix's own internal child structure (risky
-  // on the select trigger) — wrapping the field in a flex row and placing
-  // the icon as a plain sibling after it sidesteps both, and works
-  // identically for every locked field regardless of tag.
+  // Plain <input>s (text/date) can't hold a floating icon inside themselves —
+  // they're void elements, no children allowed — so these get wrapped in a
+  // flex row with the lock icon as a plain sibling after them instead.
+  const NEWAPP_LOCKED_SIBLING_ICON_IDS = ['invoiceAmount', 'obligorName', 'invoiceDate', 'dueDate'];
+
   const addNewAppLockIcons = (form) => {
-    NEWAPP_LOCKED_FIELD_IDS.forEach((id) => {
+    NEWAPP_LOCKED_SIBLING_ICON_IDS.forEach((id) => {
       const field = form.querySelector('#' + id);
       if (!field || (field.parentElement && field.parentElement.classList.contains('portal-lock-wrap'))) return;
       const wrap = document.createElement('div');
@@ -419,6 +418,33 @@
       icon.setAttribute('aria-hidden', 'true');
       icon.innerHTML = NEWAPP_LOCK_ICON_SVG;
       wrap.appendChild(icon);
+    });
+  };
+
+  // Валюта / Страна дебитора are <select> triggers — unlike an <input>, the
+  // trigger button can safely hold an extra child (it's a real element, and
+  // React only ever touches the two children it itself renders — the value
+  // span and the chevron — via its own fiber references, not by re-counting
+  // the button's childNodes, so adding a third one doesn't confuse it). The
+  // chevron implies "click to open a list", which is actively misleading on
+  // a disabled field, so it's hidden outright and the lock icon takes its
+  // place: the trigger's own justify-between layout pushes whichever child
+  // renders last to the end, so once the chevron is display:none (out of
+  // flex flow entirely) the lock icon lands exactly where the chevron was
+  // without any manual positioning.
+  const NEWAPP_LOCKED_SELECT_IDS = ['currency', 'obligorCountry'];
+
+  const addNewAppSelectLockIcons = (form) => {
+    NEWAPP_LOCKED_SELECT_IDS.forEach((id) => {
+      const trigger = form.querySelector('#' + id);
+      if (!trigger || trigger.querySelector('.portal-lock-icon')) return;
+      const chevron = trigger.querySelector('.lucide-chevron-down');
+      if (chevron) chevron.style.display = 'none';
+      const icon = document.createElement('span');
+      icon.className = 'portal-lock-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = NEWAPP_LOCK_ICON_SVG;
+      trigger.appendChild(icon);
     });
   };
 
@@ -844,6 +870,7 @@
     wireNewAppFieldMuting(dataCard);
     lockNewAppDataFields(form);
     addNewAppLockIcons(form);
+    addNewAppSelectLockIcons(form);
     repurposeNewAppComment(form);
     ensureNewAppAutoFillNote(dataCard);
 
