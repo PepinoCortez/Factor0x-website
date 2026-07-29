@@ -445,6 +445,12 @@
     note.className = 'portal-newapp-autofill-note';
     note.textContent = 'Поля ниже определяются автоматически по загруженным документам.';
     heading.insertAdjacentElement('afterend', note);
+    // Submit overlaps this same header area (position: sticky, top-right —
+    // see .portal-newapp-submit-row) instead of sitting in flow; without a
+    // reserved gutter, this text runs straight under the button on every
+    // width this column's ever rendered at (confirmed by testing — not
+    // only at narrow viewports).
+    if (heading.parentElement) heading.parentElement.classList.add('portal-newapp-data-header');
   };
 
   const validateNewAppForm = (form) => {
@@ -1014,7 +1020,12 @@
       // Reuses the app's own already-computed overdueDays/latePenaltyAmount
       // text instead of re-deriving anything — just hides the original (kept
       // in the DOM, not removed, so React never notices) and reformats its
-      // text into this column's two-part layout.
+      // text into this column's two-line layout: "просрочено N дн." never
+      // truncates (it's its own line, not fighting the penalty for space on
+      // one line), and the penalty sits compactly underneath — every row's
+      // min-height already accounts for two lines here (see CSS), so this
+      // doesn't reintroduce the uneven-row-height problem the penalty used
+      // to cause back when it lived under the status badge instead.
       note.style.display = 'none';
       const isDefault = note.classList.contains('text-status-danger');
       const match = note.textContent.match(/^(\d+\s*дн\.)\s*(?:·\s*(.+))?$/);
@@ -1030,7 +1041,7 @@
       if (penaltyPhrase) {
         const penaltySpan = document.createElement('span');
         penaltySpan.className = 'portal-deal-countdown-penalty';
-        penaltySpan.textContent = '· ' + penaltyPhrase;
+        penaltySpan.textContent = penaltyPhrase;
         cell.appendChild(penaltySpan);
       }
     } else {
@@ -1064,6 +1075,26 @@
     header.className = 'portal-deal-countdown-header';
     header.textContent = 'Отсчёт';
     dueHeader.insertAdjacentElement('afterend', header);
+  };
+
+  // A very faint full-row tint so a Дефолт/Просрочка row is the first thing
+  // the eye catches scanning the list, on top of (not instead of) the
+  // colored status badge — tagged on the row's own Link wrapper (the actual
+  // element carrying the border/hover background, one level above the
+  // card div itself) rather than the card, so it lines up with those.
+  const tagDealRowSeverity = (row) => {
+    const rowLink = row.parentElement;
+    if (!rowLink || rowLink.dataset.portalSeverityTagged) return;
+    const badge = row.querySelector('[data-testid^="badge-status-"]');
+    const badgeGroup = badge && badge.closest('.flex.flex-wrap.items-center.gap-2');
+    const flagBadge =
+      badgeGroup &&
+      Array.from(badgeGroup.children).find(
+        (el) => el.textContent.trim() === 'Дефолт' || el.textContent.trim() === 'Просрочка'
+      );
+    if (!flagBadge) return;
+    rowLink.dataset.portalSeverityTagged = 'true';
+    rowLink.classList.add(flagBadge.textContent.trim() === 'Дефолт' ? 'portal-deal-row-danger' : 'portal-deal-row-warning');
   };
 
   const DEAL_WORD_FORMS = {
@@ -1128,6 +1159,7 @@
       if (simplifyFlaggedStatus(row)) problemCount++;
       hideDealTermCell(row);
       ensureDealCountdownCell(row);
+      tagDealRowSeverity(row);
     });
     ensureDealsSummaryBar(tableWrap, problemCount, rows.length);
 

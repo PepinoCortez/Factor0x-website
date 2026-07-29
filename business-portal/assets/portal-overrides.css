@@ -585,6 +585,26 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: rgba(255, 255, 255, 0.04);
 }
 
+/* Very faint full-row tint for Дефолт/Просрочка (tagDealRowSeverity in
+   portal-overrides.js) — deliberately subtler than the status badge itself,
+   just enough that the eye catches these rows scanning down the list
+   without the row reading as "loud" or fighting the badge for attention. */
+.portal-deal-row-danger {
+  background: rgba(229, 72, 77, 0.055);
+}
+
+.portal-deal-row-warning {
+  background: rgba(217, 122, 52, 0.055);
+}
+
+.portal-deal-row-danger:hover {
+  background: rgba(229, 72, 77, 0.09);
+}
+
+.portal-deal-row-warning:hover {
+  background: rgba(217, 122, 52, 0.09);
+}
+
 /* Flattens each deal's own card (rounded-xl border shadow) to a plain
    transparent box — the row's actual border/hover now come from the Link
    wrapper above — without touching its Link/click behavior. */
@@ -631,7 +651,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    template — see NS in the compiled component) so columns stay aligned. */
 .portal-deals-header,
 .portal-deals-list [data-testid^="card-deal-"] > div {
-  grid-template-columns: 88px minmax(0, 1fr) 118px 72px 90px 152px 210px 2px !important;
+  grid-template-columns: 88px minmax(0, 1fr) 118px 84px 84px 128px 210px 2px !important;
   column-gap: 0.375rem !important;
 }
 
@@ -644,9 +664,14 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   text-overflow: clip;
 }
 
-/* Defensive: the native "Сумма инвойса" header span already carries
-   text-right, this just guarantees it stays flush with the numbers below
-   even if that class ever changes. */
+/* Header labels read as centered captions over their column rather than
+   left/right-hugging it — except Сумма инвойса, which stays flush with its
+   right-aligned money column below (the one alignment this file was asked
+   not to touch). */
+.portal-deals-header > * {
+  text-align: center;
+}
+
 .portal-deals-header span:nth-child(3) {
   text-align: right;
 }
@@ -664,29 +689,40 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   display: none;
 }
 
-/* Отсчёт: "просрочено 60 дн." must never truncate (it's the one thing this
-   column exists to show); the trailing "· пеня AED 3,240" is secondary and
-   free to ellipsis under real width pressure instead of wrapping the row
-   onto a second line. */
+/* Отсчёт: "просрочено N дн." on its own line so it never has to fight the
+   penalty amount for space on one line (that's what was truncating it) —
+   the penalty gets a second, smaller line underneath instead. min-height
+   here reserves that two-line height on EVERY row, not just flagged ones,
+   so a normal deal's single "через N дн." line still takes up the same
+   vertical space as a flagged deal's two lines — without this, only
+   flagged rows would grow, reintroducing the uneven-row-height problem.
+   The left border is the visual seam between this and Погашение — they're
+   two different values (when vs. how much) that used to run together on
+   one line. */
 .portal-deal-countdown {
   display: flex;
-  align-items: baseline;
-  gap: 0.3rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
   min-width: 0;
-  font-size: 0.8rem;
-  white-space: nowrap;
-  overflow: hidden;
+  min-height: 2.1rem;
+  font-size: 0.78rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 10px;
 }
 
 .portal-deal-countdown-days {
-  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .portal-deal-countdown-penalty {
-  min-width: 0;
+  font-size: 0.7rem;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  opacity: 0.82;
+  opacity: 0.78;
 }
 
 /* "Через N дн." when the due date is close but not yet overdue — a muted
@@ -1024,7 +1060,12 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   align-items: start;
 }
 
-@media (max-width: 640px) {
+/* 640px was too low for this specific 65/35 split: at anything below
+   ~1100px total viewport, Заявка на финансирование's 35% column shrinks to
+   the point where its own heading/button (see .portal-newapp-submit-row)
+   no longer fit side by side — confirmed by testing, not a guess. Below
+   this, single column is the only layout that has room for both. */
+@media (max-width: 1100px) {
   .portal-new-application-page form {
     grid-template-columns: 1fr;
   }
@@ -1080,7 +1121,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   overflow: visible !important;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1100px) {
   .portal-new-application-page form > .portal-newapp-data-card {
     position: static;
   }
@@ -1183,6 +1224,22 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   font-size: 0.78rem;
   line-height: 1.4;
   color: rgba(245, 242, 233, 0.5);
+}
+
+/* Reserves room for the sticky "Отправить" button (measured: button ~124px
+   + its own 20px right margin = 144px from the card's true right edge;
+   minus the card's native 24px CardHeader padding already covering part of
+   that = 120px needed here, +10px safety) so no line of the heading/note
+   ever runs under it — regardless of how many lines it wraps to, at any
+   width this column renders at (see the 1100px breakpoint above — below it
+   this column doesn't exist at all). Padding alone isn't enough on its own:
+   "финансирование" is a single 14-character word with no natural break
+   point, so once the reserved width shrinks past its own rendered width it
+   overflows straight through the padding no matter how much more of it you
+   add — overflow-wrap lets it break mid-word as a last resort instead. */
+.portal-newapp-data-header {
+  overflow-wrap: break-word;
+  padding-right: 144px;
 }
 
 /* Валюта / Страна дебитора show a real selected value (AED / United Arab
