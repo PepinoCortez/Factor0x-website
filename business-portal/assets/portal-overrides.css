@@ -188,8 +188,10 @@ main.portal-grid-bg::before {
   overflow: hidden;
 }
 
-/* Same dark-glass recipe as .portal-new-application-page .bg-card, so
-   Обзор's containers read as the same visual system as Новая заявка's. */
+/* Base recipe for the promoted "Всего профинансировано" hero card only
+   (the other three metrics are overridden right below to match Требует
+   внимания instead — kept as a separate, more specific rule rather than
+   changed in place here). */
 .portal-metric-card,
 .kpi-dark-card div[class*="divide-y"] > div {
   border-radius: 12px;
@@ -202,13 +204,35 @@ main.portal-grid-bg::before {
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
-.portal-metric-card:hover,
-.kpi-dark-card div[class*="divide-y"] > div:hover {
+/* Заявок на рассмотрении / Активных сделок / Ближайшее погашение matched to
+   Требует внимания's own recipe (see .portal-attention-card below) instead
+   of the hero card's — same values, kept in sync manually since both
+   selector groups need to stay independently targetable. */
+.portal-metric-card:not(:has([data-testid="kpi-total-financed"])),
+.kpi-dark-card div[class*="divide-y"] > div:not(:has([data-testid="kpi-total-financed"])) {
+  border: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)), #0D0D0F;
+  box-shadow:
+    0 24px 44px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.portal-metric-card:has([data-testid="kpi-total-financed"]):hover,
+.kpi-dark-card div[class*="divide-y"] > div:has([data-testid="kpi-total-financed"]):hover {
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)), #111113;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     0 22px 54px rgba(0, 0, 0, 0.2);
   transform: translateY(-3px);
+}
+
+.portal-metric-card:not(:has([data-testid="kpi-total-financed"])):hover,
+.kpi-dark-card div[class*="divide-y"] > div:not(:has([data-testid="kpi-total-financed"])):hover {
+  transform: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)), #0D0D0F;
+  box-shadow:
+    0 24px 44px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .portal-metric-card > * {
@@ -230,15 +254,17 @@ main.portal-grid-bg::before {
 /* "Последние события": target both the JS marker class and, robustly, the
    Card element that wraps the activity list directly by its data-testid, so
    the border/shadow fix holds even without the marker class. */
+/* Matched to Требует внимания's recipe (see .portal-attention-card below),
+   same as the three non-hero metric cards above. */
 .portal-activity-card,
 main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activity"]) {
   margin-top: 0;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113 !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)), #0D0D0F !important;
+  border: 0 !important;
   border-radius: 12px !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.16) !important;
+    0 24px 44px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
 
 /* Bottom two-column layout: activity feed on the left, secondary widgets
