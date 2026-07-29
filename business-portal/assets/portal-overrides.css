@@ -922,6 +922,23 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   opacity: 1;
 }
 
+/* Валюта / Страна дебитора show a real selected value (AED / United Arab
+   Emirates), not an empty placeholder, so opacity alone left their text
+   noticeably brighter than Сумма инвойса's dim placeholder example —
+   recolored to the exact same hint tone, same as Сумма инвойса's
+   ::placeholder below. Native <input type="date"> doesn't use
+   ::placeholder for its empty "дд.мм.гггг" segments either, so it needs
+   the same explicit color. Both go back to full white once touched. */
+.portal-newapp-data-card .flex.flex-col.gap-2 [role="combobox"],
+.portal-newapp-data-card .flex.flex-col.gap-2 input[type="date"] {
+  color: rgba(255, 255, 255, 0.34);
+}
+
+.portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active [role="combobox"],
+.portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active input[type="date"] {
+  color: #fff;
+}
+
 /* Submit stays inert (not just visually muted) until the two documents that
    actually gate underwriting — Invoice + Contract — are attached. */
 .portal-new-application-page [data-testid="button-submit-application"]:disabled {

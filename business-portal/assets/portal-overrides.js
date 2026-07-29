@@ -368,17 +368,27 @@
     if (el.textContent !== value) el.textContent = value;
   };
 
+  const addRequiredMark = (label) => {
+    if (label && !label.querySelector('.portal-required-mark')) {
+      const mark = document.createElement('span');
+      mark.className = 'portal-required-mark';
+      mark.textContent = '*';
+      mark.setAttribute('aria-hidden', 'true');
+      label.appendChild(mark);
+    }
+  };
+
   const markRequiredLabels = (form) => {
     form.querySelectorAll('[required]').forEach((field) => {
       if (!field.id) return;
-      const label = form.querySelector('label[for="' + field.id + '"]');
-      if (label && !label.querySelector('.portal-required-mark')) {
-        const mark = document.createElement('span');
-        mark.className = 'portal-required-mark';
-        mark.textContent = '*';
-        mark.setAttribute('aria-hidden', 'true');
-        label.appendChild(mark);
-      }
+      addRequiredMark(form.querySelector('label[for="' + field.id + '"]'));
+    });
+    // Валюта / Страна дебитора aren't HTML-required (both already default
+    // to a real value, AED / United Arab Emirates) — the mark here is
+    // cosmetic only, matching the other fields' look, not a new validation
+    // rule.
+    ['currency', 'obligorCountry'].forEach((id) => {
+      addRequiredMark(form.querySelector('label[for="' + id + '"]'));
     });
   };
 
