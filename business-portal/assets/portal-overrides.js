@@ -1397,11 +1397,16 @@
 
   // Архив is a real native <table> (shadcn Table primitives), not Мои
   // сделки's CSS-grid div cards — same visual recipe, different selectors
-  // (there's no shared markup to hook a single class onto both). Column
-  // set is also genuinely different (settlement figures, not a live
-  // countdown), so this only reuses the *look*: dark gradient card frame,
-  // centered headers with the money columns right-aligned, same row
-  // divider/hover tone as Мои сделки — not a column-for-column copy.
+  // (there's no shared markup to hook a single class onto both). Now
+  // brought to an identical look column-width-for-column-width where the
+  // two tables share a column (ID/Дебитор/Сумма/Ставка — see the widths in
+  // portal-overrides.css); Архив's own extra columns (Комиссия/Вы
+  // получили/Дни просрочки/Пеня/Дата закрытия) render in the same style
+  // but obviously have no Мои сделки equivalent to copy a width from.
+  //
+  // Column indices below (row.children, 0-based): 0 chevron, 1 ID,
+  // 2 Дебитор, 3 Сумма, 4 Ставка, 5 Срок, 6 Комиссия, 7 Вы получили,
+  // 8 Дни просрочки, 9 Пеня, 10 Статус, 11 Дата закрытия.
   const ensureArchiveRowFormatted = (row) => {
     if (row.dataset.portalArchiveFormatted) return;
     row.dataset.portalArchiveFormatted = 'true';
@@ -1423,6 +1428,42 @@
       const date = parseDealDate(dateCell.textContent);
       if (date) dateCell.textContent = formatDealDueDateShort(date);
     }
+
+    // Дебитор (column 2): 310px comfortably fits most names on one line,
+    // but not an extreme one like "Carrefour UAE (Majid Al Futtaim
+    // Hypermarkets LLC)" — same ellipsis + title= hover fallback as Мои
+    // сделки's own Дебитор column (see ensureDealObligorTooltip), so a
+    // name that doesn't fit degrades the exact same way in both tables.
+    const obligorCell = row.children[2];
+    if (obligorCell) {
+      const name = obligorCell.textContent.trim();
+      if (name) obligorCell.title = name;
+    }
+
+    // Статус (column 10): the only label that ever renders here is
+    // "Погашена" (hardcoded in the compiled component — even a deal that
+    // was once overdue closes as "Погашена", Дни просрочки/Пеня are what
+    // carry that history), so this can reuse Мои сделки's own success
+    // tone directly instead of duplicating the tone system for one label.
+    const statusBadge = row.children[10] && row.children[10].firstElementChild;
+    if (statusBadge) {
+      statusBadge.classList.add('portal-deal-badge', 'portal-badge-success');
+    }
+
+    // Тёплая подсветка: "Дни просрочки" (column 8) reads "—" for a deal
+    // that was never overdue, and "N дн." otherwise — Мои сделки's own
+    // .portal-deal-row-warning (a plain, unscoped rule — see CSS) applies
+    // identically to a <tr> here as it does to that table's row divs.
+    const overdueCell = row.children[8];
+    if (overdueCell && overdueCell.textContent.trim() !== '—') {
+      row.classList.add('portal-deal-row-warning');
+    }
+  };
+
+  // Same 1296px as .portal-deals-page — one design system, one page width.
+  const ensureArchivePageWidened = (card) => {
+    const pageRoot = card.parentElement;
+    if (pageRoot) pageRoot.classList.add('portal-archive-page');
   };
 
   const applyArchiveTheme = () => {
@@ -1430,7 +1471,10 @@
     if (!table) return false;
 
     const card = table.closest('.bg-card');
-    if (card) card.classList.add('portal-archive-table');
+    if (card) {
+      card.classList.add('portal-archive-table');
+      ensureArchivePageWidened(card);
+    }
 
     table.querySelectorAll('[data-testid^="row-archive-"]').forEach(ensureArchiveRowFormatted);
 

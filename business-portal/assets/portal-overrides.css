@@ -742,14 +742,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   }
 }
 
-/* ---- "Архив": same dark-table look as "Мои сделки" above, on a real
-   native <table> (shadcn Table primitives — see applyArchiveTheme in
+/* ---- "Архив": identical look to "Мои сделки" above, on a real native
+   <table> (shadcn Table primitives — see applyArchiveTheme in
    portal-overrides.js) rather than Мои сделки's CSS-grid div cards. No
    markup to share a selector between the two, so the frame recipe below
    is copied verbatim from .portal-deals-table rather than reused from it.
-   Column set is otherwise untouched — 12 native columns (settlement
-   figures, not a live countdown), so this is the look, not a column-for-
-   column copy of Мои сделки's own 8. */
+   Where a column exists in both (ID/Дебитор/Сумма/Ставка), it now uses
+   the exact same px width as Мои сделки too (see the per-column widths
+   further down) — Архив's own extra columns (settlement figures Мои
+   сделки has no equivalent for) render in the same style regardless. */
 .portal-archive-table {
   border-radius: 12px !important;
   border: 1px solid rgba(255, 255, 255, 0.16) !important;
@@ -758,6 +759,126 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
     0 18px 48px rgba(0, 0, 0, 0.16) !important;
   overflow: hidden;
+}
+
+/* Page root widened to the exact same 1296px as .portal-deals-page — one
+   design system, one page width (see ensureArchivePageWidened in
+   portal-overrides.js). */
+.portal-archive-page {
+  max-width: 1296px !important;
+}
+
+/* Explicit per-column widths, same idea as Мои сделки's grid-template-
+   columns but expressed as a real <table>'s own column widths (table-
+   layout:fixed makes a nth-child width apply to the whole column, not
+   just one cell). ID/Дебитор/Сумма/Ставка reuse Мои сделки's exact px
+   values; Архив's own extra columns (Комиссия/Вы получили/Дни просрочки/
+   Пеня/Дата закрытия) are kept tight on purpose — that's the "избыточная
+   пустота" this borrows from to let Дебитор run wide enough for a full
+   legal name ("Carrefour UAE (Majid Al Futtaim Hypermarkets LLC)") on one
+   line, matching the reference table. Totals to ~1297px, matching
+   .portal-archive-page's own 1296px above so nothing forces a scrollbar.
+   box-sizing:border-box (below) makes each width include its own
+   padding, so these numbers are the full column, not content-only. */
+.portal-archive-table [data-testid="table-archive"] {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.portal-archive-table [data-testid="table-archive"] th,
+.portal-archive-table [data-testid="table-archive"] td {
+  box-sizing: border-box;
+}
+
+.portal-archive-table thead th:nth-child(1),
+.portal-archive-table tbody td:nth-child(1) {
+  width: 32px;
+}
+
+.portal-archive-table thead th:nth-child(2),
+.portal-archive-table tbody td:nth-child(2) {
+  width: 110px;
+}
+
+.portal-archive-table thead th:nth-child(3),
+.portal-archive-table tbody td:nth-child(3) {
+  width: 310px;
+}
+
+.portal-archive-table thead th:nth-child(4),
+.portal-archive-table tbody td:nth-child(4) {
+  width: 125px;
+}
+
+.portal-archive-table thead th:nth-child(5),
+.portal-archive-table tbody td:nth-child(5) {
+  width: 85px;
+}
+
+.portal-archive-table thead th:nth-child(6),
+.portal-archive-table tbody td:nth-child(6) {
+  width: 70px;
+}
+
+.portal-archive-table thead th:nth-child(7),
+.portal-archive-table tbody td:nth-child(7) {
+  width: 105px;
+}
+
+.portal-archive-table thead th:nth-child(8),
+.portal-archive-table tbody td:nth-child(8) {
+  width: 105px;
+}
+
+.portal-archive-table thead th:nth-child(9),
+.portal-archive-table tbody td:nth-child(9) {
+  width: 70px;
+}
+
+.portal-archive-table thead th:nth-child(10),
+.portal-archive-table tbody td:nth-child(10) {
+  width: 90px;
+}
+
+.portal-archive-table thead th:nth-child(11),
+.portal-archive-table tbody td:nth-child(11) {
+  width: 115px;
+}
+
+.portal-archive-table thead th:nth-child(12),
+.portal-archive-table tbody td:nth-child(12) {
+  width: 80px;
+}
+
+/* Single-line by default everywhere (fixes ID "DEAL-" / "0009" and Срок
+   "30" / "дн." both wrapping once their columns above are narrow and
+   fixed-width) — Дебитор is the deliberate exception, ellipsis instead of
+   nowrap-and-overflow so a name too long even for 310px degrades the same
+   way Мои сделки's own Дебитор does (see ensureArchiveRowFormatted in
+   portal-overrides.js for the matching title= hover fallback). Once no
+   cell wraps, every row's height is driven by the same single line of
+   text (Комиссия's own two stacked lines are the tallest, consistently,
+   on every row) — that's what makes row heights uniform (item 4). */
+.portal-archive-table [data-testid="table-archive"] th,
+.portal-archive-table [data-testid="table-archive"] td {
+  white-space: nowrap;
+}
+
+.portal-archive-table tbody td:nth-child(3) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Тёплая подсветка просроченных строк reuses .portal-deal-row-warning
+   itself (already a plain, unscoped rule further up — applies to any
+   element with the class, <tr> included; see ensureArchiveRowFormatted in
+   portal-overrides.js for how a row earns it) — only the :hover variant
+   needs repeating here, to win against .portal-archive-table's own
+   generic tbody tr:hover !important above. Архив has no equivalent to
+   Дефолт (a closed deal is always "Погашена" regardless of how it got
+   there), so only the warning tone ever applies here. */
+.portal-archive-table tbody tr.portal-deal-row-warning:hover {
+  background: rgba(217, 122, 52, 0.09) !important;
 }
 
 /* Same row divider/hover tone as .portal-deals-list > * above — native
@@ -782,9 +903,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 /* Headers centered like Мои сделки's, money columns (Сумма инвойса,
    Комиссия, Вы получили — columns 4/7/8 of 12) right-aligned along with
-   their own data cells, same convention as Мои сделки's Сумма инвойса. */
+   their own data cells, same convention as Мои сделки's Сумма инвойса.
+   Мои сделки's own header row gets its caps from a native "uppercase
+   tracking-wide" class already baked into that component — Архив's
+   TableHead has no such class, so it's added explicitly here instead. */
 .portal-archive-table thead th {
   text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  font-size: 0.75rem;
 }
 
 .portal-archive-table thead th:nth-child(4),
