@@ -734,6 +734,60 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   }
 }
 
+/* ---- "Архив": same dark-table look as "Мои сделки" above, on a real
+   native <table> (shadcn Table primitives — see applyArchiveTheme in
+   portal-overrides.js) rather than Мои сделки's CSS-grid div cards. No
+   markup to share a selector between the two, so the frame recipe below
+   is copied verbatim from .portal-deals-table rather than reused from it.
+   Column set is otherwise untouched — 12 native columns (settlement
+   figures, not a live countdown), so this is the look, not a column-for-
+   column copy of Мои сделки's own 8. */
+.portal-archive-table {
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 48px rgba(0, 0, 0, 0.16) !important;
+  overflow: hidden;
+}
+
+/* Same row divider/hover tone as .portal-deals-list > * above — native
+   TableRow already ships border-b/hover:bg-muted/50, this just repoints
+   both at the exact same rgba values instead of trusting the theme's
+   --border/--muted vars to land on the same tone by coincidence. */
+.portal-archive-table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+/* Native TableBody already drops the last row's border ([&_tr:last-child]
+   in the compiled component) — matched here so the !important above
+   doesn't reinstate it. Expanding a row inserts its detail <tr> right
+   after it, so "last child" only ever means the true last summary row. */
+.portal-archive-table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.portal-archive-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Headers centered like Мои сделки's, money columns (Сумма инвойса,
+   Комиссия, Вы получили — columns 4/7/8 of 12) right-aligned along with
+   their own data cells, same convention as Мои сделки's Сумма инвойса. */
+.portal-archive-table thead th {
+  text-align: center;
+}
+
+.portal-archive-table thead th:nth-child(4),
+.portal-archive-table thead th:nth-child(7),
+.portal-archive-table thead th:nth-child(8),
+.portal-archive-table tbody td:nth-child(4),
+.portal-archive-table tbody td:nth-child(7),
+.portal-archive-table tbody td:nth-child(8) {
+  text-align: right;
+}
+
 /* Header labels read as centered captions over their column rather than
    left/right-hugging it — except Сумма инвойса, which stays flush with its
    right-aligned money column below (the one alignment this file was asked

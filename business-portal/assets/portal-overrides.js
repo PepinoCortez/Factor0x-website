@@ -1274,11 +1274,54 @@
     return true;
   };
 
+  // Архив is a real native <table> (shadcn Table primitives), not Мои
+  // сделки's CSS-grid div cards — same visual recipe, different selectors
+  // (there's no shared markup to hook a single class onto both). Column
+  // set is also genuinely different (settlement figures, not a live
+  // countdown), so this only reuses the *look*: dark gradient card frame,
+  // centered headers with the money columns right-aligned, same row
+  // divider/hover tone as Мои сделки — not a column-for-column copy.
+  const ensureArchiveRowFormatted = (row) => {
+    if (row.dataset.portalArchiveFormatted) return;
+    row.dataset.portalArchiveFormatted = 'true';
+
+    // Срок: "180 days" -> "180 дн." — the only column left with a raw
+    // English literal (hardcoded in the compiled component, not from a
+    // shared formatter), out of place next to eleven Russian-labeled ones.
+    const termCell = row.children[5];
+    if (termCell) {
+      const match = termCell.textContent.trim().match(/^(\d+)\s*days$/);
+      if (match) termCell.textContent = `${match[1]} дн.`;
+    }
+
+    // Дата закрытия: same "12 май 2026" -> "12.05.26" reformat as Мои
+    // сделки's Погашение column, reusing the same parse/format helpers —
+    // it's the same pn()-produced text shape, just a different column.
+    const dateCell = row.children[row.children.length - 1];
+    if (dateCell) {
+      const date = parseDealDate(dateCell.textContent);
+      if (date) dateCell.textContent = formatDealDueDateShort(date);
+    }
+  };
+
+  const applyArchiveTheme = () => {
+    const table = document.querySelector('[data-testid="table-archive"]');
+    if (!table) return false;
+
+    const card = table.closest('.bg-card');
+    if (card) card.classList.add('portal-archive-table');
+
+    table.querySelectorAll('[data-testid^="row-archive-"]').forEach(ensureArchiveRowFormatted);
+
+    return true;
+  };
+
   const run = () => {
     const overviewDone = applyOverviewTheme();
     const newApplicationDone = applyNewApplicationTheme();
     const dealsDone = applyDealsTheme();
-    if (!overviewDone && !newApplicationDone && !dealsDone) {
+    const archiveDone = applyArchiveTheme();
+    if (!overviewDone && !newApplicationDone && !dealsDone && !archiveDone) {
       window.setTimeout(run, 120);
     }
   };
