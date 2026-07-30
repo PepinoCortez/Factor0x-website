@@ -1,4 +1,92 @@
 (function () {
+  // ---- Language. English is the default; Russian is what's actually
+  // baked into the compiled bundle's own JSX (no i18n system exists there
+  // — see the language-switcher comment further down), so getting English
+  // requires two different mechanisms depending on who owns the text:
+  //   - Everything THIS file writes to the DOM (labels, tooltips, notif
+  //     copy, aria-labels) is wrapped in t(ru, en) at the call site below.
+  //   - Everything the COMPILED APP renders natively is translated after
+  //     the fact by translatePage() (see far below), which runs last in
+  //     run() — after every Russian-text-matching selector elsewhere in
+  //     this file (OVERDUE_OBLIGOR_RE, DEAL_STATUS_TONE, hideDealTermHeader,
+  //     etc.) has already done its own matching against the untranslated
+  //     Russian DOM. Translating first would break all of those.
+  // Switching languages reloads the page (see ensureLanguageSwitcher)
+  // rather than live-updating in place — the native app's own Russian
+  // strings only exist freshly per mount, and re-deriving every already-
+  // attached tooltip/label in place isn't worth the complexity a toggle
+  // that already isn't a hot path doesn't need.
+  const LANGUAGE_STORAGE_KEY = 'portalLanguage';
+
+  const getStoredLanguage = () => {
+    try {
+      return localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    } catch (error) {
+      return null;
+    }
+  };
+
+  const currentLang = getStoredLanguage() === 'ru' ? 'ru' : 'en';
+
+  // t('русский', 'english') — returns whichever matches currentLang.
+  const t = (ru, en) => (currentLang === 'ru' ? ru : en);
+
+  // Two different date recipes render in this app: this file's own custom
+  // formatter (pn() in the compiled bundle) uses short abbreviations
+  // ("24 июл"), but at least one native spot formats via the browser's own
+  // Intl with the 'ru-RU' locale hardcoded (see the one activity-feed
+  // timestamp toLocaleDateString call in the compiled bundle), which
+  // produces full genitive month names instead ("3 мая"). Both need an
+  // entry here since they're never both the same token.
+  const RU_MONTH_ABBR_EN = {
+    'янв': 'Jan', 'февр': 'Feb', 'март': 'Mar', 'апр': 'Apr', 'май': 'May', 'июн': 'Jun',
+    'июл': 'Jul', 'авг': 'Aug', 'сент': 'Sep', 'окт': 'Oct', 'нояб': 'Nov', 'дек': 'Dec',
+    'января': 'January', 'февраля': 'February', 'марта': 'March', 'апреля': 'April',
+    'мая': 'May', 'июня': 'June', 'июля': 'July', 'августа': 'August',
+    'сентября': 'September', 'октября': 'October', 'ноября': 'November', 'декабря': 'December',
+  };
+
+  // Small regex rules for the pieces of native bundle text that combine a
+  // Russian word with a number the app computed at runtime (a due-date
+  // month, "N дн.", a penalty amount) — too dynamic for the exact-string
+  // dictionary in translatePage() below, so handled as patterns instead.
+  // Reused both by translatePage() (on whole bundle text nodes) and inline,
+  // wherever this file itself copies a fragment of native text out of the
+  // DOM to reconstruct it elsewhere (e.g. ensureDealCountdownCell).
+  //
+  // NOTE: \b is ASCII-only in JS regex (word chars = [A-Za-z0-9_]), so it
+  // never fires around Cyrillic letters — "\bмай\b" silently matches
+  // nothing, ever. The month rule below uses an explicit non-Cyrillic
+  // lookaround instead; the plain-word rules just drop \b entirely, safe
+  // here since this app's whole Russian vocabulary is known and none of
+  // these five words are substrings of any other word actually in it.
+  const RU_EN_FRAGMENT_RULES = [
+    [
+      // Genitive forms (марта, апреля, ...) listed alongside the abbreviations
+      // (март, апр, ...) they're prefixed by — safe regardless of which
+      // alternative the engine tries first, since the lookahead below
+      // rejects a match that leaves trailing Cyrillic letters unconsumed
+      // (e.g. "март" matching inside "марта") and backtracks to the next
+      // alternative until one actually accounts for the whole word.
+      /(^|[^а-яёА-ЯЁ])(января|февраля|марта|апреля|июня|июля|августа|сентября|октября|ноября|декабря|янв|февр|март|апр|май|июн|июл|авг|сент|окт|нояб|дек|мая)(?=[^а-яёА-ЯЁ]|$)\.?/g,
+      (m, pre, mo) => pre + (RU_MONTH_ABBR_EN[mo] || mo),
+    ],
+    [/(\d+(?:[.,]\d+)?)\s*мес\./g, '$1 mo.'],
+    [/(\d+)\s*дн\./g, '$1 days'],
+    [/%\s*в\s*день/g, '% per day'],
+    [/пеня/gi, 'late fee'],
+    [/сегодня/gi, 'today'],
+    [/просрочено/gi, 'overdue'],
+  ];
+
+  // RU -> EN only (translation only ever runs forward — see the note atop
+  // the language section on why a switch reloads instead of live-reverting).
+  // No-ops entirely in Russian mode, so it's safe to call unconditionally.
+  const translateFragment = (text) => {
+    if (currentLang !== 'en' || !text) return text;
+    return RU_EN_FRAGMENT_RULES.reduce((acc, [re, repl]) => acc.replace(re, repl), text);
+  };
+
   const CURRENCY_SEP = ' ';
 
   const splitCurrencyTag = (valueEl) => {
@@ -66,7 +154,7 @@
 
     const title = document.createElement('h2');
     title.className = 'portal-widget-title';
-    title.textContent = 'Требует внимания';
+    title.textContent = t('Требует внимания', 'Needs Attention');
     card.appendChild(title);
 
     const list = document.createElement('ul');
@@ -84,7 +172,7 @@
       const match = text.match(DEAL_ID_RE);
       const action = document.createElement('a');
       action.className = 'portal-attention-action';
-      action.textContent = 'Загрузить документ';
+      action.textContent = t('Загрузить документ', 'Upload document');
       action.href = match
         ? '/business-portal/deals/' + match[1]
         : '/business-portal/deals';
@@ -104,7 +192,7 @@
 
     const title = document.createElement('h2');
     title.className = 'portal-widget-title';
-    title.textContent = 'Ближайшие погашения';
+    title.textContent = t('Ближайшие погашения', 'Upcoming Repayments');
     card.appendChild(title);
 
     const list = document.createElement('ul');
@@ -143,7 +231,7 @@
 
       const dateEl = document.createElement('span');
       dateEl.className = 'portal-repayment-date';
-      dateEl.textContent = overdue ? r.date + ' · просрочено' : r.date;
+      dateEl.textContent = translateFragment(overdue ? r.date + ' · просрочено' : r.date);
 
       li.appendChild(obligorEl);
       li.appendChild(amountEl);
@@ -253,10 +341,18 @@
       splitCurrencyTag(document.querySelector('[data-testid="kpi-total-financed"]'));
     }
 
+    // Matched by text content (every other page's entry point below keys
+    // off a stable data-testid instead — see the language section up top).
+    // React can paint this card's heading a tick before its list — on that
+    // tick, translatePage() has no way to know listEl isn't ready yet and
+    // translates the heading anyway, so the Russian-only check below would
+    // permanently stop matching on every later run() once that happens.
+    // Checking both languages makes the match survive regardless of which
+    // cycle it lands on.
     const activityCard = Array.from(overviewRoot.children).find((node) => {
       return (
         node instanceof HTMLElement &&
-        node.textContent.includes('Последние события') &&
+        (node.textContent.includes('Последние события') || node.textContent.includes('Recent Activity')) &&
         !node.classList.contains('portal-bottom-grid')
       );
     });
@@ -378,7 +474,7 @@
 
   // The two free-text fields shipped with "Например, ..." typing hints —
   // wrong tone now that nobody types into them.
-  const NEWAPP_LOCKED_PLACEHOLDER = 'Определится автоматически';
+  const NEWAPP_LOCKED_PLACEHOLDER = t('Определится автоматически', 'Determined automatically');
 
   const lockNewAppDataFields = (form) => {
     NEWAPP_LOCKED_FIELD_IDS.forEach((id) => {
@@ -470,14 +566,22 @@
     if (!textarea || textarea.dataset.portalRepurposed) return;
     textarea.dataset.portalRepurposed = 'true';
     const label = form.querySelector('label[for="description"]');
-    if (label) setTextIfChanged(label, 'Комментарий (необязательно)');
-    textarea.placeholder = 'Если что-то из данных выше определено неверно — опишите здесь, и мы это учтём';
+    if (label) setTextIfChanged(label, t('Комментарий (необязательно)', 'Comment (optional)'));
+    textarea.placeholder = t(
+      'Если что-то из данных выше определено неверно — опишите здесь, и мы это учтём',
+      "If anything above was picked up incorrectly, describe it here and we'll take it into account"
+    );
   };
+
+  // Set by applyNewAppColumnsLayout below (which runs first — see the
+  // run() call order) — shared so the two stay in sync regardless of
+  // language instead of each hardcoding the string separately.
+  const NEWAPP_DATA_HEADING = t('Заявка на финансирование', 'Financing Application');
 
   const ensureNewAppAutoFillNote = (dataCard) => {
     if (!dataCard || dataCard.querySelector('.portal-newapp-autofill-note')) return;
     const heading = Array.from(dataCard.querySelectorAll('*')).find(
-      (el) => el.children.length === 0 && el.textContent.trim() === 'Заявка на финансирование'
+      (el) => el.children.length === 0 && el.textContent.trim() === NEWAPP_DATA_HEADING
     );
     if (!heading) return;
     const note = document.createElement('p');
@@ -488,9 +592,12 @@
     // file but already initialized by the time this actually runs (this
     // function is only called from applyNewApplicationTheme via run(), at
     // the very end of the file).
-    note.append('Поля определяются автоматически.');
+    note.append(t('Поля определяются автоматически.', 'Fields fill in automatically.'));
     note.appendChild(buildDealInfoIcon(
-      'Загрузите документы, и поля заполнятся автоматически из инвойса. Останется только проверить. Пока документы не загружены.'
+      t(
+        'Загрузите документы, и поля заполнятся автоматически из инвойса. Останется только проверить. Пока документы не загружены.',
+        "Upload the documents and the fields will fill in automatically from the invoice — you'll just need to check them. No documents uploaded yet."
+      )
     ));
     heading.insertAdjacentElement('afterend', note);
     // Submit overlaps this same header area (position: sticky, top-right —
@@ -563,7 +670,7 @@
       const badge = document.querySelector('[data-testid="badge-doc-status-' + key + '"]');
       if (!badge) return;
       if (required) {
-        if (!uploaded) setTextIfChanged(badge, 'Не загружено');
+        if (!uploaded) setTextIfChanged(badge, t('Не загружено', 'Not uploaded'));
       } else {
         badge.classList.toggle('portal-doc-badge-hidden', !uploaded);
       }
@@ -618,8 +725,16 @@
       return group;
     };
 
-    const requiredGroup = buildGroup('Необходимо для старта', 'без этого заявку не отправить', 'portal-doc-group-required');
-    const laterGroup = buildGroup('Можно догрузить позже', 'приложите сразу или добавьте потом в карточке сделки', 'portal-doc-group-later');
+    const requiredGroup = buildGroup(
+      t('Необходимо для старта', 'Needed to start'),
+      t('без этого заявку не отправить', "can't submit without these"),
+      'portal-doc-group-required'
+    );
+    const laterGroup = buildGroup(
+      t('Можно догрузить позже', 'Can add later'),
+      t('приложите сразу или добавьте потом в карточке сделки', 'attach now, or add later from the deal card'),
+      'portal-doc-group-later'
+    );
 
     NEWAPP_DOC_ORDER.forEach(({ key, required }) => {
       const badge = document.querySelector('[data-testid="badge-doc-status-' + key + '"]');
@@ -641,14 +756,16 @@
     const docs = newAppDocStatus();
     const parts = [];
     if (docs.missingRequired.length === 0) {
-      parts.push('обязательные документы приложены ✓');
+      parts.push(t('обязательные документы приложены ✓', 'required documents attached ✓'));
     } else {
-      parts.push('осталось приложить: ' + docs.missingRequired.join(', '));
+      parts.push(t('осталось приложить: ', 'still need to attach: ') + docs.missingRequired.join(', '));
     }
     const requiredDone = docs.requiredTotal - docs.missingRequired.length;
     const bonus = docs.totalUploaded - requiredDone;
     if (bonus > 0) {
-      parts.push('+' + bonus + ' ' + (bonus === 1 ? 'доп. документ' : 'доп. документа') + ' уже приложено');
+      parts.push(
+        '+' + bonus + ' ' + t(bonus === 1 ? 'доп. документ' : 'доп. документа', bonus === 1 ? 'extra document' : 'extra documents') + ' ' + t('уже приложено', 'already attached')
+      );
     }
     setTextIfChanged(textEl, parts.join(' · '));
   };
@@ -711,7 +828,7 @@
     const dataHeading = Array.from(dataCard.querySelectorAll('*')).find(
       (el) => el.children.length === 0 && el.textContent.trim() === 'Данные по инвойсу'
     );
-    if (dataHeading) setTextIfChanged(dataHeading, 'Заявка на финансирование');
+    if (dataHeading) setTextIfChanged(dataHeading, NEWAPP_DATA_HEADING);
 
     // If the submit button lives in its own section (not nested in either
     // card above), mark it too so it spans full width below both columns —
@@ -732,7 +849,7 @@
       if (invoiceLabel) {
         const tag = document.createElement('span');
         tag.className = 'portal-doc-row-primary-tag';
-        tag.textContent = 'Главный документ';
+        tag.textContent = t('Главный документ', 'Primary document');
         // Appended *inside* the label (not as a sibling after it) so the
         // inline-flex tag sits on the same line as "Инвойс" instead of
         // wrapping to its own line below.
@@ -757,15 +874,15 @@
     stepsCard.className = 'portal-newapp-side-card';
     const stepsTitle = document.createElement('h2');
     stepsTitle.className = 'portal-newapp-side-title';
-    stepsTitle.textContent = 'Что будет после подачи';
+    stepsTitle.textContent = t('Что будет после подачи', 'What happens after you apply');
     stepsCard.appendChild(stepsTitle);
 
     const stepsList = document.createElement('ol');
     stepsList.className = 'portal-newapp-steps';
     [
-      'Подаёте заявку — данные и документы уходят на проверку.',
-      'Мы оцениваем риск-профиль сделки и рассчитываем ставку.',
-      'Возвращаемся с предложением по финансированию.',
+      t('Подаёте заявку — данные и документы уходят на проверку.', 'You submit the application — the data and documents go for review.'),
+      t('Мы оцениваем риск-профиль сделки и рассчитываем ставку.', "We assess the deal's risk profile and calculate the rate."),
+      t('Возвращаемся с предложением по финансированию.', 'We come back with a financing offer.'),
     ].forEach((text) => {
       const li = document.createElement('li');
       li.textContent = text;
@@ -787,18 +904,18 @@
     backdrop.className = 'portal-newapp-summary-backdrop';
     backdrop.innerHTML =
       '<div class="portal-newapp-summary-card">' +
-        '<div class="portal-newapp-summary-kicker">Проверьте перед отправкой</div>' +
-        '<h3>Сводка заявки</h3>' +
+        '<div class="portal-newapp-summary-kicker">' + t('Проверьте перед отправкой', 'Review before submitting') + '</div>' +
+        '<h3>' + t('Сводка заявки', 'Application summary') + '</h3>' +
         '<dl class="portal-newapp-summary-list">' +
-          '<div><dt>Сумма</dt><dd data-slot="amount">—</dd></div>' +
-          '<div><dt>Дебитор</dt><dd data-slot="obligor">—</dd></div>' +
-          '<div><dt>Срок оплаты</dt><dd data-slot="dueDate">—</dd></div>' +
-          '<div><dt>Документы</dt><dd data-slot="docs">—</dd></div>' +
-          '<div><dt>Комментарий</dt><dd data-slot="comment">—</dd></div>' +
+          '<div><dt>' + t('Сумма', 'Amount') + '</dt><dd data-slot="amount">—</dd></div>' +
+          '<div><dt>' + t('Дебитор', 'Debtor') + '</dt><dd data-slot="obligor">—</dd></div>' +
+          '<div><dt>' + t('Срок оплаты', 'Payment due') + '</dt><dd data-slot="dueDate">—</dd></div>' +
+          '<div><dt>' + t('Документы', 'Documents') + '</dt><dd data-slot="docs">—</dd></div>' +
+          '<div><dt>' + t('Комментарий', 'Comment') + '</dt><dd data-slot="comment">—</dd></div>' +
         '</dl>' +
         '<div class="portal-newapp-summary-actions">' +
-          '<button type="button" class="portal-newapp-summary-back">Вернуться к правке</button>' +
-          '<button type="button" class="portal-newapp-summary-confirm">Отправить</button>' +
+          '<button type="button" class="portal-newapp-summary-back">' + t('Вернуться к правке', 'Back to edit') + '</button>' +
+          '<button type="button" class="portal-newapp-summary-confirm">' + t('Отправить', 'Submit') + '</button>' +
         '</div>' +
       '</div>';
     document.body.appendChild(backdrop);
@@ -814,12 +931,12 @@
     const docs = newAppDocStatus();
 
     overlay.querySelector('[data-slot="amount"]').textContent = amount
-      ? Number(amount).toLocaleString('ru-RU') + ' ' + currency
+      ? Number(amount).toLocaleString(t('ru-RU', 'en-US')) + ' ' + currency
       : '—';
     overlay.querySelector('[data-slot="obligor"]').textContent = obligor || '—';
     overlay.querySelector('[data-slot="dueDate"]').textContent = formatNewAppDate(dueDate);
     overlay.querySelector('[data-slot="docs"]').textContent =
-      docs.totalUploaded + ' из ' + docs.total + (docs.missingRequired.length ? ' (не хватает: ' + docs.missingRequired.join(', ') + ')' : '');
+      docs.totalUploaded + t(' из ', ' of ') + docs.total + (docs.missingRequired.length ? t(' (не хватает: ', ' (missing: ') + docs.missingRequired.join(', ') + ')' : '');
 
     const comment = form.querySelector('#description') && form.querySelector('#description').value.trim();
     overlay.querySelector('[data-slot="comment"]').textContent = comment || '—';
@@ -894,7 +1011,10 @@
     // Документы sits on the left and is the actual point of entry.
     const subtitleEl = page.querySelector(':scope > div > p');
     if (subtitleEl) {
-      setTextIfChanged(subtitleEl, 'Загрузите документы — остальные поля определятся автоматически.');
+      setTextIfChanged(subtitleEl, t(
+        'Загрузите документы — остальные поля определятся автоматически.',
+        'Upload the documents — the remaining fields will fill in automatically.'
+      ));
     }
     fixNonSubmitButtonTypes(form);
     hideNewAppPackageProgress(form);
@@ -941,11 +1061,27 @@
   // verbatim from their own description field in P_ in the compiled
   // bundle. Готов к финансированию/Профинансировано stay unexplained,
   // they're self-evident.
+  // Keys are matched against the native badge's CURRENT text (still
+  // Russian at this point in run() — see the language comment up top), so
+  // they stay literal Russian regardless of language. Only the tooltip
+  // body values (what the visitor actually reads) are translated.
   const DEAL_STATUS_INFO = {
-    'Дефолт': 'Сделка не погашена в установленный срок и переведена в статус дефолта. Пеня продолжает начисляться до полного погашения.',
-    'Просрочка': 'Срок оплаты по сделке прошёл. Идёт начисление пени — свяжитесь с дебитором или с нами, если нужна помощь.',
-    'Ожидает загрузки документов': 'Нужно загрузить документы по сделке, чтобы мы начали проверку.',
-    'Расчёт ставки': 'Рассчитывается ставка финансирования: документы получены, идёт оценка и расчёт ставки по сделке.',
+    'Дефолт': t(
+      'Сделка не погашена в установленный срок и переведена в статус дефолта. Пеня продолжает начисляться до полного погашения.',
+      'The deal was not repaid by the due date and has been moved to default. Late fees continue to accrue until it is fully repaid.'
+    ),
+    'Просрочка': t(
+      'Срок оплаты по сделке прошёл. Идёт начисление пени — свяжитесь с дебитором или с нами, если нужна помощь.',
+      "The deal's payment deadline has passed. Late fees are accruing — contact the debtor or us if you need help."
+    ),
+    'Ожидает загрузки документов': t(
+      'Нужно загрузить документы по сделке, чтобы мы начали проверку.',
+      'The deal documents need to be uploaded before we can start reviewing it.'
+    ),
+    'Расчёт ставки': t(
+      'Рассчитывается ставка финансирования: документы получены, идёт оценка и расчёт ставки по сделке.',
+      'The financing rate is being calculated: documents received, we are assessing and pricing the deal.'
+    ),
   };
 
   // Native badgeClassName reuses the exact same --status-warning token for
@@ -1075,7 +1211,7 @@
     wrap.className =
       'inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-muted-foreground hover-elevate active-elevate-2';
     wrap.innerHTML = DEAL_INFO_ICON_SVG;
-    wrap.setAttribute('aria-label', 'Пояснение');
+    wrap.setAttribute('aria-label', t('Пояснение', 'Explanation'));
     attachDealTooltip(wrap, text);
     return wrap;
   };
@@ -1226,13 +1362,13 @@
       cell.classList.add(isDefault ? 'text-status-danger' : 'text-status-warning');
       const daysSpan = document.createElement('span');
       daysSpan.className = 'portal-deal-countdown-days';
-      daysSpan.textContent = 'просрочено ' + daysPhrase;
+      daysSpan.textContent = t('просрочено ', 'overdue ') + translateFragment(daysPhrase);
       cell.appendChild(daysSpan);
 
       if (penaltyPhrase) {
         const penaltySpan = document.createElement('span');
         penaltySpan.className = 'portal-deal-countdown-penalty';
-        penaltySpan.textContent = penaltyPhrase;
+        penaltySpan.textContent = translateFragment(penaltyPhrase);
         cell.appendChild(penaltySpan);
       }
     } else {
@@ -1240,7 +1376,7 @@
       const dueDate = DEAL_COUNTDOWN_DASH_STATUSES.has(statusText) ? null : parsedDueDate;
       if (dueDate) {
         const days = dealDaysUntil(dueDate);
-        cell.textContent = days <= 0 ? 'сегодня' : `через ${days} дн.`;
+        cell.textContent = days <= 0 ? t('сегодня', 'today') : t(`через ${days} дн.`, `in ${days} days`);
         cell.classList.add(
           days >= 0 && days <= DEAL_COUNTDOWN_SOON_DAYS ? 'portal-deal-countdown-soon' : 'text-muted-foreground'
         );
@@ -1264,7 +1400,7 @@
     if (!dueHeader) return;
     const header = document.createElement('span');
     header.className = 'portal-deal-countdown-header';
-    header.textContent = 'Отсчёт';
+    header.textContent = t('Отсчёт', 'Countdown');
     dueHeader.insertAdjacentElement('afterend', header);
   };
 
@@ -1316,10 +1452,13 @@
   };
 
   const buildDealsSummaryText = (problemCount, totalCount) => {
-    if (problemCount === 0) return 'Все сделки в порядке';
+    if (problemCount === 0) return t('Все сделки в порядке', 'All deals are on track');
     const rest = totalCount - problemCount;
-    const base = `${problemCount} ${ruPlural(problemCount, DEAL_WORD_FORMS.deal)} ${ruPlural(problemCount, DEAL_WORD_FORMS.require)} внимания`;
-    return rest > 0 ? `${base} · остальные в порядке` : base;
+    const base =
+      currentLang === 'ru'
+        ? `${problemCount} ${ruPlural(problemCount, DEAL_WORD_FORMS.deal)} ${ruPlural(problemCount, DEAL_WORD_FORMS.require)} внимания`
+        : `${problemCount} ${problemCount === 1 ? 'deal needs' : 'deals need'} attention`;
+    return rest > 0 ? base + t(' · остальные в порядке', ' · the rest are on track') : base;
   };
 
   // Gives the borrower context before the list itself — which may open on a
@@ -1414,10 +1553,13 @@
     // Срок: "180 days" -> "180 дн." — the only column left with a raw
     // English literal (hardcoded in the compiled component, not from a
     // shared formatter), out of place next to eleven Russian-labeled ones.
-    const termCell = row.children[5];
-    if (termCell) {
-      const match = termCell.textContent.trim().match(/^(\d+)\s*days$/);
-      if (match) termCell.textContent = `${match[1]} дн.`;
+    // In English mode it's already the right language — left untouched.
+    if (currentLang === 'ru') {
+      const termCell = row.children[5];
+      if (termCell) {
+        const match = termCell.textContent.trim().match(/^(\d+)\s*days$/);
+        if (match) termCell.textContent = `${match[1]} дн.`;
+      }
     }
 
     // Дата закрытия: same "12 май 2026" -> "12.05.26" reformat as Мои
@@ -1550,10 +1692,21 @@
   // a vertical bar and a horizontal band via ::before/::after, no SVG
   // there either). The dropdown panel itself is this portal's own dark
   // recipe instead of the landing page's light one — that page has no
-  // dark theme to match, this one does. No i18n system exists anywhere
-  // in the compiled portal bundle (unlike the marketing site's own
-  // docs-language.js dictionary), so switching is cosmetic only — it
-  // tracks which option is marked active, nothing in the app re-renders.
+  // dark theme to match, this one does. English is the default; picking a
+  // different language saves it and reloads (see setLanguage below) rather
+  // than live-translating in place — see the language section up top for
+  // why.
+  const setLanguage = (lang) => {
+    if (lang === currentLang) return;
+    try {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
+    } catch (error) {
+      // Private-browsing/storage-disabled — reloading would just lose the
+      // choice immediately, so there's nothing useful to do here.
+    }
+    location.reload();
+  };
+
   let langMenuEl = null;
 
   const closeLangMenu = () => {
@@ -1577,7 +1730,7 @@
     const trigger = document.createElement('button');
     trigger.type = 'button';
     trigger.className = 'portal-lang-trigger';
-    trigger.setAttribute('aria-label', 'Выбрать язык');
+    trigger.setAttribute('aria-label', t('Выбрать язык', 'Choose language'));
     trigger.setAttribute('aria-expanded', 'false');
     const glyph = document.createElement('span');
     glyph.setAttribute('aria-hidden', 'true');
@@ -1589,13 +1742,14 @@
     langMenuEl = menu;
 
     const options = [
-      { label: 'ENG', active: false },
-      { label: 'РУС', active: true },
-    ].map(({ label, active }) => {
+      { lang: 'en', label: 'ENG' },
+      { lang: 'ru', label: 'РУС' },
+    ].map(({ lang, label }) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = label;
-      btn.className = 'portal-lang-option' + (active ? ' portal-lang-option-active' : '');
+      btn.className = 'portal-lang-option' + (lang === currentLang ? ' portal-lang-option-active' : '');
+      btn.dataset.lang = lang;
       return btn;
     });
     options.forEach((btn) => menu.appendChild(btn));
@@ -1610,10 +1764,9 @@
     options.forEach((btn) => {
       btn.addEventListener('click', (event) => {
         event.stopPropagation();
-        options.forEach((b) => b.classList.remove('portal-lang-option-active'));
-        btn.classList.add('portal-lang-option-active');
         closeLangMenu();
         trigger.setAttribute('aria-expanded', 'false');
+        setLanguage(btn.dataset.lang);
       });
     });
 
@@ -1640,7 +1793,7 @@
     document.documentElement.classList.toggle('portal-light-theme', mode === 'light');
     if (themeToggleTrigger) {
       themeToggleTrigger.innerHTML = mode === 'light' ? MOON_ICON_SVG : SUN_ICON_SVG;
-      const label = mode === 'light' ? 'Тёмная тема' : 'Светлая тема';
+      const label = mode === 'light' ? t('Тёмная тема', 'Dark theme') : t('Светлая тема', 'Light theme');
       themeToggleTrigger.title = label;
       themeToggleTrigger.setAttribute('aria-label', label);
     }
@@ -1688,10 +1841,29 @@
   // doesn't have access to). Same tone/shape as that feed's own items:
   // one line of what happened, one relative timestamp.
   const NOTIF_ITEMS = [
-    { text: 'Ставка рассчитана для DEAL-0011 — 5.2% в месяц.', time: '5 минут назад', unread: true },
-    { text: 'DEAL-0014 просрочена на 12 дн. — начислена пеня AED 1,536.', time: 'Вчера' },
-    { text: 'DEAL-0013 профинансирована — AED 410,000 отправлены на ваш счёт.', time: '3 дня назад' },
-    { text: 'Документы по DEAL-0015 получены, начата проверка.', time: '5 дней назад' },
+    {
+      text: t('Ставка рассчитана для DEAL-0011 — 5.2% в месяц.', 'Rate calculated for DEAL-0011 — 5.2% per month.'),
+      time: t('5 минут назад', '5 minutes ago'),
+      unread: true,
+    },
+    {
+      text: t(
+        'DEAL-0014 просрочена на 12 дн. — начислена пеня AED 1,536.',
+        'DEAL-0014 is 12 days overdue — a late fee of AED 1,536 has accrued.'
+      ),
+      time: t('Вчера', 'Yesterday'),
+    },
+    {
+      text: t(
+        'DEAL-0013 профинансирована — AED 410,000 отправлены на ваш счёт.',
+        'DEAL-0013 has been financed — AED 410,000 has been sent to your account.'
+      ),
+      time: t('3 дня назад', '3 days ago'),
+    },
+    {
+      text: t('Документы по DEAL-0015 получены, начата проверка.', 'Documents for DEAL-0015 received, review has started.'),
+      time: t('5 дней назад', '5 days ago'),
+    },
   ];
 
   let notifPanelEl = null;
@@ -1718,7 +1890,7 @@
 
     const header = document.createElement('div');
     header.className = 'portal-notif-panel-header';
-    header.textContent = 'Уведомления';
+    header.textContent = t('Уведомления', 'Notifications');
     panel.appendChild(header);
 
     const list = document.createElement('div');
@@ -1776,7 +1948,7 @@
     const bellBtn = document.createElement('button');
     bellBtn.type = 'button';
     bellBtn.className = 'portal-notif-bell';
-    bellBtn.setAttribute('aria-label', 'Уведомления');
+    bellBtn.setAttribute('aria-label', t('Уведомления', 'Notifications'));
     bellBtn.innerHTML = NOTIF_BELL_ICON_SVG;
 
     const badge = document.createElement('span');
@@ -1802,6 +1974,229 @@
     return true;
   };
 
+  // ---- Translation of the compiled app's own native (Russian) output.
+  // Exact-string dictionary, checked against a text node's *full* value —
+  // covers every static label/sentence the bundle renders. Dynamic bits
+  // (dates, "N дн.", a debtor's name mixed into a sentence) aren't safe to
+  // match exactly, so those fall through to REGEX_ONLY below instead.
+  const BUNDLE_RU_EN = {
+    // Nav / shell
+    'Обзор': 'Overview',
+    'Новая заявка': 'New Application',
+    'Мои сделки': 'My Deals',
+    'Архив': 'Archive',
+    'Профиль компании': 'Company Profile',
+    'Настройки': 'Settings',
+    'Выйти': 'Log Out',
+    'К обзору': 'Back to Overview',
+    // Overview page
+    'Сводка по вашим заявкам и сделкам': 'Summary of your applications and deals',
+    'Всего профинансировано': 'Total Financed',
+    'Заявок на рассмотрении': 'Applications Under Review',
+    'Активных сделок': 'Active Deals',
+    'Ближайшее погашение': 'Next Repayment',
+    'Подать новую заявку': 'Submit New Application',
+    'Последние события': 'Recent Activity',
+    'Нет': 'None',
+    'У вас пока нет активных сделок.': "You don't have any active deals yet.",
+    'У вас пока нет завершённых сделок.': "You don't have any completed deals yet.",
+    'Ваши активные сделки — включая те, где ещё не наступило погашение': 'Your active deals — including those not yet due for repayment',
+    'Ваши завершённые сделки, условия и соглашения': 'Your completed deals, terms, and agreements',
+    'Загрузите акт приёмки по заявке №0012': 'Upload the acceptance certificate for application #0012',
+    'Ваша заявка №0015 подана и ожидает рассмотрения': 'Your application #0015 has been submitted and is awaiting review',
+    'Ваша заявка №0012 одобрена': 'Your application #0012 has been approved',
+    'Сделка №0013 профинансирована': 'Deal #0013 has been financed',
+    'Ваш дебитор Spinneys Dubai LLC просрочил оплату по сделке №0014': 'Your debtor Spinneys Dubai LLC is overdue on payment for deal #0014',
+    'Ваш дебитор Lulu Group International оплатил инвойс по сделке №0009': 'Your debtor Lulu Group International paid the invoice for deal #0009',
+    'Заявка отправлена': 'Application Submitted',
+    'Заявка подана': 'Submitted',
+    'На проверке': 'Under Review',
+    'Одобрена': 'Approved',
+    'Отправка…': 'Submitting…',
+    // New Application
+    'Загрузите документы — остальные поля определятся автоматически.': 'Upload the documents — the remaining fields will fill in automatically.',
+    'Заявка на финансирование': 'Financing Application',
+    'Данные по инвойсу': 'Invoice Data',
+    'Документы': 'Documents',
+    'Документы по сделке': 'Deal Documents',
+    'Документы сделки': 'Deal Documents',
+    'Демо-документ': 'Demo Document',
+    'Инвойс': 'Invoice',
+    'Контракт': 'Contract',
+    'Заказ на поставку (PO)': 'Purchase Order (PO)',
+    'Коносамент (B/L)': 'Bill of Lading (B/L)',
+    'Акт приёмки': 'Acceptance Certificate',
+    'Подписанное соглашение о факторинге': 'Signed Factoring Agreement',
+    'Подтверждение долга дебитором': 'Debt Confirmation by Debtor',
+    'Комплектность пакета': 'Package Completeness',
+    'Загружено': 'Uploaded',
+    'Загружено ': 'Uploaded ',
+    ' из ': ' of ',
+    ' документов': ' documents',
+    'Нужно загрузить': 'Needs upload',
+    'Валюта': 'Currency',
+    'Дебитор / должник (название компании)': 'Debtor (company name)',
+    'Дебитор': 'Debtor',
+    'Дата выставления инвойса': 'Invoice Date',
+    'Дата инвойса': 'Invoice Date',
+    'Срок оплаты': 'Payment Due Date',
+    'Страна дебитора': "Debtor's Country",
+    'Сумма инвойса': 'Invoice Amount',
+    'Сумма инвойса ': 'Invoice Amount ',
+    'Краткое описание товаров/услуг': 'Brief description of goods/services',
+    'Например, Carrefour UAE': 'e.g., Carrefour UAE',
+    'Например, поставка бакалейной продукции для сети супермаркетов': 'e.g., delivery of grocery products for a supermarket chain',
+    'Подайте инвойс на финансирование': 'Submit an invoice for financing',
+    'Профиль компании': 'Company Profile',
+    'Загрузить': 'Upload',
+    'Заменить': 'Replace',
+    'Приложите пакет документов сразу при подаче — или догрузите позже, в карточке этой сделки.':
+      'Attach the document package right away, or add it later from the deal card.',
+    'дд.мм.гггг': 'dd.mm.yyyy',
+    // Deals / Archive / status
+    'Дефолт': 'Default',
+    'Просрочка': 'Overdue',
+    'Погашена': 'Repaid',
+    'Погашена дебитором': 'Repaid by Debtor',
+    'Погашение': 'Repayment',
+    'Профинансирована': 'Financed',
+    'Профинансировано': 'Financed',
+    'Готов к финансированию': 'Ready for Financing',
+    'Ожидает загрузки документов': 'Awaiting Documents',
+    'Расчёт ставки': 'Rate Calculation',
+    'Расчёт финансирования': 'Financing Calculation',
+    'Расчёт': 'Calculation',
+    'Срок': 'Term',
+    'Статус сделки': 'Deal Status',
+    'Статус': 'Status',
+    'Ключевые даты': 'Key Dates',
+    'Дефолт по обязательству вашего дебитора': "Default on your debtor's obligation",
+    'Дата закрытия сделки': 'Deal Closing Date',
+    'Дата закрытия': 'Closing Date',
+    'Дата получения транша': 'Disbursement Date',
+    'Дата создания заявки': 'Application Creation Date',
+    'Даты сделки': 'Deal Dates',
+    'Условия оплаты': 'Payment Terms',
+    'Полные условия сделки': 'Full Deal Terms',
+    'Комиссия': 'Fee',
+    'Ставка/мес': 'Rate/mo',
+    'Ставка пени': 'Late Fee Rate',
+    'Была просрочка платежа': 'There was a late payment',
+    'Дней просрочки': 'Days Overdue',
+    'Дни просрочки': 'Days Overdue',
+    'Начислено': 'Accrued',
+    'Пеня за просрочку': 'Late Payment Fee',
+    'Как рассчитано': "How it's calculated",
+    'Месячная ставка по вашему риск-профилю.': 'Monthly rate based on your risk profile.',
+    'Ставка рассчитывается по вашему риск-профилю.': 'The rate is calculated based on your risk profile.',
+    'Сделка одобрена, ставка определена, ожидается выплата финансирования.': 'The deal is approved, the rate is set, and disbursement is pending.',
+    'Рассчитывается ставка финансирования: документы получены, идёт оценка и расчёт ставки по сделке.': 'The financing rate is being calculated: documents received, we are assessing and pricing the deal.',
+    'Нужно загрузить документы по сделке, чтобы мы начали проверку.': 'The deal documents need to be uploaded before we can start reviewing it.',
+    'Загрузите документы по сделке, чтобы мы начали проверку.': 'Upload the deal documents so we can start reviewing.',
+    'Средства выплачены заёмщику; ожидается оплата инвойса дебитором.': 'Funds have been disbursed to the borrower; awaiting invoice payment from the debtor.',
+    'Сделка не найдена.': 'Deal not found.',
+    'Отправить': 'Submit',
+    'Перейти к документам': 'Go to Documents',
+    'Перейти к моим сделкам': 'Go to My Deals',
+    // Rate/fee explainer tooltips — fragments (see the "Комиссия"/"Ставка/мес"/
+    // "Вы получили" dt tooltips in the compiled bundle: each is a run of
+    // sibling text nodes around interpolated numbers, so each fragment
+    // below is its own isolated node rather than a full sentence).
+    'Это ставка ': 'This is the ',
+    'за один месяц': 'monthly rate',
+    ' финансирования — не итоговая комиссия по сделке. Назначена по вашему риск-профилю:': ' for financing — not the total fee for the deal. Set according to your risk profile:',
+    ' в месяц.': ' per month.',
+    'Это ': 'This is ',
+    'итоговая комиссия за весь срок': 'total fee for the entire term',
+    ' сделки (': ' of the deal (',
+    ' дней = ': ' days = ',
+    '), а не месячная ставка: ': '), not a monthly rate: ',
+    '/мес ×': '/mo ×',
+    'Вы получили': 'You Received',
+    '− комиссия ': '− fee ',
+    '− комиссия': '− fee',
+    ', выплачено одним траншем.': ', paid out in one lump sum.',
+    '% в день': '% per day',
+    // Seed/demo deal descriptions
+    'Поставка бакалейной продукции для сети супермаркетов, июльская партия.': 'Grocery supply for a supermarket chain, July batch.',
+    'Поставка бытовой техники в сеть гипермаркетов.': 'Home appliance supply to a hypermarket chain.',
+    'Поставка бытовой химии, новогодняя партия.': 'Household chemicals supply, New Year batch.',
+    'Поставка бытовой химии, регулярный ежемесячный заказ.': 'Household chemicals supply, regular monthly order.',
+    'Поставка кондитерских изделий, партия за март.': 'Confectionery supply, March batch.',
+    'Поставка промышленного оборудования и запасных частей.': 'Industrial equipment and spare parts supply.',
+    'Поставка свежих продуктов, партия за июнь.': 'Fresh produce supply, June batch.',
+    'Поставка строительных материалов по контракту на реконструкцию склада.': 'Construction materials supply under a warehouse renovation contract.',
+    'Поставка строительных материалов, зимняя партия.': 'Construction materials supply, winter batch.',
+  };
+
+  // Whole-string regexes for bundle text that's a template literal baked
+  // into ONE text node with a dynamic number inside it (so no fixed exact
+  // string exists to put in the dictionary above).
+  const BUNDLE_RU_EN_PATTERNS = [
+    [/^Ваша заявка №(\d+) подана и ожидает рассмотрения$/, (_, id) => `Your application #${id} has been submitted and is awaiting review`],
+    [/^Ваша заявка №(\d+) одобрена$/, (_, id) => `Your application #${id} has been approved`],
+    [/^Сделка №(\d+) профинансирована$/, (_, id) => `Deal #${id} has been financed`],
+    [
+      /^Просрочка платежа со стороны вашего дебитора — платёж ожидался (.+)$/,
+      (_, date) => `Payment from your debtor is overdue — payment was expected ${translateFragment(date)}`,
+    ],
+  ];
+
+  // Walks every text node under <body> and, in English mode, swaps in the
+  // translation for any exact dictionary match, whole-string pattern
+  // match, or (as a last resort) the RU_EN_FRAGMENT_RULES substitutions
+  // already used inline elsewhere in this file (month names, "N дн.", "N
+  // мес.", "% в день") — covers the rare native text node this dictionary
+  // doesn't have an exact entry for. Runs last in run(), after every
+  // Russian-text-matching function above has already matched against the
+  // untranslated DOM — see the language section up top for why the order
+  // matters. Idempotent: already-English text matches nothing here, so
+  // repeat calls (the MutationObserver fires again from this function's
+  // own edits) settle after one extra no-op pass.
+  const translatePage = () => {
+    if (currentLang !== 'en') return;
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        const parentTag = node.parentElement && node.parentElement.tagName;
+        if (parentTag === 'SCRIPT' || parentTag === 'STYLE') return NodeFilter.FILTER_REJECT;
+        return node.nodeValue && /[а-яёА-ЯЁ]/.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      },
+    });
+    const nodes = [];
+    let node;
+    while ((node = walker.nextNode())) nodes.push(node);
+    nodes.forEach((n) => {
+      const raw = n.nodeValue;
+      if (Object.prototype.hasOwnProperty.call(BUNDLE_RU_EN, raw)) {
+        n.nodeValue = BUNDLE_RU_EN[raw];
+        return;
+      }
+      const trimmed = raw.trim();
+      if (Object.prototype.hasOwnProperty.call(BUNDLE_RU_EN, trimmed)) {
+        n.nodeValue = raw.replace(trimmed, BUNDLE_RU_EN[trimmed]);
+        return;
+      }
+      for (const [re, fn] of BUNDLE_RU_EN_PATTERNS) {
+        if (re.test(trimmed)) {
+          n.nodeValue = raw.replace(trimmed, trimmed.replace(re, fn));
+          return;
+        }
+      }
+      const fragmented = translateFragment(raw);
+      if (fragmented !== raw) n.nodeValue = fragmented;
+    });
+
+    // placeholder is an attribute, not a text node — invisible to the
+    // TreeWalker above (e.g. the locked date fields' native "дд.мм.гггг",
+    // or the two free-text fields' "Например, ..." hints).
+    document.querySelectorAll('[placeholder]').forEach((el) => {
+      const ph = el.getAttribute('placeholder');
+      if (ph && Object.prototype.hasOwnProperty.call(BUNDLE_RU_EN, ph)) {
+        el.setAttribute('placeholder', BUNDLE_RU_EN[ph]);
+      }
+    });
+  };
+
   const run = () => {
     const overviewDone = applyOverviewTheme();
     const newApplicationDone = applyNewApplicationTheme();
@@ -1813,6 +2208,8 @@
     // counted towards the "nothing matched, keep polling" check below,
     // it just quietly no-ops on every later tick via its own guard.
     ensureNotificationBell();
+    // Last, on purpose — see translatePage's own comment for why.
+    translatePage();
     if (!overviewDone && !newApplicationDone && !dealsDone && !archiveDone && !dealDetailDone) {
       window.setTimeout(run, 120);
     }
