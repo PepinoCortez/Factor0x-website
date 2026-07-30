@@ -875,7 +875,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-new-application-page textarea.border-input {
-  min-height: 72px;
+  min-height: 132px;
 }
 
 /* Hide the native number-input spinner (Сумма инвойса) — it clashes with
