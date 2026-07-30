@@ -805,11 +805,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   overflow: hidden;
 }
 
-/* Page root widened to the exact same 1296px as .portal-deals-page — one
-   design system, one page width (see ensureArchivePageWidened in
-   portal-overrides.js). */
+/* Page root — 1400px, 8% wider than .portal-deals-page's 1296px (a later,
+   Архив-specific request; the two pages no longer share a width). Table
+   itself is width:100% (see below) with table-layout:fixed, so widening
+   this alone stretches every column proportionally along with it — no
+   need to touch the per-column widths further down to match. */
 .portal-archive-page {
-  max-width: 1296px !important;
+  max-width: 1400px !important;
 }
 
 /* Срок / Дни просрочки / Пеня за просрочку (columns 6/9/10 of the
@@ -838,11 +840,14 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    apply to the whole column, not just one cell). Дебитор gets the bulk of
    what Срок/Дни просрочки/Пеня freed up — 420px comfortably fits a full
    legal name ("Carrefour UAE (Majid Al Futtaim Hypermarkets LLC)") on one
-   line; ellipsis + title= below is still there for anything longer.
-   Totals to ~1297px, matching .portal-archive-page's own 1296px so
-   nothing forces a scrollbar. box-sizing:border-box (below) makes each
-   width include its own padding, so these numbers are the full column,
-   not content-only. */
+   line; ellipsis + title= below is still there for anything longer. These
+   sum to ~1297px on their own, less than .portal-archive-page's 1400px —
+   table-layout:fixed with the table itself at width:100% (below) scales
+   every column up proportionally to fill the difference, so the ratios
+   here still hold even though the raw px numbers no longer sum to the
+   page width exactly. box-sizing:border-box (below) makes each width
+   include its own padding, so these numbers are the full column, not
+   content-only. */
 .portal-archive-table [data-testid="table-archive"] {
   table-layout: fixed;
   width: 100%;

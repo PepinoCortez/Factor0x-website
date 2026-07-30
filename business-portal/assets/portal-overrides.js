@@ -1464,7 +1464,8 @@
     }
   };
 
-  // Same 1296px as .portal-deals-page — one design system, one page width.
+  // 1400px — 8% wider than .portal-deals-page's 1296px (see the CSS rule
+  // for why; the two pages no longer share a width on purpose).
   const ensureArchivePageWidened = (card) => {
     const pageRoot = card.parentElement;
     if (pageRoot) pageRoot.classList.add('portal-archive-page');
