@@ -58,6 +58,13 @@
   --ov-surface-bg-alt: #0D0D0F;
   --ov-tooltip-bg: #1A1A1D;
   --ov-page-bg: #0A0A0B;
+  /* Multiplies every box-shadow's black alpha via calc(N * var(--ov-shadow-
+     scale)) at each call site. A shadow tuned to read as a soft lift on a
+     near-black page (this theme) is a heavy, visibly-edged smudge on a
+     white one — same literal alpha, very different result depending on
+     what it's sitting on — so unlike the neutral tokens above, this one
+     needs an actual multiplier, not just a color swap. */
+  --ov-shadow-scale: 1;
 }
 
 /* ---- Light theme. Toggled by adding/removing this class on <html> (see
@@ -71,8 +78,8 @@
    -bg/-border tints, plus the gold gradient badges elsewhere in this file)
    are left alone in both themes — they're alpha tints designed to sit on
    top of any page color, not part of this neutral system, and read fine
-   on white as-is. Box-shadows also stay literal black in both themes —
-   shadows are conventionally dark regardless of the surface they fall on. */
+   on white as-is. --ov-shadow-scale turned down instead — see its comment
+   above. */
 .portal-light-theme {
   --background: 0 0% 100%;
   --foreground: 240 8% 10%;
@@ -97,6 +104,7 @@
   --ov-surface-bg-alt: #FFFFFF;
   --ov-tooltip-bg: #FFFFFF;
   --ov-page-bg: #F4F4F5;
+  --ov-shadow-scale: 0.35;
 }
 
 /* The globe/theme-toggle/bell buttons in the header, the two dropdown
@@ -321,7 +329,7 @@ main.portal-grid-bg::before {
   border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
   box-shadow:
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.16);
+    0 18px 48px rgba(0, 0, 0, calc(0.16 * var(--ov-shadow-scale)));
   padding: 1rem 1.1rem;
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
 }
@@ -331,7 +339,7 @@ main.portal-grid-bg::before {
   background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.1), rgba(var(--ov-tint-rgb), 0.035)), var(--ov-surface-bg);
   box-shadow:
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.18),
-    0 22px 54px rgba(0, 0, 0, 0.2);
+    0 22px 54px rgba(0, 0, 0, calc(0.2 * var(--ov-shadow-scale)));
   transform: translateY(-3px);
 }
 
@@ -394,7 +402,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 12px !important;
   box-shadow:
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.16) !important;
+    0 18px 48px rgba(0, 0, 0, calc(0.16 * var(--ov-shadow-scale))) !important;
 }
 
 /* Not clickable, so no hover lift — static like Требует внимания /
@@ -411,7 +419,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 12px !important;
   box-shadow:
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.16) !important;
+    0 18px 48px rgba(0, 0, 0, calc(0.16 * var(--ov-shadow-scale))) !important;
 }
 
 /* Overdue/default banner on the same page — recolored off the native
@@ -455,7 +463,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: linear-gradient(180deg, rgba(var(--ov-tint-rgb), 0.035), rgba(var(--ov-tint-rgb), 0.015)), var(--ov-surface-bg-alt);
   border: 1px solid rgba(var(--ov-tint-rgb), 0.08);
   box-shadow:
-    0 24px 44px rgba(0, 0, 0, 0.3),
+    0 24px 44px rgba(0, 0, 0, calc(0.3 * var(--ov-shadow-scale))),
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.08);
 }
 
@@ -486,7 +494,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg) !important;
   box-shadow:
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.16) !important;
+    0 18px 48px rgba(0, 0, 0, calc(0.16 * var(--ov-shadow-scale))) !important;
 }
 
 /* Grows to close the gap down to Последние события's bottom edge (see
@@ -507,7 +515,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg) !important;
   box-shadow:
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.16) !important;
+    0 18px 48px rgba(0, 0, 0, calc(0.16 * var(--ov-shadow-scale))) !important;
 }
 
 .portal-attention-list,
@@ -696,7 +704,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg);
   box-shadow:
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.16);
+    0 18px 48px rgba(0, 0, 0, calc(0.16 * var(--ov-shadow-scale)));
   overflow: hidden;
 }
 
@@ -893,7 +901,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg) !important;
   box-shadow:
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.16) !important;
+    0 18px 48px rgba(0, 0, 0, calc(0.16 * var(--ov-shadow-scale))) !important;
   overflow: hidden;
 }
 
@@ -1191,7 +1199,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 10px;
   background: var(--ov-tooltip-bg);
   border: 1px solid rgba(var(--ov-tint-rgb), 0.14);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, calc(0.35 * var(--ov-shadow-scale)));
   color: var(--ov-text);
   font-size: 0.85rem;
   line-height: 1.5;
@@ -1346,7 +1354,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border: 1px solid rgba(var(--ov-tint-rgb), 0.16) !important;
   box-shadow:
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.16) !important;
+    0 18px 48px rgba(0, 0, 0, calc(0.16 * var(--ov-shadow-scale))) !important;
   border-radius: 12px !important;
 }
 
@@ -1960,7 +1968,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   padding: 28px;
   background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg);
   border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, calc(0.4 * var(--ov-shadow-scale))), inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14);
 }
 
 .portal-newapp-summary-kicker {
@@ -2120,7 +2128,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
   box-shadow:
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.3);
+    0 18px 48px rgba(0, 0, 0, calc(0.3 * var(--ov-shadow-scale)));
 }
 
 .portal-notif-panel-header {
@@ -2239,7 +2247,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
   box-shadow:
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.3);
+    0 18px 48px rgba(0, 0, 0, calc(0.3 * var(--ov-shadow-scale)));
 }
 
 .portal-lang-menu.portal-lang-open {
