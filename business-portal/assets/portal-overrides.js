@@ -89,19 +89,30 @@
 
   const CURRENCY_SEP = ' ';
 
+  // Splits valueEl's own single text node into a tag + the remaining
+  // amount by inserting the tag *before* it and shortening its nodeValue
+  // in place, rather than clearing valueEl and appending two fresh nodes
+  // (an earlier version did that — clearing via .textContent = '' destroys
+  // the original text node React rendered here, and React's fiber still
+  // referencing the now-detached node crashes with "NotFoundError: Failed
+  // to execute 'removeChild'" once this page unmounts — same root cause as
+  // setTextIfChanged's rewrite above, see its comment for the full
+  // explanation). Reusing the existing node for the amount half keeps it
+  // intact; only the tag is ever a new node.
   const splitCurrencyTag = (valueEl) => {
     if (!valueEl || valueEl.dataset.portalSplit) return;
-    const text = valueEl.textContent || '';
+    const textNode = valueEl.firstChild;
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) return;
+    const text = textNode.nodeValue || '';
     const idx = text.indexOf(CURRENCY_SEP);
     if (idx === -1) return;
     const currency = text.slice(0, idx);
     const amount = text.slice(idx + 1);
-    valueEl.textContent = '';
     const tag = document.createElement('span');
     tag.className = 'metric-currency-tag';
     tag.textContent = currency;
-    valueEl.appendChild(tag);
-    valueEl.appendChild(document.createTextNode(amount));
+    valueEl.insertBefore(tag, textNode);
+    textNode.nodeValue = amount;
     valueEl.dataset.portalSplit = 'true';
   };
 
@@ -460,8 +471,32 @@
   // `el.textContent = x` always replaces child nodes (even when the text is
   // unchanged) — writing on every tick would retrigger the observer and spin
   // forever. Only touch the DOM when the value actually changed.
+  //
+  // That replacement is also the reason this crashed React on navigating
+  // away from whatever page called it on a native (React-rendered) element:
+  // `el.textContent = x` doesn't update the existing text node's value, it
+  // DESTROYS it and creates a brand new one, even when el already has
+  // exactly one text-node child. React's fiber still holds a reference to
+  // the original (now-detached) node; when the page later unmounts, React
+  // walks down and tries to remove that stale reference from el, which
+  // throws "NotFoundError: Failed to execute 'removeChild'" because it was
+  // already replaced (confirmed by intercepting Node.prototype.removeChild
+  // during the actual crash: parent was a plain react-rendered <span>, the
+  // node being removed a lone text node no longer in it). Setting
+  // `.nodeValue` on the *existing* text node instead — the same technique
+  // React itself uses to update text — changes what's on screen without
+  // touching node identity, so it's safe regardless of who rendered el.
+  // Falls back to a plain assignment only when el doesn't have the simple
+  // single-text-node shape this rewrite needs (no existing node to mutate,
+  // or a currently-empty element, both of which aren't React-tracked text
+  // to destroy).
   const setTextIfChanged = (el, value) => {
-    if (el.textContent !== value) el.textContent = value;
+    if (el.textContent === value) return;
+    if (el.childNodes.length === 1 && el.firstChild.nodeType === Node.TEXT_NODE) {
+      el.firstChild.nodeValue = value;
+    } else {
+      el.textContent = value;
+    }
   };
 
   // Every field but the comment is filled from the uploaded documents, not
@@ -497,37 +532,53 @@
   const NEWAPP_LOCK_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>';
 
   // Plain <input>s (text/date) can't hold a floating icon inside themselves —
-  // they're void elements, no children allowed — so these get wrapped in a
-  // flex row with the lock icon as a plain sibling after them instead.
+  // they're void elements, no children allowed. An earlier version wrapped
+  // each field in a new div and moved the field into it (a positioning
+  // anchor sized to match, per the CSS comment on .portal-lock-wrap) — that
+  // reparenting crashed React on navigating away from this page: unmounting
+  // removes each node from the parent React itself rendered it into, and a
+  // moved field's actual DOM parent no longer matched that (see
+  // groupNewAppDocuments above, which had the identical bug). This field's
+  // native parent already holds its <label> too (a "flex flex-col gap-2"
+  // stack, confirmed from the live DOM), so it can't just become the
+  // position:relative anchor directly — top:50% would center against the
+  // whole label+field block, not the field's own row. Instead: insert the
+  // icon as a plain new sibling right after the field (nothing native ever
+  // moves), mark that shared parent as the anchor, and position the icon
+  // with a one-time measurement of the field's own offset within it.
   const NEWAPP_LOCKED_SIBLING_ICON_IDS = ['invoiceAmount', 'obligorName', 'invoiceDate', 'dueDate'];
 
   const addNewAppLockIcons = (form) => {
     NEWAPP_LOCKED_SIBLING_ICON_IDS.forEach((id) => {
       const field = form.querySelector('#' + id);
-      if (!field || (field.parentElement && field.parentElement.classList.contains('portal-lock-wrap'))) return;
-      const wrap = document.createElement('div');
-      wrap.className = 'portal-lock-wrap';
-      field.insertAdjacentElement('beforebegin', wrap);
-      wrap.appendChild(field);
+      if (!field || field.dataset.portalLockIconAdded) return;
+      const anchor = field.parentElement;
+      if (!anchor) return;
+      field.dataset.portalLockIconAdded = 'true';
+      anchor.classList.add('portal-lock-anchor');
       const icon = document.createElement('span');
       icon.className = 'portal-lock-icon';
       icon.setAttribute('aria-hidden', 'true');
       icon.innerHTML = NEWAPP_LOCK_ICON_SVG;
-      wrap.appendChild(icon);
+      field.insertAdjacentElement('afterend', icon);
+      icon.style.top = field.offsetTop + field.offsetHeight / 2 + 'px';
     });
   };
 
-  // Валюта / Страна дебитора are <select> triggers — unlike an <input>, the
-  // trigger button can safely hold an extra child (it's a real element, and
-  // React only ever touches the two children it itself renders — the value
-  // span and the chevron — via its own fiber references, not by re-counting
-  // the button's childNodes, so adding a third one doesn't confuse it). The
-  // chevron implies "click to open a list", which is actively misleading on
-  // a disabled field, so it's hidden outright and the lock icon takes its
-  // place: the trigger's own justify-between layout pushes whichever child
-  // renders last to the end, so once the chevron is display:none (out of
-  // flex flow entirely) the lock icon lands exactly where the chevron was
-  // without any manual positioning.
+  // Валюта / Страна дебитора are <select> triggers. An earlier version
+  // appended the lock icon directly into the trigger button on the theory
+  // that a real element can safely hold an extra child since React only
+  // ever touches the two it renders itself (the value span and the
+  // chevron) via its own fiber references. That theory turned out to be
+  // wrong in practice: it crashed React on navigating away from this page
+  // with the exact same "NotFoundError: Failed to execute 'removeChild'"
+  // as groupNewAppDocuments/addNewAppLockIcons above (confirmed by
+  // bisecting — disabling only this function was enough to make the
+  // crash disappear). Fixed the same way as those: the icon is inserted
+  // as a plain new sibling *after* the trigger instead, positioned with a
+  // one-time measurement rather than living inside a React-owned node.
+  // The chevron itself is still hidden in place (a style-only change, not
+  // a structural one — safe, unlike adding/moving a child).
   const NEWAPP_LOCKED_SELECT_IDS = ['currency', 'obligorCountry'];
 
   const addNewAppSelectLockIcons = (form) => {
@@ -542,18 +593,21 @@
       // the [role="combobox"] color rule in portal-overrides.css) makes all
       // locked fields read the same way.
       const valueSpan = trigger.querySelector('span');
-      if (valueSpan && valueSpan.textContent !== NEWAPP_LOCKED_PLACEHOLDER) {
-        valueSpan.textContent = NEWAPP_LOCKED_PLACEHOLDER;
-      }
+      if (valueSpan) setTextIfChanged(valueSpan, NEWAPP_LOCKED_PLACEHOLDER);
 
-      if (trigger.querySelector('.portal-lock-icon')) return;
+      if (trigger.dataset.portalLockIconAdded) return;
+      const anchor = trigger.parentElement;
+      if (!anchor) return;
+      trigger.dataset.portalLockIconAdded = 'true';
+      anchor.classList.add('portal-lock-anchor');
       const chevron = trigger.querySelector('.lucide-chevron-down');
       if (chevron) chevron.style.display = 'none';
       const icon = document.createElement('span');
       icon.className = 'portal-lock-icon';
       icon.setAttribute('aria-hidden', 'true');
       icon.innerHTML = NEWAPP_LOCK_ICON_SVG;
-      trigger.appendChild(icon);
+      trigger.insertAdjacentElement('afterend', icon);
+      icon.style.top = trigger.offsetTop + trigger.offsetHeight / 2 + 'px';
     });
   };
 
@@ -693,26 +747,32 @@
     if (progressBar) progressBar.classList.add('portal-hidden-package-progress');
   };
 
-  // Groups the 7 document rows in place (same parent, no reparenting of the
-  // rows container itself) into "needed to start" vs "can wait" sections.
+  // Groups the 7 document rows into "needed to start" vs "can wait"
+  // sections — WITHOUT reparenting the row elements themselves (an earlier
+  // version wrapped each group's rows in its own new div and moved the
+  // rows into it). That reparenting crashed React on navigating away from
+  // this page: unmounting removes each node from the parent React itself
+  // rendered it into, and once a row's actual DOM parent no longer matches
+  // that (it's inside this file's wrapper div instead), React's own
+  // cleanup throws "NotFoundError: Failed to execute 'removeChild'" and
+  // leaves the next page's mount half-done — a blank #root, needing a hard
+  // reload to recover. NEWAPP_DOC_ORDER already matches the native render
+  // order (confirmed from the compiled component's own document-type
+  // array) and happens to list every required doc before every optional
+  // one, so the same visual grouping is achievable by just inserting two
+  // heading elements as new siblings at the boundary — nothing native
+  // ever changes parents.
   const groupNewAppDocuments = () => {
     const firstBadge = document.querySelector('[data-testid="badge-doc-status-invoice"]');
     const firstRow = firstBadge && firstBadge.closest('.flex.flex-col.gap-3');
     if (!firstRow) return;
-    // Once grouped, the row's own parent IS a .portal-doc-group — checking
-    // that directly (instead of re-deriving the original rows container,
-    // which no longer exists as the row's parent after the first move) is
-    // what makes this idempotent. Getting this wrong regroups on every
-    // MutationObserver tick forever, nesting new groups infinitely.
-    if (firstRow.parentElement && firstRow.parentElement.classList.contains('portal-doc-group')) return;
     const rowsContainer = firstRow.parentElement;
-    if (!rowsContainer) return;
+    if (!rowsContainer || rowsContainer.classList.contains('portal-doc-rows-grouped')) return;
+    rowsContainer.classList.add('portal-doc-rows-grouped');
 
-    const buildGroup = (title, hint, className) => {
-      const group = document.createElement('div');
-      group.className = 'portal-doc-group ' + className;
+    const buildHeading = (title, hint, className) => {
       const heading = document.createElement('div');
-      heading.className = 'portal-doc-group-heading';
+      heading.className = 'portal-doc-group-heading ' + className;
       const titleEl = document.createElement('span');
       titleEl.className = 'portal-doc-group-title';
       titleEl.textContent = title;
@@ -721,30 +781,27 @@
       hintEl.textContent = hint;
       heading.appendChild(titleEl);
       heading.appendChild(hintEl);
-      group.appendChild(heading);
-      return group;
+      return heading;
     };
 
-    const requiredGroup = buildGroup(
+    const requiredHeading = buildHeading(
       t('Необходимо для старта', 'Needed to start'),
       t('без этого заявку не отправить', "can't submit without these"),
       'portal-doc-group-required'
     );
-    const laterGroup = buildGroup(
+    const laterHeading = buildHeading(
       t('Можно догрузить позже', 'Can add later'),
       t('приложите сразу или добавьте потом в карточке сделки', 'attach now, or add later from the deal card'),
       'portal-doc-group-later'
     );
 
-    NEWAPP_DOC_ORDER.forEach(({ key, required }) => {
-      const badge = document.querySelector('[data-testid="badge-doc-status-' + key + '"]');
-      const row = badge && badge.closest('.flex.flex-col.gap-3');
-      if (!row) return;
-      (required ? requiredGroup : laterGroup).appendChild(row);
-    });
+    firstRow.insertAdjacentElement('beforebegin', requiredHeading);
 
-    rowsContainer.appendChild(requiredGroup);
-    rowsContainer.appendChild(laterGroup);
+    const firstOptional = NEWAPP_DOC_ORDER.find(({ required }) => !required);
+    const firstOptionalBadge =
+      firstOptional && document.querySelector('[data-testid="badge-doc-status-' + firstOptional.key + '"]');
+    const firstOptionalRow = firstOptionalBadge && firstOptionalBadge.closest('.flex.flex-col.gap-3');
+    if (firstOptionalRow) firstOptionalRow.insertAdjacentElement('beforebegin', laterHeading);
   };
 
   // Replaces the bare "Загружено 0 из 7 документов" deficit-framed counter
@@ -1332,7 +1389,7 @@
 
     const parsedDueDate = parseDealDate(dueDateCell.textContent);
     if (parsedDueDate) {
-      dueDateCell.textContent = formatDealDueDateShort(parsedDueDate);
+      setTextIfChanged(dueDateCell, formatDealDueDateShort(parsedDueDate));
     }
 
     const cell = document.createElement('div');
@@ -1558,7 +1615,7 @@
       const termCell = row.children[5];
       if (termCell) {
         const match = termCell.textContent.trim().match(/^(\d+)\s*days$/);
-        if (match) termCell.textContent = `${match[1]} дн.`;
+        if (match) setTextIfChanged(termCell, `${match[1]} дн.`);
       }
     }
 
@@ -1568,7 +1625,7 @@
     const dateCell = row.children[row.children.length - 1];
     if (dateCell) {
       const date = parseDealDate(dateCell.textContent);
-      if (date) dateCell.textContent = formatDealDueDateShort(date);
+      if (date) setTextIfChanged(dateCell, formatDealDueDateShort(date));
     }
 
     // Дебитор (column 2): 310px comfortably fits most names on one line,

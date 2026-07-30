@@ -1467,22 +1467,20 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   text-transform: none !important;
 }
 
-/* ---- Document checklist: "needed to start" vs "can wait" ---- */
-
-.portal-doc-group {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Regrouping moved each row out from under the rows container's own native
-   spacing utility (that only ever applied between ITS direct children — the
-   two group divs now, not the individual rows inside them), so rows inside
-   a group sat flush against each other — denser than "Заявка"'s own field
-   stack on the right (trimmed to 14px/10px, see .gap-5/.gap-4 below, but
-   still real gaps). Targets consecutive rows specifically (the `+` combinator
-   skips the heading-to-first-row gap) so this doesn't stack on top of
-   .portal-doc-group-heading's own 10px bottom padding above. */
-.portal-doc-group > .flex.flex-col.gap-3 + .flex.flex-col.gap-3 {
+/* ---- Document checklist: "needed to start" vs "can wait" ----
+   Headings are inserted as plain siblings of the native document rows
+   (see groupNewAppDocuments in portal-overrides.js) rather than each
+   group's rows being moved into its own wrapper div — an earlier version
+   did that and crashed React on navigating away from this page, since
+   unmounting removes each row from the parent React itself rendered it
+   into, and a reparented row's actual DOM parent no longer matched that.
+   No wrapper now means no spacing-utility parent to hang a "gap between
+   this group's own rows" rule on — targets consecutive rows directly
+   under the rows container instead, which the `+` combinator already
+   limits to true neighbors (skips any pair with a heading between them,
+   so this doesn't stack on top of .portal-doc-group-heading's own 10px
+   bottom padding below). */
+.portal-doc-rows-grouped > .flex.flex-col.gap-3 + .flex.flex-col.gap-3 {
   margin-top: 16px;
 }
 
@@ -1494,13 +1492,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   padding: 4px 0 10px;
 }
 
-.portal-doc-group-required:not(:first-child) .portal-doc-group-heading {
-  padding-top: 28px;
-  margin-top: 10px;
-  border-top: 1px solid rgba(var(--ov-tint-rgb), 0.16);
-}
-
-.portal-doc-group-later .portal-doc-group-heading {
+/* Only the "can add later" heading gets the divider treatment — the
+   "needed to start" one is always inserted first (see NEWAPP_DOC_ORDER's
+   own required-then-optional order in portal-overrides.js), so it never
+   needs separating from something above it. */
+.portal-doc-group-heading.portal-doc-group-later {
   padding-top: 28px;
   margin-top: 10px;
   border-top: 1px solid rgba(var(--ov-tint-rgb), 0.16);
@@ -1785,25 +1781,26 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   pointer-events: none;
 }
 
-/* An <input> can't hold the lock icon as a real child (void element), so
-   this wrapper is purely a positioning anchor — same visual bounds as the
-   input itself (it fills the wrapper via its own w-full) — and the icon is
-   absolutely placed at its right edge, inside that one box, instead of
-   sitting in a second box next to it (see addNewAppLockIcons in
-   portal-overrides.js). The <select> trigger case (addNewAppSelectLockIcons)
-   doesn't need this wrapper at all — the icon there is a real child of the
-   button, laid out by the button's own flex row. */
-.portal-lock-wrap {
+/* An <input> can't hold the lock icon as a real child (void element), and
+   the <select> trigger — while it technically can — crashes React on
+   navigating away from this page if it does (see addNewAppSelectLockIcons
+   in portal-overrides.js). Both cases get the icon inserted as a plain
+   sibling instead, placed with an absolute position — the field/trigger's
+   *existing* parent becomes the anchor rather than a new wrapper it gets
+   moved into (that parent also holds a <label>, so top:50% here would
+   center against the whole label+field block — the icon's `top` is set
+   inline in JS instead, from a one-time measurement of the field's own
+   offset within this anchor). */
+.portal-lock-anchor {
   position: relative;
 }
 
-.portal-lock-wrap > .portal-field-locked {
+.portal-lock-anchor > .portal-field-locked {
   padding-right: 34px !important;
 }
 
-.portal-lock-wrap > .portal-lock-icon {
+.portal-lock-anchor > .portal-lock-icon {
   position: absolute;
-  top: 50%;
   right: 12px;
   transform: translateY(-50%);
   pointer-events: none;
