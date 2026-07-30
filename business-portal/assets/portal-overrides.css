@@ -24,9 +24,9 @@
   --accent: 240 6% 16%;
   --accent-foreground: 44 44% 95%;
 
-  --grid-line: rgba(255, 255, 255, 0.04);
-  --surface-dark: rgba(255, 255, 255, 0.035);
-  --surface-dark-raised: rgba(255, 255, 255, 0.065);
+  --grid-line: rgba(var(--ov-tint-rgb), 0.04);
+  --surface-dark: rgba(var(--ov-tint-rgb), 0.035);
+  --surface-dark-raised: rgba(var(--ov-tint-rgb), 0.065);
 
   --success: #3DA35D;
   --success-bg: rgba(61, 163, 93, 0.14);
@@ -43,20 +43,94 @@
   --gold: #F0B94A;
   --gold-bg: rgba(240, 185, 74, 0.16);
   --gold-border: rgba(240, 185, 74, 0.36);
+
+  /* Neutral surface system this whole file is built on — every card/menu/
+     tooltip background, border and body-text color below resolves through
+     one of these six tokens instead of a literal, so the light theme below
+     only has to redeclare these six to re-skin the entire file at once.
+     --ov-tint-rgb/--ov-muted-rgb hold bare "R, G, B" triples (no alpha) so
+     they can be dropped straight into any existing rgba(var(--x), N) call
+     while keeping that call's own original alpha untouched. */
+  --ov-tint-rgb: 255, 255, 255;
+  --ov-muted-rgb: 245, 242, 233;
+  --ov-text: #F5F2E9;
+  --ov-surface-bg: #111113;
+  --ov-surface-bg-alt: #0D0D0F;
+  --ov-tooltip-bg: #1A1A1D;
+  --ov-page-bg: #0A0A0B;
+}
+
+/* ---- Light theme. Toggled by adding/removing this class on <html> (see
+   ensureThemeToggle / applyThemeMode in portal-overrides.js) — flips the
+   same six neutral tokens above (dark-on-light instead of light-on-dark,
+   same alpha at every call site) plus the handful of shadcn tokens this
+   file forces dark up top for its own reasons (the popover/accent bug
+   noted above doesn't exist in light mode, so those go back to the
+   compiled app's own native light values here instead of staying forced).
+   Semantic colors (--success/--warning/--danger/--info/--gold and their
+   -bg/-border tints, plus the gold gradient badges elsewhere in this file)
+   are left alone in both themes — they're alpha tints designed to sit on
+   top of any page color, not part of this neutral system, and read fine
+   on white as-is. Box-shadows also stay literal black in both themes —
+   shadows are conventionally dark regardless of the surface they fall on. */
+.portal-light-theme {
+  --background: 0 0% 100%;
+  --foreground: 240 8% 10%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 8% 10%;
+  --muted: 240 10% 96%;
+  --muted-foreground: 240 6% 42%;
+  --border: 240 10% 88%;
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 240 8% 10%;
+  /* Not redefined by this file's dark :root above either (only --sidebar/
+     --sidebar-foreground are), so without this the active-nav-item pill
+     and its focus ring keep resolving to the compiled bundle's own native
+     values — dark ones, left over from the bundle's un-fixed light/dark
+     split described up top. */
+  --sidebar-accent: 240 10% 94%;
+  --sidebar-accent-foreground: 240 8% 10%;
+  --sidebar-border: 240 10% 88%;
+  --sidebar-ring: 240 8% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 8% 10%;
+  --accent: 240 10% 94%;
+  --accent-foreground: 240 8% 10%;
+
+  --ov-tint-rgb: 0, 0, 0;
+  --ov-muted-rgb: 23, 23, 26;
+  --ov-text: #17171A;
+  --ov-surface-bg: #FFFFFF;
+  --ov-surface-bg-alt: #FFFFFF;
+  --ov-tooltip-bg: #FFFFFF;
+  --ov-page-bg: #F4F4F5;
+}
+
+/* Smooth color-scheme switch on theme toggle. Scoped to the properties the
+   tokens above actually drive (color/background/border), not `all`, so it
+   can't fight unrelated transitions (transform, opacity) elsewhere in this
+   file. Selectors that opt out with `transition: none !important` (e.g.
+   .portal-overview-card, to avoid the stuck-transition-frame bug described
+   near that rule) keep winning here too — !important still applies. */
+html,
+html *,
+html *::before,
+html *::after {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
 }
 
 html,
 body,
 #root {
   min-height: 100%;
-  background: #0A0A0B;
+  background: var(--ov-page-bg);
 }
 
 body {
   margin: 0;
   position: relative;
-  background: #0A0A0B;
-  color: #F5F2E9;
+  background: var(--ov-page-bg);
+  color: var(--ov-text);
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -156,7 +230,7 @@ main.portal-grid-bg::before {
 
 .portal-overview-header h1 {
   margin: 0;
-  color: #F5F2E9;
+  color: var(--ov-text);
   font-size: clamp(1.75rem, 2.2rem, 2.5rem);
   line-height: 1.05;
   letter-spacing: -0.03em;
@@ -164,7 +238,7 @@ main.portal-grid-bg::before {
 
 .portal-overview-header p {
   margin: 0.35rem 0 0;
-  color: rgba(245, 242, 233, 0.72);
+  color: rgba(var(--ov-muted-rgb), 0.72);
 }
 
 .portal-overview-header a,
@@ -207,7 +281,7 @@ main.portal-grid-bg::before {
 .metric-currency-tag {
   font-weight: 500;
   font-size: 0.5em;
-  color: rgba(245, 242, 233, 0.5);
+  color: rgba(var(--ov-muted-rgb), 0.5);
   margin-right: 0.5rem;
 }
 
@@ -225,10 +299,10 @@ main.portal-grid-bg::before {
 .portal-metric-card,
 .kpi-dark-card div[class*="divide-y"] > div {
   border-radius: 12px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
     0 18px 48px rgba(0, 0, 0, 0.16);
   padding: 1rem 1.1rem;
   transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
@@ -236,9 +310,9 @@ main.portal-grid-bg::before {
 
 .portal-metric-card:hover,
 .kpi-dark-card div[class*="divide-y"] > div:hover {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.035)), #111113;
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.1), rgba(var(--ov-tint-rgb), 0.035)), var(--ov-surface-bg);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.18),
     0 22px 54px rgba(0, 0, 0, 0.2);
   transform: translateY(-3px);
 }
@@ -256,7 +330,7 @@ main.portal-grid-bg::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.08) 42%, transparent 68%);
+  background: linear-gradient(110deg, transparent 0%, rgba(var(--ov-tint-rgb), 0.08) 42%, transparent 68%);
   opacity: 0;
   transform: translateX(-36%);
   transition: opacity 0.35s ease, transform 0.6s ease;
@@ -264,7 +338,7 @@ main.portal-grid-bg::before {
 }
 
 .portal-metric-card-clickable:hover {
-  border-color: rgba(255, 255, 255, 0.30);
+  border-color: rgba(var(--ov-tint-rgb), 0.30);
   transform: translateY(-4px);
 }
 
@@ -281,12 +355,12 @@ main.portal-grid-bg::before {
 .portal-metric-card .text-white\/60,
 .portal-metric-card .text-white\/50,
 .portal-metric-card .text-muted-foreground {
-  color: rgba(245, 242, 233, 0.72) !important;
+  color: rgba(var(--ov-muted-rgb), 0.72) !important;
 }
 
 .portal-metric-card .text-2xl,
 .portal-metric-card .text-3xl {
-  color: #F5F2E9 !important;
+  color: var(--ov-text) !important;
 }
 
 /* "Последние события": target both the JS marker class and, robustly, the
@@ -297,11 +371,11 @@ main.portal-grid-bg::before {
 .portal-activity-card,
 main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activity"]) {
   margin-top: 0;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113 !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg) !important;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16) !important;
   border-radius: 12px !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
     0 18px 48px rgba(0, 0, 0, 0.16) !important;
 }
 
@@ -314,11 +388,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    portal-overrides.js). Static, not clickable, same as .portal-activity-
    card above — no hover lift here either. */
 .portal-deal-detail-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113 !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg) !important;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16) !important;
   border-radius: 12px !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
     0 18px 48px rgba(0, 0, 0, 0.16) !important;
 }
 
@@ -360,11 +434,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   margin-top: 0;
   padding: 1.25rem;
   border-radius: 16px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015)), #0D0D0F;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(var(--ov-tint-rgb), 0.035), rgba(var(--ov-tint-rgb), 0.015)), var(--ov-surface-bg-alt);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.08);
   box-shadow:
     0 24px 44px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.08);
 }
 
 .portal-bottom-left,
@@ -379,21 +453,21 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   margin: 0 0 0.85rem;
   font-size: 0.95rem;
   font-weight: 600;
-  color: #F5F2E9;
+  color: var(--ov-text);
 }
 
 /* "Требует внимания" / "Ближайшие погашения" are not themselves clickable —
    only the action button and list rows inside them are — so no hover
    motion, but now the same color recipe as Последние события /
-   Всего профинансировано (was its own separate #0D0D0F recipe before). The
+   Всего профинансировано (was its own separate var(--ov-surface-bg-alt) recipe before). The
    warning semantic for attention items lives on the action button, not
    the card. */
 .portal-attention-card,
 .portal-repayments-card {
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113 !important;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16) !important;
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
     0 18px 48px rgba(0, 0, 0, 0.16) !important;
 }
 
@@ -412,9 +486,9 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-attention-card:hover,
 .portal-repayments-card:hover {
   transform: none !important;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113 !important;
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
     0 18px 48px rgba(0, 0, 0, 0.16) !important;
 }
 
@@ -437,7 +511,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   overflow-y: auto;
   padding-right: 10px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.22) rgba(255, 255, 255, 0.06);
+  scrollbar-color: rgba(var(--ov-tint-rgb), 0.22) rgba(var(--ov-tint-rgb), 0.06);
 }
 
 /* Same thin, rounded scrollbar recipe as the landing page's apply-form
@@ -448,12 +522,12 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-repayments-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(var(--ov-tint-rgb), 0.06);
   border-radius: 999px;
 }
 
 .portal-repayments-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(var(--ov-tint-rgb), 0.22);
   border-radius: 999px;
 }
 
@@ -463,7 +537,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   align-items: flex-start;
   gap: 0.5rem;
   padding-bottom: 0.85rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.06);
 }
 
 .portal-attention-item:last-child {
@@ -474,7 +548,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-attention-text {
   margin: 0;
   font-size: 0.85rem;
-  color: rgba(245, 242, 233, 0.9);
+  color: rgba(var(--ov-muted-rgb), 0.9);
 }
 
 .portal-attention-action {
@@ -498,7 +572,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   gap: 0.15rem 0.5rem;
   font-size: 0.82rem;
   padding-bottom: 0.6rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.06);
 }
 
 .portal-repayment-row:last-child {
@@ -508,21 +582,21 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-repayment-obligor {
   grid-column: 1;
-  color: #F5F2E9;
+  color: var(--ov-text);
   font-weight: 500;
 }
 
 .portal-repayment-amount {
   grid-column: 2;
   grid-row: 1;
-  color: #F5F2E9;
+  color: var(--ov-text);
   font-weight: 600;
   text-align: right;
 }
 
 .portal-repayment-date {
   grid-column: 1 / -1;
-  color: rgba(245, 242, 233, 0.55);
+  color: rgba(var(--ov-muted-rgb), 0.55);
   font-size: 0.75rem;
 }
 
@@ -600,10 +674,10 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    card recipe used everywhere else in this file). */
 .portal-deals-table {
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
     0 18px 48px rgba(0, 0, 0, 0.16);
   overflow: hidden;
 }
@@ -615,7 +689,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-deals-header {
   margin: 0;
   padding: 0.85rem 1.25rem 0.85rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.18);
 }
 
 /* Removes the gap-3 between row-cards so they sit flush against each
@@ -633,7 +707,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    everywhere. */
 .portal-deals-list > * {
   display: block;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.18);
   transition: background 0.15s ease;
 }
 
@@ -642,7 +716,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-deals-list > *:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--ov-tint-rgb), 0.04);
 }
 
 /* Very faint full-row tint for Дефолт/Просрочка (tagDealRowSeverity in
@@ -797,10 +871,10 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    сделки has no equivalent for) render in the same style regardless. */
 .portal-archive-table {
   border-radius: 12px !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113 !important;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16) !important;
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
     0 18px 48px rgba(0, 0, 0, 0.16) !important;
   overflow: hidden;
 }
@@ -944,7 +1018,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    both at the exact same rgba values instead of trusting the theme's
    --border/--muted vars to land on the same tone by coincidence. */
 .portal-archive-table tbody tr {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.18) !important;
 }
 
 /* Native TableBody already drops the last row's border ([&_tr:last-child]
@@ -956,7 +1030,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-archive-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
+  background: rgba(var(--ov-tint-rgb), 0.04) !important;
 }
 
 /* Headers centered like Мои сделки's. Мои сделки's own header row gets
@@ -1097,10 +1171,10 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   max-width: calc(100vw - 16px);
   padding: 14px 16px;
   border-radius: 10px;
-  background: #1A1A1D;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--ov-tooltip-bg);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.14);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
-  color: #F5F2E9;
+  color: var(--ov-text);
   font-size: 0.85rem;
   line-height: 1.5;
   opacity: 0;
@@ -1141,9 +1215,9 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   font-size: 0.78rem;
   font-weight: 600;
   white-space: nowrap;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(245, 242, 233, 0.85);
+  background: rgba(var(--ov-tint-rgb), 0.08);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.14);
+  color: rgba(var(--ov-muted-rgb), 0.85);
 }
 
 .portal-deals-summary-warning {
@@ -1205,9 +1279,9 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-badge-neutral {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border-color: rgba(255, 255, 255, 0.16) !important;
-  color: rgba(245, 242, 233, 0.75) !important;
+  background: rgba(var(--ov-tint-rgb), 0.06) !important;
+  border-color: rgba(var(--ov-tint-rgb), 0.16) !important;
+  color: rgba(var(--ov-muted-rgb), 0.75) !important;
 }
 
 /* "Новая заявка": restyle to match the landing page's "Get financing"
@@ -1234,7 +1308,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   font-size: clamp(1.75rem, 2.2rem, 2.5rem) !important;
   line-height: 1.05 !important;
   letter-spacing: -0.03em !important;
-  color: #F5F2E9;
+  color: var(--ov-text);
 }
 
 /* `page`'s only two children are the header (title + subtitle) and the
@@ -1249,19 +1323,19 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-new-application-page .bg-card {
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
-    #111113 !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)),
+    var(--ov-surface-bg) !important;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16) !important;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
     0 18px 48px rgba(0, 0, 0, 0.16) !important;
   border-radius: 12px !important;
 }
 
 .portal-new-application-page .border-input {
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.18) !important;
   border-radius: 7px !important;
-  background: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(var(--ov-tint-rgb), 0.12) !important;
   color: #fff !important;
   box-shadow: none !important;
   transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
@@ -1289,7 +1363,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-new-application-page .border-input::placeholder {
-  color: rgba(255, 255, 255, 0.34);
+  color: rgba(var(--ov-tint-rgb), 0.34);
   opacity: 1;
 }
 
@@ -1297,7 +1371,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-new-application-page .border-input:focus-visible {
   outline: none !important;
   border-color: rgba(244, 210, 132, 0.46) !important;
-  background: rgba(255, 255, 255, 0.16) !important;
+  background: rgba(var(--ov-tint-rgb), 0.16) !important;
   box-shadow: 0 0 0 3px rgba(244, 210, 132, 0.08) !important;
 }
 
@@ -1330,7 +1404,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   content: '';
   opacity: 0;
   pointer-events: none;
-  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.52), transparent);
+  background: linear-gradient(100deg, transparent, rgba(var(--ov-tint-rgb), 0.52), transparent);
   width: 34%;
   height: 220%;
   position: absolute;
@@ -1353,13 +1427,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-field-invalid label {
-  color: rgba(245, 242, 233, 0.92) !important;
+  color: rgba(var(--ov-muted-rgb), 0.92) !important;
 }
 
 /* ---- More readable field labels (was 10px all-caps DM Mono) ---- */
 
 .portal-new-application-page label {
-  color: rgba(255, 255, 255, 0.78) !important;
+  color: rgba(var(--ov-tint-rgb), 0.78) !important;
   font-family: 'Inter', sans-serif;
   font-size: 13px !important;
   font-weight: 500 !important;
@@ -1397,19 +1471,19 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-doc-group-required:not(:first-child) .portal-doc-group-heading {
   padding-top: 28px;
   margin-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid rgba(var(--ov-tint-rgb), 0.16);
 }
 
 .portal-doc-group-later .portal-doc-group-heading {
   padding-top: 28px;
   margin-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid rgba(var(--ov-tint-rgb), 0.16);
 }
 
 .portal-doc-group-title {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #F5F2E9;
+  color: var(--ov-text);
 }
 
 .portal-doc-group-required .portal-doc-group-title::before {
@@ -1440,7 +1514,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-doc-group-hint {
   font-size: 0.78rem;
-  color: rgba(245, 242, 233, 0.5);
+  color: rgba(var(--ov-muted-rgb), 0.5);
 }
 
 /* "Комплектность пакета / Загружено N из M документов" + its progress bar
@@ -1458,7 +1532,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    trick at a size that stays inside the card's own left padding instead of
    crossing past the icon. */
 .portal-doc-row-primary {
-  background: rgba(255, 255, 255, 0.045);
+  background: rgba(var(--ov-tint-rgb), 0.045);
   border-radius: 10px;
   margin: 0 -6px;
   padding: 0 6px;
@@ -1474,11 +1548,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   margin-left: 8px;
   padding: 2px 9px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(var(--ov-tint-rgb), 0.16);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.22);
   font-size: 0.7rem;
   font-weight: 600;
-  color: #F5F2E9;
+  color: var(--ov-text);
 }
 
 /* Document icons: soften the identical 7-in-a-row look, then bring
@@ -1492,7 +1566,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-newapp-docs-card .portal-doc-row-primary .rounded-lg.bg-muted {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(var(--ov-tint-rgb), 0.14) !important;
 }
 
 /* "Можно догрузить позже": no status badge while nothing's attached yet —
@@ -1712,7 +1786,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-lock-icon {
   display: inline-flex;
   flex-shrink: 0;
-  color: rgba(245, 242, 233, 0.4);
+  color: rgba(var(--ov-muted-rgb), 0.4);
 }
 
 /* Same size/color as "Приложите пакет документов..." (Документы card's
@@ -1764,7 +1838,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   /* !important: these carry .border-input, whose own `color: #fff
      !important` (see .border-input above) otherwise wins regardless of
      this rule's specificity, keeping them at full brightness. */
-  color: rgba(255, 255, 255, 0.34) !important;
+  color: rgba(var(--ov-tint-rgb), 0.34) !important;
 }
 
 .portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active [role="combobox"],
@@ -1791,14 +1865,14 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   gap: 16px;
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(var(--ov-tint-rgb), 0.12);
 }
 
 .portal-newapp-side-title {
   margin: 0 0 14px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #F5F2E9;
+  color: var(--ov-text);
 }
 
 .portal-newapp-steps {
@@ -1816,7 +1890,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   padding-left: 30px;
   font-size: 0.82rem;
   line-height: 1.45;
-  color: rgba(245, 242, 233, 0.78);
+  color: rgba(var(--ov-muted-rgb), 0.78);
   counter-increment: portal-step;
 }
 
@@ -1844,7 +1918,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   top: 22px;
   width: 1px;
   height: calc(100% - 6px);
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(var(--ov-tint-rgb), 0.14);
 }
 
 /* ---- Pre-submit summary overlay ---- */
@@ -1866,13 +1940,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   width: min(440px, 100%);
   border-radius: 16px;
   padding: 28px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14);
 }
 
 .portal-newapp-summary-kicker {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(var(--ov-tint-rgb), 0.5);
   font-family: 'DM Mono', monospace;
   font-size: 10px;
   font-weight: 500;
@@ -1885,7 +1959,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   margin: 0 0 20px;
   font-size: 1.3rem;
   font-weight: 600;
-  color: #F5F2E9;
+  color: var(--ov-text);
 }
 
 .portal-newapp-summary-list {
@@ -1901,19 +1975,19 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   justify-content: space-between;
   gap: 16px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.08);
 }
 
 .portal-newapp-summary-list dt {
   font-size: 0.8rem;
-  color: rgba(245, 242, 233, 0.55);
+  color: rgba(var(--ov-muted-rgb), 0.55);
 }
 
 .portal-newapp-summary-list dd {
   margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #F5F2E9;
+  color: var(--ov-text);
   text-align: right;
 }
 
@@ -1924,10 +1998,10 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-newapp-summary-back {
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.18);
   border-radius: 999px;
   background: transparent;
-  color: rgba(245, 242, 233, 0.85);
+  color: rgba(var(--ov-muted-rgb), 0.85);
   font-size: 0.82rem;
   font-weight: 500;
   padding: 0 20px;
@@ -1937,8 +2011,8 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-newapp-summary-back:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(var(--ov-tint-rgb), 0.06);
+  border-color: rgba(var(--ov-tint-rgb), 0.3);
 }
 
 .portal-newapp-summary-confirm {
@@ -1954,7 +2028,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   padding: 0 28px;
   min-height: 44px;
   cursor: pointer;
-  box-shadow: 0 10px 26px rgba(199, 154, 54, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.52);
+  box-shadow: 0 10px 26px rgba(199, 154, 54, 0.2), inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.52);
   transition: transform 0.18s ease, filter 0.18s ease;
 }
 
@@ -1982,14 +2056,14 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border: none;
   border-radius: 999px;
   background: transparent;
-  color: rgba(245, 242, 233, 0.75);
+  color: rgba(var(--ov-muted-rgb), 0.75);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .portal-notif-bell:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #F5F2E9;
+  background: rgba(var(--ov-tint-rgb), 0.08);
+  color: var(--ov-text);
 }
 
 .portal-notif-badge {
@@ -2024,10 +2098,10 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   max-height: 420px;
   overflow-y: auto;
   border-radius: 12px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
     0 18px 48px rgba(0, 0, 0, 0.3);
 }
 
@@ -2035,8 +2109,8 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   padding: 14px 16px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #F5F2E9;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--ov-text);
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.1);
 }
 
 .portal-notif-panel-list {
@@ -2046,7 +2120,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-notif-item {
   padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.06);
 }
 
 .portal-notif-item:last-child {
@@ -2061,13 +2135,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   margin: 0;
   font-size: 0.82rem;
   line-height: 1.4;
-  color: #F5F2E9;
+  color: var(--ov-text);
 }
 
 .portal-notif-item-time {
   margin: 4px 0 0;
   font-size: 0.72rem;
-  color: rgba(245, 242, 233, 0.5);
+  color: rgba(var(--ov-muted-rgb), 0.5);
 }
 
 /* ---- Language switcher, left of the bell (see ensureLanguageSwitcher in
@@ -2087,18 +2161,18 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(245, 242, 233, 0.75);
+  background: rgba(var(--ov-tint-rgb), 0.08);
+  color: rgba(var(--ov-muted-rgb), 0.75);
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .portal-lang-trigger:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #F5F2E9;
+  background: rgba(var(--ov-tint-rgb), 0.12);
+  border-color: rgba(var(--ov-tint-rgb), 0.3);
+  color: var(--ov-text);
 }
 
 .portal-lang-trigger span {
@@ -2143,10 +2217,10 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   gap: 2px;
   padding: 6px;
   border-radius: 10px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
     0 18px 48px rgba(0, 0, 0, 0.3);
 }
 
@@ -2159,7 +2233,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 7px;
   background: transparent;
   padding: 7px 10px;
-  color: rgba(245, 242, 233, 0.75);
+  color: rgba(var(--ov-muted-rgb), 0.75);
   font-family: 'DM Mono', monospace;
   font-size: 12px;
   font-weight: 700;
@@ -2169,78 +2243,37 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-lang-option:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #F5F2E9;
+  background: rgba(var(--ov-tint-rgb), 0.08);
+  color: var(--ov-text);
 }
 
 .portal-lang-option-active {
-  color: #F5F2E9;
+  color: var(--ov-text);
   background: rgba(244, 210, 132, 0.12);
 }
 
-/* ---- Theme accent-color picker (see ensureThemeColorSwitcher in
-   portal-overrides.js) — trigger matches .portal-lang-trigger's exact
-   recipe (same bordered-box size), swaps the globe glyph for a palette
-   icon since this opens a row of color swatches instead of text options. */
-.portal-theme-select {
-  position: relative;
-}
-
+/* ---- Light/dark theme toggle (see ensureThemeToggle in
+   portal-overrides.js) — a plain button, not a dropdown, matching
+   .portal-lang-trigger's exact bordered-box recipe (same size/color/
+   padding as the globe and bell on either side of it). Swaps its own SVG
+   content (sun/moon) and title/aria-label on click; no separate open/
+   closed state to style since there's no menu. */
 .portal-theme-trigger {
   width: 36px;
   height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(245, 242, 233, 0.75);
+  background: rgba(var(--ov-tint-rgb), 0.08);
+  color: rgba(var(--ov-muted-rgb), 0.75);
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .portal-theme-trigger:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #F5F2E9;
-}
-
-.portal-theme-menu {
-  position: absolute;
-  z-index: 50;
-  top: calc(100% + 8px);
-  left: 0;
-  display: none;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 18px 48px rgba(0, 0, 0, 0.3);
-}
-
-.portal-theme-menu.portal-theme-open {
-  display: flex;
-}
-
-.portal-theme-swatch {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  padding: 0;
-  cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease;
-}
-
-.portal-theme-swatch:hover {
-  transform: scale(1.12);
-}
-
-.portal-theme-swatch-active {
-  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(var(--ov-tint-rgb), 0.12);
+  border-color: rgba(var(--ov-tint-rgb), 0.3);
+  color: var(--ov-text);
 }

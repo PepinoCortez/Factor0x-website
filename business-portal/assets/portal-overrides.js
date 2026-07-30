@@ -1621,117 +1621,66 @@
     ensureLangOutsideHandler();
   };
 
-  // Theme accent-color picker. Unlike the language switcher above, this
-  // one is genuinely functional, not cosmetic-only: --primary is a real
-  // CSS custom property (the gold running through buttons, the deal-
-  // detail stepper's completed steps, etc. — everything actually themed
-  // off it, not the separate --gold/--warning/etc. constants this file
-  // hand-picked for specific badges), so setting it on documentElement at
-  // runtime recolors all of that live. Saved to localStorage so it
-  // survives a reload — inline style on documentElement itself already
-  // survives SPA navigation without any of this, since the document
-  // never reloads between routes.
-  const THEME_COLOR_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"></circle></svg>';
+  // Light/dark theme toggle. Flips .portal-light-theme on <html>, which is
+  // what every neutral-surface token in portal-overrides.css (--ov-*, plus
+  // the --background/--card/--popover/etc. this file forces dark up top)
+  // resolves through — see that class in portal-overrides.css for the full
+  // light palette. Saved to localStorage so it survives a reload; inline
+  // class on documentElement itself already survives SPA navigation
+  // without any of this, since the document never reloads between routes.
+  const SUN_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>';
+  const MOON_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>';
+  const THEME_MODE_STORAGE_KEY = 'portalThemeMode';
 
-  const THEME_COLORS = [
-    { name: 'Золото', hsl: '44 93% 60%', fg: '240 7% 6%' },
-    { name: 'Синий', hsl: '212 88% 62%', fg: '240 7% 6%' },
-    { name: 'Изумруд', hsl: '152 62% 46%', fg: '240 7% 6%' },
-    { name: 'Аметист', hsl: '265 65% 66%', fg: '240 7% 6%' },
-    { name: 'Роза', hsl: '350 78% 62%', fg: '240 7% 6%' },
-  ];
-  const THEME_COLOR_STORAGE_KEY = 'portalThemeColor';
+  let themeToggleTrigger = null;
 
-  const applyThemeColor = (color) => {
-    document.documentElement.style.setProperty('--primary', color.hsl);
-    document.documentElement.style.setProperty('--primary-foreground', color.fg);
+  const currentThemeMode = () => (document.documentElement.classList.contains('portal-light-theme') ? 'light' : 'dark');
+
+  const applyThemeMode = (mode) => {
+    document.documentElement.classList.toggle('portal-light-theme', mode === 'light');
+    if (themeToggleTrigger) {
+      themeToggleTrigger.innerHTML = mode === 'light' ? MOON_ICON_SVG : SUN_ICON_SVG;
+      const label = mode === 'light' ? 'Тёмная тема' : 'Светлая тема';
+      themeToggleTrigger.title = label;
+      themeToggleTrigger.setAttribute('aria-label', label);
+    }
     try {
-      localStorage.setItem(THEME_COLOR_STORAGE_KEY, color.hsl);
+      localStorage.setItem(THEME_MODE_STORAGE_KEY, mode);
     } catch (error) {
-      // Private-browsing/storage-disabled — the picker still works for
+      // Private-browsing/storage-disabled — the toggle still works for
       // the rest of this session, it just won't survive a reload.
     }
   };
 
-  // Runs once, immediately (not gated behind the header even existing
-  // yet) — the color has to be set before anything gold-colored on the
-  // current page paints, not only once the header itself mounts.
-  const restoreThemeColor = () => {
+  // Runs once, immediately (not gated behind the header even existing yet)
+  // — the class has to be set before the very first paint, or dark-mode
+  // visitors get a flash of the (default) light theme first.
+  const restoreThemeMode = () => {
     let saved = null;
     try {
-      saved = localStorage.getItem(THEME_COLOR_STORAGE_KEY);
+      saved = localStorage.getItem(THEME_MODE_STORAGE_KEY);
     } catch (error) {
       return;
     }
-    const match = saved && THEME_COLORS.find((color) => color.hsl === saved);
-    if (match) applyThemeColor(match);
+    if (saved === 'light') document.documentElement.classList.add('portal-light-theme');
   };
-  restoreThemeColor();
+  restoreThemeMode();
 
-  let themeMenuEl = null;
-
-  const closeThemeMenu = () => {
-    if (themeMenuEl) themeMenuEl.classList.remove('portal-theme-open');
-  };
-
-  const ensureThemeOutsideHandler = () => {
-    document.addEventListener('click', (event) => {
-      if (themeMenuEl && !themeMenuEl.closest('.portal-theme-select').contains(event.target)) {
-        closeThemeMenu();
-      }
-    });
-  };
-
-  const ensureThemeColorSwitcher = (group, beforeEl) => {
-    if (group.querySelector('.portal-theme-select')) return;
-
-    const wrap = document.createElement('div');
-    wrap.className = 'portal-theme-select';
+  const ensureThemeToggle = (group, beforeEl) => {
+    if (group.querySelector('.portal-theme-trigger')) return;
 
     const trigger = document.createElement('button');
     trigger.type = 'button';
     trigger.className = 'portal-theme-trigger';
-    trigger.setAttribute('aria-label', 'Цвет темы');
-    trigger.setAttribute('aria-expanded', 'false');
-    trigger.innerHTML = THEME_COLOR_ICON_SVG;
-    wrap.appendChild(trigger);
-
-    const menu = document.createElement('div');
-    menu.className = 'portal-theme-menu';
-    themeMenuEl = menu;
-
-    const currentHsl = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-    const swatches = THEME_COLORS.map((color) => {
-      const swatch = document.createElement('button');
-      swatch.type = 'button';
-      swatch.className = 'portal-theme-swatch' + (color.hsl === currentHsl ? ' portal-theme-swatch-active' : '');
-      swatch.style.background = 'hsl(' + color.hsl + ')';
-      swatch.setAttribute('aria-label', color.name);
-      swatch.title = color.name;
-      return swatch;
-    });
-    swatches.forEach((swatch) => menu.appendChild(swatch));
-    wrap.appendChild(menu);
+    themeToggleTrigger = trigger;
 
     trigger.addEventListener('click', (event) => {
       event.stopPropagation();
-      const open = menu.classList.toggle('portal-theme-open');
-      trigger.setAttribute('aria-expanded', String(open));
+      applyThemeMode(currentThemeMode() === 'light' ? 'dark' : 'light');
     });
 
-    swatches.forEach((swatch, index) => {
-      swatch.addEventListener('click', (event) => {
-        event.stopPropagation();
-        applyThemeColor(THEME_COLORS[index]);
-        swatches.forEach((s) => s.classList.remove('portal-theme-swatch-active'));
-        swatch.classList.add('portal-theme-swatch-active');
-        closeThemeMenu();
-        trigger.setAttribute('aria-expanded', 'false');
-      });
-    });
-
-    group.insertBefore(wrap, beforeEl);
-    ensureThemeOutsideHandler();
+    group.insertBefore(trigger, beforeEl);
+    applyThemeMode(currentThemeMode());
   };
 
   // Standing in for a real activity feed (see "Последние события" on
@@ -1838,7 +1787,7 @@
 
     group.insertAdjacentElement('afterbegin', bellBtn);
     ensureLanguageSwitcher(group, bellBtn);
-    ensureThemeColorSwitcher(group, bellBtn);
+    ensureThemeToggle(group, bellBtn);
 
     bellBtn.addEventListener('click', (event) => {
       event.stopPropagation();
