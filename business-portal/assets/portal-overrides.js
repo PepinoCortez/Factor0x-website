@@ -894,7 +894,7 @@
     // Документы sits on the left and is the actual point of entry.
     const subtitleEl = page.querySelector(':scope > div > p');
     if (subtitleEl) {
-      setTextIfChanged(subtitleEl, 'Загрузите документы — остальные поля определятся автоматически. Что-то не так — укажите в комментарии.');
+      setTextIfChanged(subtitleEl, 'Загрузите документы — остальные поля определятся автоматически.');
     }
     fixNonSubmitButtonTypes(form);
     hideNewAppPackageProgress(form);

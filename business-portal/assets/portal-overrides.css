@@ -976,6 +976,18 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   flex-direction: column;
 }
 
+/* Regrouping moved each row out from under the rows container's own native
+   spacing utility (that only ever applied between ITS direct children — the
+   two group divs now, not the individual rows inside them), so rows inside
+   a group sat flush against each other — denser than "Заявка"'s own field
+   stack on the right (trimmed to 14px/10px, see .gap-5/.gap-4 below, but
+   still real gaps). Targets consecutive rows specifically (the `+` combinator
+   skips the heading-to-first-row gap) so this doesn't stack on top of
+   .portal-doc-group-heading's own 10px bottom padding above. */
+.portal-doc-group > .flex.flex-col.gap-3 + .flex.flex-col.gap-3 {
+  margin-top: 16px;
+}
+
 .portal-doc-group-heading {
   display: flex;
   align-items: baseline;
@@ -1041,16 +1053,17 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 /* Invoice is the one document upload entry point now (the old top card is
-   gone) — a plain background tint. The highlight used to sit flush against
-   the icon and the "Загрузить" button (zero side padding), reading as if it
-   ended right at the first letter of "Инвойс" — negative margin + matching
-   padding bleeds the tint further out on both sides without shifting the
-   icon/text/button themselves or disturbing the other rows' alignment. */
+   gone) — a plain background tint. Flush (zero side padding) read as if it
+   ended right at the first letter of "Инвойс"; a 14px bleed (negative
+   margin + matching padding, so icon/text/button don't shift) overcorrected
+   the other way and poked out past the icon on the left. 6px keeps the same
+   trick at a size that stays inside the card's own left padding instead of
+   crossing past the icon. */
 .portal-doc-row-primary {
   background: rgba(255, 255, 255, 0.045);
   border-radius: 10px;
-  margin: 0 -14px;
-  padding: 0 14px;
+  margin: 0 -6px;
+  padding: 0 6px;
 }
 
 /* Brighter/more contrasty than the first pass — it blended into the
@@ -1346,12 +1359,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    the same explicit color. Both go back to full white once touched. */
 .portal-newapp-data-card .flex.flex-col.gap-2 [role="combobox"],
 .portal-newapp-data-card .flex.flex-col.gap-2 input[type="date"] {
-  color: rgba(255, 255, 255, 0.34);
+  /* !important: these carry .border-input, whose own `color: #fff
+     !important` (see .border-input above) otherwise wins regardless of
+     this rule's specificity, keeping them at full brightness. */
+  color: rgba(255, 255, 255, 0.34) !important;
 }
 
 .portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active [role="combobox"],
 .portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active input[type="date"] {
-  color: #fff;
+  color: #fff !important;
 }
 
 /* Submit stays inert (not just visually muted) until the two documents that
