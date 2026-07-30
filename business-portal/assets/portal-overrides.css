@@ -643,28 +643,32 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 /* Column widths: 8 visible tracks — ID, Дебитор, Сумма, Ставка, Погашение,
-   the new Отсчёт (see ensureDealCountdownCell in portal-overrides.js),
-   Статус, and a near-zero trailing track that used to size the chevron
-   before it moved to the left overlay (see the rule below this one). Срок
-   is dropped from the visible list entirely (hideDealTermCell adds
-   .portal-deal-term-cell, display:none below) — a display:none child isn't
-   a grid item at all, so the remaining 8 visible children auto-place into
-   these 8 tracks in DOM order with no gap left behind.
-   Дебитор is now a fixed 328px instead of the flexible minmax(0, 1fr) it
-   used to be — that's the exact width it had at the previous (narrower)
-   page width, already proven to fit every obligor name including the
-   longest one (Carrefour's full legal name), so there's no fitting risk
-   going back to it. With no fr track left to absorb the page's full width,
-   every column after Дебитор (Сумма through the trailing track) packs in
-   immediately after it instead of trailing off toward the page's right
-   edge — the freed width lands as empty space past Статус instead of
-   inside Дебитор, which is the point: the whole cluster of columns reads
-   as sitting further left. Shared by the header row and every data row
-   (both use this exact template — see NS in the compiled component) so
-   columns stay aligned. */
+   Отсчёт (see ensureDealCountdownCell in portal-overrides.js), Статус, and
+   a near-zero trailing track that sizes the chevron before it moves to the
+   left overlay (see the rule below this one). The chevron's own 32px is
+   spent as this row's padding-left, not a real leading grid track — it's
+   the row's last DOM child (native justify-self-end), and overlaying it
+   into a reserved gutter avoids reordering the grid itself (see the
+   comment above). Срок is dropped from the visible list entirely
+   (hideDealTermCell adds .portal-deal-term-cell, display:none below) — a
+   display:none child isn't a grid item at all, so the remaining 8 visible
+   children auto-place into these 8 tracks in DOM order with no gap left
+   behind.
+   ID/Сумма/Ставка/Погашение/Отсчёт are plain fixed widths — their content
+   is short and doesn't vary in length. Дебитор (minmax(200px, 2fr)) and
+   Статус (minmax(180px, 1fr)) are the two columns with genuinely variable-
+   length content (obligor names; badge text from "Дефолт" to "Ожидает
+   загрузки документов") — both flexible so leftover width lands there
+   instead of as dead space past the last column, weighted 2:1 towards
+   Дебитор since obligor names run longer than status labels. Their floors
+   (200px/180px) are a hard lower bound: if the table itself ever gets
+   narrower than the sum of every column's floor, the row overflows
+   (scrolls) instead of these two shrinking past what their own content
+   needs. Shared by the header row and every data row (both use this exact
+   template — see NS in the compiled component) so columns stay aligned. */
 .portal-deals-header,
 .portal-deals-list [data-testid^="card-deal-"] > div {
-  grid-template-columns: 90px 328px 122px 86px 92px 158px 218px 2px !important;
+  grid-template-columns: 110px minmax(200px, 2fr) 130px 90px 100px 150px minmax(180px, 1fr) 2px !important;
   column-gap: 0.375rem !important;
   justify-content: start !important;
 }
@@ -676,6 +680,58 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-deals-list [data-testid^="text-deal-id-"] {
   overflow: visible;
   text-overflow: clip;
+}
+
+/* Дебитор (grid column 2 — ID is 1, see the template above): min-width:0
+   overrides the grid default (min-width:auto, sized to fit the text
+   unshrunk) that would otherwise block truncation outright. Ellipsis
+   covers names too long even for the 2fr share; ensureDealObligorTooltip
+   in portal-overrides.js sets title= with the full name so it's still
+   readable on hover when that happens. */
+.portal-deals-list [data-testid^="card-deal-"] > div > *:nth-child(2) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Статус badge text (e.g. "Ожидает загрузки документов") must stay on one
+   line — the 180px floor above was sized for exactly this, but only holds
+   if the badge itself doesn't wrap first. */
+.portal-deals-list [data-testid^="badge-status-"] {
+  white-space: nowrap;
+}
+
+/* Table's own rendered width (not the viewport) drives this — same numbers
+   regardless of what's eating space beside it (nav rail, page padding).
+   Below this, Отсчёт is the one column allowed to give up space: Дебитор
+   and Статус keep their floors from the template above, everything else
+   is already a content-sized minimum. 130px still fits "просрочено 60
+   дн." / "пеня AED 3,240" (the longest realistic pair) on their own lines
+   at the smaller font-size below — narrower than that risks wrapping the
+   penalty line, which is the one thing here that must never truncate. */
+.portal-deals-table {
+  container-type: inline-size;
+  container-name: portal-deals-table;
+}
+
+@container portal-deals-table (max-width: 1120px) {
+  .portal-deals-header,
+  .portal-deals-list [data-testid^="card-deal-"] > div {
+    grid-template-columns: 110px minmax(200px, 2fr) 130px 90px 100px 130px minmax(180px, 1fr) 2px !important;
+  }
+
+  .portal-deal-countdown {
+    padding-left: 8px;
+  }
+
+  .portal-deal-countdown-days {
+    font-size: 0.72rem;
+  }
+
+  .portal-deal-countdown-penalty {
+    font-size: 0.66rem;
+  }
 }
 
 /* Header labels read as centered captions over their column rather than

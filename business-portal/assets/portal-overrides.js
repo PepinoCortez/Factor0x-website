@@ -1169,6 +1169,18 @@
     rowLink.classList.add(flagBadge.textContent.trim() === 'Дефолт' ? 'portal-deal-row-danger' : 'portal-deal-row-warning');
   };
 
+  // Дебитор (grid column 2) truncates with an ellipsis at narrow widths
+  // (see portal-overrides.css) — title= is the plain-HTML fallback for the
+  // full name on hover, no Radix/JS tooltip machinery needed since this is
+  // just the browser's own native title tooltip.
+  const ensureDealObligorTooltip = (row) => {
+    const gridRow = row.querySelector(':scope > div');
+    const obligorCell = gridRow && gridRow.children[1];
+    if (!obligorCell || obligorCell.title) return;
+    const name = obligorCell.textContent.trim();
+    if (name) obligorCell.title = name;
+  };
+
   const DEAL_WORD_FORMS = {
     deal: ['сделка', 'сделки', 'сделок'],
     require: ['требует', 'требуют', 'требуют'],
@@ -1254,6 +1266,7 @@
       if (simplifyFlaggedStatus(row)) problemCount++;
       hideDealTermCell(row);
       ensureDealCountdownCell(row);
+      ensureDealObligorTooltip(row);
       tagDealRowSeverity(row);
     });
     ensureDealsSummaryBar(pageRoot, problemCount, rows.length);
