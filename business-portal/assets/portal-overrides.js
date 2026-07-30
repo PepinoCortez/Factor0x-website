@@ -1445,18 +1445,31 @@
     // was once overdue closes as "Погашена", Дни просрочки/Пеня are what
     // carry that history), so this can reuse Мои сделки's own success
     // tone directly instead of duplicating the tone system for one label.
-    const statusBadge = row.children[10] && row.children[10].firstElementChild;
+    const statusCell = row.children[10];
+    const statusBadge = statusCell && statusCell.firstElementChild;
     if (statusBadge) {
       statusBadge.classList.add('portal-deal-badge', 'portal-badge-success');
     }
 
-    // Тёплая подсветка: "Дни просрочки" (column 8) reads "—" for a deal
-    // that was never overdue, and "N дн." otherwise — Мои сделки's own
-    // .portal-deal-row-warning (a plain, unscoped rule — see CSS) applies
-    // identically to a <tr> here as it does to that table's row divs.
+    // "Дни просрочки" (column 8, hidden — see CSS) reads "—" for a deal
+    // that was never overdue, "N дн." otherwise; still a real cell here,
+    // just not shown as its own column anymore. Was overdue: warm row
+    // tint (Мои сделки's own .portal-deal-row-warning, a plain unscoped
+    // rule — applies to a <tr> here exactly like it does to that table's
+    // row divs) plus a compact caption next to Статус, so the signal
+    // survives collapsing Срок/Дни просрочки/Пеня into the detail row
+    // instead of disappearing with them — full days/rate/amount are still
+    // one click away in "Была просрочка платежа".
     const overdueCell = row.children[8];
-    if (overdueCell && overdueCell.textContent.trim() !== '—') {
+    const wasOverdue = overdueCell && overdueCell.textContent.trim() !== '—';
+    if (wasOverdue) {
       row.classList.add('portal-deal-row-warning');
+      if (statusCell && !statusCell.querySelector('.portal-archive-overdue-flag')) {
+        const flag = document.createElement('span');
+        flag.className = 'portal-archive-overdue-flag';
+        flag.textContent = 'была просрочка';
+        statusCell.appendChild(flag);
+      }
     }
   };
 
