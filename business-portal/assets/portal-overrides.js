@@ -1545,6 +1545,82 @@
   // rest of this file's hand-built icons (see DEAL_INFO_ICON_SVG).
   const NOTIF_BELL_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>';
 
+  // Language switcher, matching the marketing site's own .language-select
+  // (see index.html/style.css) — same pure-CSS globe glyph (a circle plus
+  // a vertical bar and a horizontal band via ::before/::after, no SVG
+  // there either). The dropdown panel itself is this portal's own dark
+  // recipe instead of the landing page's light one — that page has no
+  // dark theme to match, this one does. No i18n system exists anywhere
+  // in the compiled portal bundle (unlike the marketing site's own
+  // docs-language.js dictionary), so switching is cosmetic only — it
+  // tracks which option is marked active, nothing in the app re-renders.
+  let langMenuEl = null;
+
+  const closeLangMenu = () => {
+    if (langMenuEl) langMenuEl.classList.remove('portal-lang-open');
+  };
+
+  const ensureLangOutsideHandler = () => {
+    document.addEventListener('click', (event) => {
+      if (langMenuEl && !langMenuEl.closest('.portal-lang-select').contains(event.target)) {
+        closeLangMenu();
+      }
+    });
+  };
+
+  const ensureLanguageSwitcher = (group, beforeEl) => {
+    if (group.querySelector('.portal-lang-select')) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'portal-lang-select';
+
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'portal-lang-trigger';
+    trigger.setAttribute('aria-label', 'Выбрать язык');
+    trigger.setAttribute('aria-expanded', 'false');
+    const glyph = document.createElement('span');
+    glyph.setAttribute('aria-hidden', 'true');
+    trigger.appendChild(glyph);
+    wrap.appendChild(trigger);
+
+    const menu = document.createElement('div');
+    menu.className = 'portal-lang-menu';
+    langMenuEl = menu;
+
+    const options = [
+      { label: 'ENG', active: false },
+      { label: 'РУС', active: true },
+    ].map(({ label, active }) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = label;
+      btn.className = 'portal-lang-option' + (active ? ' portal-lang-option-active' : '');
+      return btn;
+    });
+    options.forEach((btn) => menu.appendChild(btn));
+    wrap.appendChild(menu);
+
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const open = menu.classList.toggle('portal-lang-open');
+      trigger.setAttribute('aria-expanded', String(open));
+    });
+
+    options.forEach((btn) => {
+      btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        options.forEach((b) => b.classList.remove('portal-lang-option-active'));
+        btn.classList.add('portal-lang-option-active');
+        closeLangMenu();
+        trigger.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    group.insertBefore(wrap, beforeEl);
+    ensureLangOutsideHandler();
+  };
+
   // Standing in for a real activity feed (see "Последние события" on
   // Обзор, list-activity — that one's populated from an API this mock
   // doesn't have access to). Same tone/shape as that feed's own items:
@@ -1648,6 +1724,7 @@
     notifBadgeEl = badge;
 
     group.insertAdjacentElement('afterbegin', bellBtn);
+    ensureLanguageSwitcher(group, bellBtn);
 
     bellBtn.addEventListener('click', (event) => {
       event.stopPropagation();

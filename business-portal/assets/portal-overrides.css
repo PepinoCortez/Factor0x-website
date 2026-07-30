@@ -2069,3 +2069,111 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   font-size: 0.72rem;
   color: rgba(245, 242, 233, 0.5);
 }
+
+/* ---- Language switcher, left of the bell (see ensureLanguageSwitcher in
+   portal-overrides.js) — same pure-CSS globe glyph as the marketing
+   site's .language-trigger (a circle plus a vertical bar and a
+   horizontal band via ::before/::after), scaled down from 42px to this
+   header's 36px. The dropdown itself is this file's own dark card recipe
+   rather than the landing page's light one — that page has no dark theme
+   to match, this header does. */
+.portal-lang-select {
+  position: relative;
+}
+
+.portal-lang-trigger {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(245, 242, 233, 0.75);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.portal-lang-trigger:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #F5F2E9;
+}
+
+.portal-lang-trigger span {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  display: block;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+
+.portal-lang-trigger span::before,
+.portal-lang-trigger span::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.portal-lang-trigger span::before {
+  width: 1.5px;
+  height: 13px;
+  background: currentColor;
+}
+
+.portal-lang-trigger span::after {
+  width: 14px;
+  height: 6px;
+  border-top: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+}
+
+.portal-lang-menu {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 92px;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 48px rgba(0, 0, 0, 0.3);
+}
+
+.portal-lang-menu.portal-lang-open {
+  display: flex;
+}
+
+.portal-lang-option {
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  padding: 7px 10px;
+  color: rgba(245, 242, 233, 0.75);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.portal-lang-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #F5F2E9;
+}
+
+.portal-lang-option-active {
+  color: #F5F2E9;
+  background: rgba(244, 210, 132, 0.12);
+}
