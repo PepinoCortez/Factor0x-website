@@ -482,7 +482,16 @@
     if (!heading) return;
     const note = document.createElement('p');
     note.className = 'portal-newapp-autofill-note';
-    note.textContent = 'Поля определяются автоматически по загруженным документам.';
+    // Short label on view; the full explanation (why fields are locked, what
+    // triggers the autofill) moves into the "i" tooltip instead of running
+    // on in the note itself — buildDealInfoIcon is defined further down this
+    // file but already initialized by the time this actually runs (this
+    // function is only called from applyNewApplicationTheme via run(), at
+    // the very end of the file).
+    note.append('Поля определяются автоматически');
+    note.appendChild(buildDealInfoIcon(
+      'Загрузите документы, и поля заполнятся автоматически из инвойса. Останется только проверить. Пока документы не загружены.'
+    ));
     heading.insertAdjacentElement('afterend', note);
     // Submit overlaps this same header area (position: sticky, top-right —
     // see .portal-newapp-submit-row) instead of sitting in flow; without a

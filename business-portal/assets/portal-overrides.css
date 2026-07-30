@@ -1132,6 +1132,17 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   order: 1;
 }
 
+/* Документы is the taller card, so its own natural content height is what
+   the grid row (and Заявка's stretched height, see below) is measured
+   against — the native 24px of bottom padding below the last row
+   (Подтверждение долга дебитором) carries straight through into both
+   cards' bottom edge. Trimming it here raises both at once, without
+   touching Заявка's own padding-bottom (still reserved for the submit
+   button, see .portal-newapp-data-card > .p-6.pt-0 below). */
+.portal-newapp-docs-card > .p-6.pt-0 {
+  padding-bottom: 8px;
+}
+
 .portal-new-application-page form > .portal-newapp-data-card {
   grid-column: 2;
   grid-row: 1;
@@ -1294,7 +1305,10 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-newapp-autofill-note {
-  margin: 2px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 2px 0 6px;
   font-size: 0.78rem;
   line-height: 1.4;
   color: rgba(245, 242, 233, 0.5);
@@ -1304,9 +1318,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    this header — now that it's pinned to the bottom of the card instead
    (see .portal-newapp-submit-row), the header has the card's full width to
    itself. overflow-wrap stays as a cheap safety net regardless — no reason
-   to drop it now that it isn't load-bearing for anything. */
+   to drop it now that it isn't load-bearing for anything.
+   padding-bottom trims the native CardHeader gap below the (now one-line)
+   note, so "Сумма инвойса" and the rest of the fields below it sit closer
+   to the header instead of leaving a gap sized for the old, longer note. */
 .portal-newapp-data-header {
   overflow-wrap: break-word;
+  padding-bottom: 8px;
 }
 
 /* Reserves clearance at the bottom of the card's own content for
