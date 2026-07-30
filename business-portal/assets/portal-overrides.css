@@ -10,6 +10,19 @@
   --sidebar-foreground: 44 44% 95%;
   --primary: 44 93% 60%;
   --primary-foreground: 240 7% 6%;
+  /* Neither is redefined anywhere else in the compiled app (no .dark
+     variant exists for them) — every native Radix dropdown/tooltip/select
+     using bg-popover or focus:bg-accent renders in the native light-mode
+     white/near-black pair otherwise, the same bug this file already found
+     and fixed once for its own custom tooltips (see .portal-floating-tip)
+     but never at the root — the user menu dropdown is the one still
+     showing it as a plain white box. Fixing it here instead of per-
+     component covers every current and future native popover/menu at
+     once. */
+  --popover: 240 6% 11%;
+  --popover-foreground: 44 44% 95%;
+  --accent: 240 6% 16%;
+  --accent-foreground: 44 44% 95%;
 
   --grid-line: rgba(255, 255, 255, 0.04);
   --surface-dark: rgba(255, 255, 255, 0.035);
@@ -900,6 +913,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-archive-table tbody td:nth-child(3) {
+  /* Native <td> here carries no color class at all (unlike Мои сделки's
+     own Дебитор, which is text-muted-foreground) — full-brightness
+     --foreground by default, visibly lighter than the same company names
+     one tab over. Matched to the exact same token instead. */
+  color: hsl(var(--muted-foreground));
   overflow: hidden;
   text-overflow: ellipsis;
 }
