@@ -295,6 +295,37 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 /* Not clickable, so no hover lift — static like Требует внимания /
    Ближайшие погашения below, just with the shared color recipe. */
 
+/* Deal detail page ("Мои сделки" -> a row): same recipe again, for its 4
+   Cards (Статус сделки / Расчёт финансирования / Ключевые даты /
+   Документы по сделке — see ensureDealDetailCardsThemed in
+   portal-overrides.js). Static, not clickable, same as .portal-activity-
+   card above — no hover lift here either. */
+.portal-deal-detail-card {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113 !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 12px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 48px rgba(0, 0, 0, 0.16) !important;
+}
+
+/* Overdue/default banner on the same page — recolored off the native
+   --status-warning-bg/--status-danger-bg tokens (pale, no dark-theme
+   variant anywhere in the compiled app) onto this file's own dark-safe
+   --warning/--danger set (see ensureDealDetailFlagBanner in
+   portal-overrides.js). */
+.portal-deal-detail-flag-warning {
+  background: var(--warning-bg) !important;
+  border-color: var(--warning-border) !important;
+  color: var(--warning) !important;
+}
+
+.portal-deal-detail-flag-danger {
+  background: var(--danger-bg) !important;
+  border-color: var(--danger-border) !important;
+  color: var(--danger) !important;
+}
+
 /* Bottom two-column layout: activity feed on the left, secondary widgets
    stacked on the right — built by portal-overrides.js, which moves the
    existing activity card into .portal-bottom-left and appends the new

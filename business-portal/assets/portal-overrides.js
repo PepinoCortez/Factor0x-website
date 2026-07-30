@@ -1478,6 +1478,57 @@
 
     table.querySelectorAll('[data-testid^="row-archive-"]').forEach(ensureArchiveRowFormatted);
 
+    // Expanding a row (chevron click) renders "Была просрочка платежа" with
+    // the same native bg-status-warning-bg token as the deal detail page's
+    // own overdue banner — same pale-on-dark bug, same fix (see
+    // ensureDealDetailFlagBanner above; reused directly, no danger variant
+    // exists here since Архив has no equivalent to a "Дефолт" flag).
+    table.querySelectorAll('[class*="bg-status-warning-bg"]').forEach((banner) => {
+      banner.classList.add('portal-deal-detail-flag', 'portal-deal-detail-flag-warning');
+    });
+
+    return true;
+  };
+
+  // Deal detail page ("Мои сделки" -> a row): its 4 cards (Статус сделки /
+  // Расчёт финансирования / Ключевые даты / Документы по сделке) use the
+  // native, plain bg-card background — the one place left with a visibly
+  // different container color from the table it was opened out of, or from
+  // Обзор's own cards. No data-testid on the Cards themselves, so this
+  // walks up from the one stable testid on the page (the deal's own ID
+  // heading) to the page root, then grabs every direct child that's an
+  // actual Card (bg-card) — skips the header block and the submitted/
+  // overdue banners above them, neither of which carries that class.
+  const ensureDealDetailCardsThemed = (pageRoot) => {
+    pageRoot.querySelectorAll(':scope > .bg-card').forEach((card) => {
+      card.classList.add('portal-deal-detail-card');
+    });
+  };
+
+  // The overdue/default banner reuses the native --status-warning-bg/
+  // --status-danger-bg tokens directly (bg-status-warning-bg /
+  // bg-status-danger-bg) — those are pale, ~94% lightness light-mode
+  // colors with no dark-theme override anywhere in the compiled app (the
+  // same root cause behind the Статус badges a few rounds back), and read
+  // as a near-white box on this dark page. Recolored to this file's own
+  // dark-safe --warning-bg/--danger-bg instead — same tones already used
+  // for row severity tints elsewhere.
+  const ensureDealDetailFlagBanner = (pageRoot) => {
+    const banner = pageRoot.querySelector('[class*="bg-status-warning-bg"], [class*="bg-status-danger-bg"]');
+    if (!banner || banner.classList.contains('portal-deal-detail-flag')) return;
+    const isDanger = banner.className.includes('bg-status-danger-bg');
+    banner.classList.add('portal-deal-detail-flag', isDanger ? 'portal-deal-detail-flag-danger' : 'portal-deal-detail-flag-warning');
+  };
+
+  const applyDealDetailTheme = () => {
+    const idEl = document.querySelector('[data-testid="text-deal-detail-id"]');
+    if (!idEl) return false;
+    const pageRoot = idEl.closest('.mx-auto.flex.max-w-3xl.flex-col.gap-6');
+    if (!pageRoot) return false;
+
+    ensureDealDetailCardsThemed(pageRoot);
+    ensureDealDetailFlagBanner(pageRoot);
+
     return true;
   };
 
@@ -1486,7 +1537,8 @@
     const newApplicationDone = applyNewApplicationTheme();
     const dealsDone = applyDealsTheme();
     const archiveDone = applyArchiveTheme();
-    if (!overviewDone && !newApplicationDone && !dealsDone && !archiveDone) {
+    const dealDetailDone = applyDealDetailTheme();
+    if (!overviewDone && !newApplicationDone && !dealsDone && !archiveDone && !dealDetailDone) {
       window.setTimeout(run, 120);
     }
   };
