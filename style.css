@@ -184,6 +184,10 @@ em { font-style: normal; color: var(--accent); }
   border-color: rgba(255,255,255,0.34);
   color: var(--white);
 }
+/* Same dark card recipe as the Business Portal's own language dropdown
+   (.portal-lang-menu in business-portal/assets/portal-overrides.css) —
+   this used to be a plain white popup, the one part of the language
+   switcher not already matching the portal's dark theme. */
 .language-menu {
   position: absolute;
   top: calc(100% + 10px);
@@ -192,10 +196,10 @@ em { font-style: normal; color: var(--accent); }
   display: grid;
   gap: 4px;
   padding: 8px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255,255,255,0.16);
   border-radius: 12px;
-  background: rgba(255,255,255,0.96);
-  box-shadow: 0 22px 60px rgba(5,5,5,0.14);
+  background: linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025)), #111113;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 18px 48px rgba(0,0,0,0.3);
   opacity: 0;
   visibility: hidden;
   transform: translateY(-6px);
@@ -213,15 +217,17 @@ em { font-style: normal; color: var(--accent); }
   border-radius: 9px;
   background: transparent;
   padding: 9px 10px;
-  color: var(--black);
-  font-family: 'Manrope', sans-serif;
-  font-size: 13px;
+  color: rgba(245,242,233,0.75);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.4px;
   cursor: pointer;
   text-align: left;
 }
 .language-menu button:hover {
-  background: rgba(5,5,5,0.05);
+  background: rgba(255,255,255,0.08);
+  color: #F5F2E9;
 }
 .network-select { position: relative; }
 .network-trigger {
