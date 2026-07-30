@@ -1536,12 +1536,142 @@
     return true;
   };
 
+  // Notification bell, added to the persistent header next to the user
+  // menu — no such feature exists anywhere in the compiled app (no
+  // backend for it either), so this is a self-contained, purely front-end
+  // mock: a fixed list below, one item marked unread, badge disappears
+  // once the panel's been opened. Same lucide-style stroke recipe as the
+  // rest of this file's hand-built icons (see DEAL_INFO_ICON_SVG).
+  const NOTIF_BELL_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>';
+
+  // Standing in for a real activity feed (see "Последние события" on
+  // Обзор, list-activity — that one's populated from an API this mock
+  // doesn't have access to). Same tone/shape as that feed's own items:
+  // one line of what happened, one relative timestamp.
+  const NOTIF_ITEMS = [
+    { text: 'Ставка рассчитана для DEAL-0011 — 5.2% в месяц.', time: '5 минут назад', unread: true },
+    { text: 'DEAL-0014 просрочена на 12 дн. — начислена пеня AED 1,536.', time: 'Вчера' },
+    { text: 'DEAL-0013 профинансирована — AED 410,000 отправлены на ваш счёт.', time: '3 дня назад' },
+    { text: 'Документы по DEAL-0015 получены, начата проверка.', time: '5 дней назад' },
+  ];
+
+  let notifPanelEl = null;
+  let notifBadgeEl = null;
+
+  const closeNotifPanel = () => {
+    if (notifPanelEl) notifPanelEl.remove();
+    notifPanelEl = null;
+  };
+
+  const positionNotifPanel = (bellBtn, panel) => {
+    const rect = bellBtn.getBoundingClientRect();
+    const margin = 8;
+    const width = 320;
+    let left = rect.right - width;
+    left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+    panel.style.left = left + 'px';
+    panel.style.top = rect.bottom + margin + 'px';
+  };
+
+  const openNotifPanel = (bellBtn) => {
+    const panel = document.createElement('div');
+    panel.className = 'portal-notif-panel';
+
+    const header = document.createElement('div');
+    header.className = 'portal-notif-panel-header';
+    header.textContent = 'Уведомления';
+    panel.appendChild(header);
+
+    const list = document.createElement('div');
+    list.className = 'portal-notif-panel-list';
+    NOTIF_ITEMS.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'portal-notif-item' + (item.unread ? ' portal-notif-item-unread' : '');
+      const text = document.createElement('p');
+      text.className = 'portal-notif-item-text';
+      text.textContent = item.text;
+      const time = document.createElement('p');
+      time.className = 'portal-notif-item-time';
+      time.textContent = item.time;
+      row.appendChild(text);
+      row.appendChild(time);
+      list.appendChild(row);
+    });
+    panel.appendChild(list);
+
+    document.body.appendChild(panel);
+    positionNotifPanel(bellBtn, panel);
+    notifPanelEl = panel;
+
+    if (notifBadgeEl) notifBadgeEl.classList.add('portal-notif-badge-hidden');
+  };
+
+  let notifOutsideWired = false;
+  const ensureNotifOutsideHandler = () => {
+    if (notifOutsideWired) return;
+    notifOutsideWired = true;
+    document.addEventListener('click', (event) => {
+      if (notifPanelEl && !notifPanelEl.contains(event.target) && !event.target.closest('.portal-notif-bell')) {
+        closeNotifPanel();
+      }
+    });
+  };
+
+  // The dropdown-menu wrapper around the avatar (Radix DropdownMenu.Root)
+  // renders no DOM node of its own, and its trigger (asChild) doesn't
+  // either — button-user-menu is a direct child of <header>, matching
+  // that header's own "justify-between" two-item layout exactly. Adding
+  // the bell as a third direct child would put it in the middle of the
+  // free space instead of snug against the avatar, so this wraps both in
+  // one new flex group and drops that group where the avatar button used
+  // to be — header still only ever sees two children.
+  const ensureNotificationBell = () => {
+    const userMenuBtn = document.querySelector('[data-testid="button-user-menu"]');
+    if (!userMenuBtn || userMenuBtn.closest('.portal-notif-group')) return false;
+
+    const group = document.createElement('div');
+    group.className = 'portal-notif-group';
+    userMenuBtn.insertAdjacentElement('beforebegin', group);
+    group.appendChild(userMenuBtn);
+
+    const bellBtn = document.createElement('button');
+    bellBtn.type = 'button';
+    bellBtn.className = 'portal-notif-bell';
+    bellBtn.setAttribute('aria-label', 'Уведомления');
+    bellBtn.innerHTML = NOTIF_BELL_ICON_SVG;
+
+    const badge = document.createElement('span');
+    badge.className = 'portal-notif-badge';
+    badge.textContent = String(NOTIF_ITEMS.filter((item) => item.unread).length);
+    bellBtn.appendChild(badge);
+    notifBadgeEl = badge;
+
+    group.insertAdjacentElement('afterbegin', bellBtn);
+
+    bellBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (notifPanelEl) {
+        closeNotifPanel();
+      } else {
+        openNotifPanel(bellBtn);
+      }
+    });
+
+    ensureNotifOutsideHandler();
+    return true;
+  };
+
   const run = () => {
     const overviewDone = applyOverviewTheme();
     const newApplicationDone = applyNewApplicationTheme();
     const dealsDone = applyDealsTheme();
     const archiveDone = applyArchiveTheme();
     const dealDetailDone = applyDealDetailTheme();
+    // Header is part of the persistent shell (never unmounts across
+    // route changes), so this only ever needs to succeed once — not
+    // counted towards the "nothing matched, keep polling" check below,
+    // it just quietly no-ops on every later tick via its own guard.
+    ensureNotificationBell();
     if (!overviewDone && !newApplicationDone && !dealsDone && !archiveDone && !dealDetailDone) {
       window.setTimeout(run, 120);
     }

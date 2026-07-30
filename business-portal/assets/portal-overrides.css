@@ -987,9 +987,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 /* Header labels read as centered captions over their column — Сумма
    инвойса included now (was the one right-aligned exception; a later,
    more specific instruction to center every value column below,
-   including this one, replaces that). */
+   including this one, replaces that). !important: Ставка/мес and
+   Погашение's <span> still carry the native text-right class too — this
+   already won for Сумма инвойса's own text-right span (a longer label,
+   filling most of the column either way, so the miscentering was hard to
+   spot there), but visibly lost for these two shorter ones. */
 .portal-deals-header > * {
-  text-align: center;
+  text-align: center !important;
 }
 
 /* Value cells for Сумма инвойса / Ставка/мес / Погашение / Отсчёт /
@@ -1034,9 +1038,8 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    so a normal deal's single "через N дн." line still takes up the same
    vertical space as a flagged deal's two lines — without this, only
    flagged rows would grow, reintroducing the uneven-row-height problem.
-   The left border is the visual seam between this and Погашение — they're
-   two different values (when vs. how much) that used to run together on
-   one line. */
+   Used to also have a left border as a visual seam against Погашение —
+   dropped, it read as visual clutter once every column centered. */
 .portal-deal-countdown {
   display: flex;
   flex-direction: column;
@@ -1047,8 +1050,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   min-width: 0;
   min-height: 2.1rem;
   font-size: 0.78rem;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  padding-left: 10px;
 }
 
 .portal-deal-countdown-days {
@@ -1955,4 +1956,111 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-newapp-summary-confirm:hover {
   transform: translateY(-1px);
   filter: brightness(1.04);
+}
+
+/* ---- Notification bell, next to the user menu in the persistent header
+   (see ensureNotificationBell in portal-overrides.js) — a self-contained
+   front-end mock, no backend feature behind it. */
+.portal-notif-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.portal-notif-bell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(245, 242, 233, 0.75);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.portal-notif-bell:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #F5F2E9;
+}
+
+.portal-notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  box-shadow: 0 0 0 2px hsl(var(--sidebar));
+}
+
+.portal-notif-badge-hidden {
+  display: none;
+}
+
+/* Fixed + positioned via JS (getBoundingClientRect, see
+   positionNotifPanel) rather than nested position:absolute — same reason
+   as .portal-floating-tip elsewhere in this file: a rounded card ancestor
+   with overflow:hidden would otherwise clip it. */
+.portal-notif-panel {
+  position: fixed;
+  z-index: 9999;
+  width: 320px;
+  max-height: 420px;
+  overflow-y: auto;
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)), #111113;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 18px 48px rgba(0, 0, 0, 0.3);
+}
+
+.portal-notif-panel-header {
+  padding: 14px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #F5F2E9;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.portal-notif-panel-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.portal-notif-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.portal-notif-item:last-child {
+  border-bottom: none;
+}
+
+.portal-notif-item-unread {
+  background: rgba(244, 210, 132, 0.07);
+}
+
+.portal-notif-item-text {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: #F5F2E9;
+}
+
+.portal-notif-item-time {
+  margin: 4px 0 0;
+  font-size: 0.72rem;
+  color: rgba(245, 242, 233, 0.5);
 }
