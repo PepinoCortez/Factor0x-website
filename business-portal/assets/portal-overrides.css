@@ -81,17 +81,10 @@
   --muted: 240 10% 96%;
   --muted-foreground: 240 6% 42%;
   --border: 240 10% 88%;
-  --sidebar: 0 0% 100%;
-  --sidebar-foreground: 240 8% 10%;
-  /* Not redefined by this file's dark :root above either (only --sidebar/
-     --sidebar-foreground are), so without this the active-nav-item pill
-     and its focus ring keep resolving to the compiled bundle's own native
-     values — dark ones, left over from the bundle's un-fixed light/dark
-     split described up top. */
-  --sidebar-accent: 240 10% 94%;
-  --sidebar-accent-foreground: 240 8% 10%;
-  --sidebar-border: 240 10% 88%;
-  --sidebar-ring: 240 8% 10%;
+  /* --sidebar/--sidebar-foreground/-accent/-border/-ring deliberately NOT
+     redefined here — the left nav rail and top header (both bg-sidebar)
+     stay permanently dark in both themes, by request, instead of following
+     the light/dark toggle like the rest of the page. */
   --popover: 0 0% 100%;
   --popover-foreground: 240 8% 10%;
   --accent: 240 10% 94%;
@@ -106,17 +99,37 @@
   --ov-page-bg: #F4F4F5;
 }
 
+/* The globe/theme-toggle/bell buttons in the header, and the two dropdown
+   panels they open, are part of that same permanently-dark chrome (see the
+   --sidebar note above) — not the content underneath. Re-pinning the six
+   neutral tokens back to their dark values on just this subtree keeps them
+   rendering as light-on-dark in light mode too, instead of going dark-on-
+   dark and disappearing against the header they live in. */
+.portal-light-theme .portal-notif-group,
+.portal-light-theme .portal-notif-panel {
+  --ov-tint-rgb: 255, 255, 255;
+  --ov-muted-rgb: 245, 242, 233;
+  --ov-text: #F5F2E9;
+  --ov-surface-bg: #111113;
+  --ov-surface-bg-alt: #111113;
+  --ov-tooltip-bg: #111113;
+}
+
 /* Smooth color-scheme switch on theme toggle. Scoped to the properties the
    tokens above actually drive (color/background/border), not `all`, so it
    can't fight unrelated transitions (transform, opacity) elsewhere in this
    file. Selectors that opt out with `transition: none !important` (e.g.
    .portal-overview-card, to avoid the stuck-transition-frame bug described
-   near that rule) keep winning here too — !important still applies. */
+   near that rule) keep winning here too — !important still applies.
+   box-shadow deliberately excluded — animating the big blurred shadows
+   this file uses on ~a dozen cards at once produced a stray jagged
+   rendering seam during the transition. Shadows just snap instantly
+   instead; barely noticeable next to the 0.25s color fade. */
 html,
 html *,
 html *::before,
 html *::after {
-  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
 html,
