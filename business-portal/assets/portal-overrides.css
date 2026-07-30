@@ -916,20 +916,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: rgba(217, 122, 52, 0.09) !important;
 }
 
-/* Compact "была просрочка" caption next to Статус (see
-   ensureArchiveRowFormatted in portal-overrides.js) — the whole signal
-   Дни просрочки/Пеня used to carry as their own columns, now just this
-   one word plus the row tint above; full days/rate/amount are one click
-   away in the expanded "Была просрочка платежа" block. */
-.portal-archive-overdue-flag {
-  display: inline-block;
-  margin-left: 8px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--warning);
-  white-space: nowrap;
-}
-
 /* Same row divider/hover tone as .portal-deals-list > * above — native
    TableRow already ships border-b/hover:bg-muted/50, this just repoints
    both at the exact same rgba values instead of trusting the theme's
@@ -950,12 +936,10 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: rgba(255, 255, 255, 0.04) !important;
 }
 
-/* Headers centered like Мои сделки's, money columns (Сумма инвойса,
-   Комиссия, Вы получили — columns 4/7/8 of 12) right-aligned along with
-   their own data cells, same convention as Мои сделки's Сумма инвойса.
-   Мои сделки's own header row gets its caps from a native "uppercase
-   tracking-wide" class already baked into that component — Архив's
-   TableHead has no such class, so it's added explicitly here instead. */
+/* Headers centered like Мои сделки's. Мои сделки's own header row gets
+   its caps from a native "uppercase tracking-wide" class already baked
+   into that component — Архив's TableHead has no such class, so it's
+   added explicitly here instead. */
 .portal-archive-table thead th {
   text-align: center;
   text-transform: uppercase;
@@ -963,25 +947,53 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   font-size: 0.75rem;
 }
 
-.portal-archive-table thead th:nth-child(4),
-.portal-archive-table thead th:nth-child(7),
-.portal-archive-table thead th:nth-child(8),
+/* Value cells for Сумма инвойса / Статус / Дата закрытия (columns 4/11/12
+   of 12) are plain text or a single inline-flex badge, so text-align on
+   the cell itself is enough. Ставка/мес / Комиссия / Вы получили (5/7/8)
+   each render their value as a block-level "flex items-center gap-1.5"
+   row (rate or amount, plus a tooltip icon) that fills the full cell
+   width — text-align doesn't affect a block flex box's own children, so
+   these need justify-content on that row instead. */
 .portal-archive-table tbody td:nth-child(4),
-.portal-archive-table tbody td:nth-child(7),
-.portal-archive-table tbody td:nth-child(8) {
-  text-align: right;
+.portal-archive-table tbody td:nth-child(11),
+.portal-archive-table tbody td:nth-child(12) {
+  text-align: center;
 }
 
-/* Header labels read as centered captions over their column rather than
-   left/right-hugging it — except Сумма инвойса, which stays flush with its
-   right-aligned money column below (the one alignment this file was asked
-   not to touch). */
+.portal-archive-table tbody td:nth-child(5) > *,
+.portal-archive-table tbody td:nth-child(7) > *,
+.portal-archive-table tbody td:nth-child(8) > * {
+  justify-content: center;
+}
+
+/* Header labels read as centered captions over their column — Сумма
+   инвойса included now (was the one right-aligned exception; a later,
+   more specific instruction to center every value column below,
+   including this one, replaces that). */
 .portal-deals-header > * {
   text-align: center;
 }
 
-.portal-deals-header span:nth-child(3) {
-  text-align: right;
+/* Value cells for Сумма инвойса / Ставка/мес / Погашение / Отсчёт /
+   Статус, centered to match their now-centered headers above. Each needs
+   a different property because each renders differently: Сумма/Погашение
+   are plain right-aligned text (text-align), Ставка is a "flex ...
+   justify-end" row (justify-content), Отсчёт is this file's own flex-
+   column .portal-deal-countdown (align-items, its cross axis), Статус is
+   a "flex flex-wrap items-center gap-2" row holding the badge (+ overdue
+   note below it, when present) — align-items centers both rows as a
+   block instead of stretching them to the column's full width. */
+.portal-deals-list [data-testid^="card-deal-"] > div > *:nth-child(3),
+.portal-deals-list [data-testid^="card-deal-"] > div > *:nth-child(5) {
+  text-align: center !important;
+}
+
+.portal-deals-list [data-testid^="card-deal-"] > div > *:nth-child(4) {
+  justify-content: center !important;
+}
+
+.portal-deals-list [data-testid^="card-deal-"] > div > *:nth-child(7) {
+  align-items: center;
 }
 
 /* Every row is back to a single content line now that the overdue note has
@@ -1011,6 +1023,8 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  text-align: center;
   gap: 1px;
   min-width: 0;
   min-height: 2.1rem;

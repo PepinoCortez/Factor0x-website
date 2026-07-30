@@ -1456,20 +1456,11 @@
     // just not shown as its own column anymore. Was overdue: warm row
     // tint (Мои сделки's own .portal-deal-row-warning, a plain unscoped
     // rule — applies to a <tr> here exactly like it does to that table's
-    // row divs) plus a compact caption next to Статус, so the signal
-    // survives collapsing Срок/Дни просрочки/Пеня into the detail row
-    // instead of disappearing with them — full days/rate/amount are still
-    // one click away in "Была просрочка платежа".
+    // row divs) — full days/rate/amount are one click away in "Была
+    // просрочка платежа".
     const overdueCell = row.children[8];
-    const wasOverdue = overdueCell && overdueCell.textContent.trim() !== '—';
-    if (wasOverdue) {
+    if (overdueCell && overdueCell.textContent.trim() !== '—') {
       row.classList.add('portal-deal-row-warning');
-      if (statusCell && !statusCell.querySelector('.portal-archive-overdue-flag')) {
-        const flag = document.createElement('span');
-        flag.className = 'portal-archive-overdue-flag';
-        flag.textContent = 'была просрочка';
-        statusCell.appendChild(flag);
-      }
     }
   };
 
