@@ -1055,11 +1055,29 @@
   // rest — relocated into its own column instead (right next to Погашение,
   // which it explains), and the badge cell goes back to holding just one
   // line, same as every other row.
+
+  // "12 май 2026" -> "12.05.26" — denser, and matches the дд.мм.гггг shape
+  // used everywhere else in the portal. Parsed once, here, because
+  // parseDealDate only understands the original "D MMM YYYY" text; every
+  // other read of this cell's date below reuses the same parsed value
+  // instead of re-parsing the now-reformatted text.
+  const formatDealDueDateShort = (date) => {
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yy = String(date.getFullYear() % 100).padStart(2, '0');
+    return `${dd}.${mm}.${yy}`;
+  };
+
   const ensureDealCountdownCell = (row) => {
     const dueDateCell = row.querySelector(DEAL_DUE_DATE_SELECTOR);
     if (!dueDateCell) return;
     if (dueDateCell.nextElementSibling && dueDateCell.nextElementSibling.classList.contains('portal-deal-countdown')) {
       return;
+    }
+
+    const parsedDueDate = parseDealDate(dueDateCell.textContent);
+    if (parsedDueDate) {
+      dueDateCell.textContent = formatDealDueDateShort(parsedDueDate);
     }
 
     const cell = document.createElement('div');
@@ -1100,7 +1118,7 @@
       }
     } else {
       const statusText = badge ? badge.textContent.trim() : '';
-      const dueDate = DEAL_COUNTDOWN_DASH_STATUSES.has(statusText) ? null : parseDealDate(dueDateCell.textContent);
+      const dueDate = DEAL_COUNTDOWN_DASH_STATUSES.has(statusText) ? null : parsedDueDate;
       if (dueDate) {
         const days = dealDaysUntil(dueDate);
         cell.textContent = days <= 0 ? 'сегодня' : `через ${days} дн.`;

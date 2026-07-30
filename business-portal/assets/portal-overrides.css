@@ -650,20 +650,23 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    .portal-deal-term-cell, display:none below) — a display:none child isn't
    a grid item at all, so the remaining 8 visible children auto-place into
    these 8 tracks in DOM order with no gap left behind.
-   Дебитор already fit every obligor name at the previous (narrower) page
-   width, including the longest one (Carrefour's full legal name), so the
-   extra width from widening the page another 10% is spread deliberately
-   across several columns instead of just dumping it all into Дебитор again
-   — Сумма/Ставка/Погашение get a little breathing room, Отсчёт gets enough
-   that "через N дн." + the penalty line basically never need to ellipsis,
-   Статус gets a bit more too, and Дебитор (still the only fr column, still
-   the largest single column) absorbs whatever's left. Shared by the header
-   row and every data row (both use this exact template — see NS in the
-   compiled component) so columns stay aligned. */
+   Дебитор is now a fixed 328px instead of the flexible minmax(0, 1fr) it
+   used to be — that's the exact width it had at the previous (narrower)
+   page width, already proven to fit every obligor name including the
+   longest one (Carrefour's full legal name), so there's no fitting risk
+   going back to it. With no fr track left to absorb the page's full width,
+   every column after Дебитор (Сумма through the trailing track) packs in
+   immediately after it instead of trailing off toward the page's right
+   edge — the freed width lands as empty space past Статус instead of
+   inside Дебитор, which is the point: the whole cluster of columns reads
+   as sitting further left. Shared by the header row and every data row
+   (both use this exact template — see NS in the compiled component) so
+   columns stay aligned. */
 .portal-deals-header,
 .portal-deals-list [data-testid^="card-deal-"] > div {
-  grid-template-columns: 90px minmax(0, 1fr) 122px 86px 92px 158px 218px 2px !important;
+  grid-template-columns: 90px 328px 122px 86px 92px 158px 218px 2px !important;
   column-gap: 0.375rem !important;
+  justify-content: start !important;
 }
 
 .portal-deals-list [data-testid^="card-deal-"] > div {
