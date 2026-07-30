@@ -1677,14 +1677,18 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(245, 242, 233, 0.4);
 }
 
+/* Same size/color as "Приложите пакет документов..." (Документы card's
+   own subtitle, native text-sm text-muted-foreground) — hsl(var(...))
+   rather than a hand-picked rgba so this tracks --muted-foreground
+   exactly, including if that token ever changes. */
 .portal-newapp-autofill-note {
   display: flex;
   align-items: center;
   gap: 6px;
   margin: 2px 0 6px;
-  font-size: 0.78rem;
+  font-size: 0.875rem;
   line-height: 1.4;
-  color: rgba(245, 242, 233, 0.5);
+  color: hsl(var(--muted-foreground));
 }
 
 /* Used to reserve room for "Отправить" when it sat top-right, overlapping

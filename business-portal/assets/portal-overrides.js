@@ -488,7 +488,7 @@
     // file but already initialized by the time this actually runs (this
     // function is only called from applyNewApplicationTheme via run(), at
     // the very end of the file).
-    note.append('Поля определяются автоматически');
+    note.append('Поля определяются автоматически.');
     note.appendChild(buildDealInfoIcon(
       'Загрузите документы, и поля заполнятся автоматически из инвойса. Останется только проверить. Пока документы не загружены.'
     ));
