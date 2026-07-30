@@ -937,7 +937,7 @@
   // existed for them); Ожидает загрузки документов/Расчёт ставки had a
   // native Radix "i" instead. Unified so hovering (or tapping) the BADGE
   // ITSELF opens the tooltip, not just a separate small icon next to it —
-  // see wrapDealBadgeWithTooltip below. Text for the native two is copied
+  // see attachDealTooltip below. Text for the native two is copied
   // verbatim from their own description field in P_ in the compiled
   // bundle. Готов к финансированию/Профинансировано stay unexplained,
   // they're self-evident.
@@ -969,75 +969,115 @@
     if (tone) badgeEl.classList.add('portal-badge-' + tone);
   };
 
-  // Same visual recipe as the app's own tooltip trigger button (identical
-  // Tailwind classes, so it matches pixel-for-pixel) — just a plain
-  // hover/focus CSS tooltip instead of a Radix portal, since we can't wire
-  // real Radix state onto a node React doesn't own.
+  // ---- Shared floating tooltip for every explainer in this file (status
+  // badges below, plus the New Application autofill note further up) — one
+  // node appended straight to <body> and positioned via
+  // getBoundingClientRect on open, instead of the old position:absolute
+  // child nested inside the trigger. That old approach broke wherever the
+  // trigger sat inside a card with overflow:hidden (e.g. .portal-deals-
+  // table, needed for its own rounded corners) — the tooltip content got
+  // silently clipped at the card's edge instead of just spilling past it.
+  // A single reused node also means the trigger itself needs no wrapper
+  // element anymore — attachDealTooltip wires the behavior directly onto
+  // whatever's passed in (an icon, or a badge on its own).
+  const DEAL_FLOATING_TIP_WIDTH = 288;
+
+  let dealFloatingTipEl = null;
+  const getDealFloatingTip = () => {
+    if (!dealFloatingTipEl) {
+      dealFloatingTipEl = document.createElement('div');
+      dealFloatingTipEl.className = 'portal-floating-tip';
+      document.body.appendChild(dealFloatingTipEl);
+    }
+    return dealFloatingTipEl;
+  };
+
+  const positionDealFloatingTip = (trigger, tip) => {
+    const rect = trigger.getBoundingClientRect();
+    const margin = 8;
+    let left = rect.left + rect.width / 2 - DEAL_FLOATING_TIP_WIDTH / 2;
+    left = Math.max(margin, Math.min(left, window.innerWidth - DEAL_FLOATING_TIP_WIDTH - margin));
+    let top = rect.top - tip.offsetHeight - margin;
+    if (top < margin) top = rect.bottom + margin;
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+  };
+
+  const showDealTooltip = (trigger) => {
+    const text = trigger.dataset.portalTip;
+    if (!text) return;
+    const tip = getDealFloatingTip();
+    tip.textContent = text;
+    tip.classList.add('portal-floating-tip-visible');
+    positionDealFloatingTip(trigger, tip);
+  };
+
+  const hideDealFloatingTip = () => {
+    if (dealFloatingTipEl) dealFloatingTipEl.classList.remove('portal-floating-tip-visible');
+  };
+
+  // Which trigger, if any, was opened by a click/tap rather than hover —
+  // stays open (ignores mouseleave/blur) until clicked again or dismissed
+  // by clicking elsewhere (see ensureDealTooltipOutsideHandler below).
+  let dealTipPinnedTrigger = null;
+
+  // Wires hover, keyboard focus, and click/tap to the shared floating tip
+  // for one trigger element (an icon span, or a status badge directly —
+  // no wrapper needed now that the tip isn't a nested child of it). Click
+  // always stops propagation: every trigger this is used on sits inside a
+  // row that's itself a Link to the deal's own page, and without this a
+  // tap would navigate there instead of just opening the tooltip.
+  const attachDealTooltip = (trigger, text) => {
+    trigger.dataset.portalTip = text;
+    trigger.classList.add('portal-tip-trigger');
+    trigger.tabIndex = 0;
+    trigger.setAttribute('role', 'button');
+    trigger.addEventListener('mouseenter', () => showDealTooltip(trigger));
+    trigger.addEventListener('mouseleave', () => {
+      if (dealTipPinnedTrigger !== trigger) hideDealFloatingTip();
+    });
+    trigger.addEventListener('focus', () => showDealTooltip(trigger));
+    trigger.addEventListener('blur', () => {
+      if (dealTipPinnedTrigger !== trigger) hideDealFloatingTip();
+    });
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (dealTipPinnedTrigger === trigger) {
+        dealTipPinnedTrigger = null;
+        hideDealFloatingTip();
+      } else {
+        dealTipPinnedTrigger = trigger;
+        showDealTooltip(trigger);
+      }
+    });
+  };
+
+  let dealTooltipOutsideWired = false;
+  const ensureDealTooltipOutsideHandler = () => {
+    if (dealTooltipOutsideWired) return;
+    dealTooltipOutsideWired = true;
+    document.addEventListener('click', (event) => {
+      if (dealTipPinnedTrigger && !dealTipPinnedTrigger.contains(event.target)) {
+        dealTipPinnedTrigger = null;
+        hideDealFloatingTip();
+      }
+    });
+  };
+
+  // Same "i" glyph used for the New Application autofill note above — kept
+  // as an actual icon there since that note has no badge to hover on its
+  // own. The Статус column below has no separate icon anymore: the badge
+  // itself is the trigger (see attachDealTooltip).
   const DEAL_INFO_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>';
 
   const buildDealInfoIcon = (text) => {
     const wrap = document.createElement('span');
     wrap.className =
-      'portal-i-icon inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-muted-foreground hover-elevate active-elevate-2';
-    wrap.tabIndex = 0;
-    wrap.setAttribute('role', 'button');
-    wrap.setAttribute('aria-label', 'Пояснение');
+      'inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-muted-foreground hover-elevate active-elevate-2';
     wrap.innerHTML = DEAL_INFO_ICON_SVG;
-    wrap.addEventListener('click', (event) => event.stopPropagation());
-    const tip = document.createElement('span');
-    tip.className =
-      'portal-i-tip z-50 w-72 rounded-md border bg-popover p-4 text-sm leading-relaxed text-popover-foreground shadow-md';
-    tip.textContent = text;
-    wrap.appendChild(tip);
+    wrap.setAttribute('aria-label', 'Пояснение');
+    attachDealTooltip(wrap, text);
     return wrap;
-  };
-
-  // Wraps an existing badge (moving it, not cloning it — same "React
-  // doesn't mind a relocated node it still owns" rule the rest of this
-  // file leans on) together with a small icon into one .portal-i-icon
-  // group, so the tooltip opens on hovering the PILL itself, not just the
-  // icon next to it. Click both stops propagation (the row above this is a
-  // Link to the deal's own page — without this a tap would navigate there
-  // instead of showing the tooltip) and toggles portal-i-open explicitly,
-  // since :hover/:focus-visible alone don't reliably fire on a tap for a
-  // custom, non-native interactive element.
-  const wrapDealBadgeWithTooltip = (badge, text) => {
-    const wrap = document.createElement('span');
-    wrap.className = 'portal-i-icon inline-flex items-center gap-1.5';
-    wrap.tabIndex = 0;
-    wrap.setAttribute('role', 'button');
-    wrap.setAttribute('aria-label', badge.textContent.trim() + ' — пояснение');
-    wrap.addEventListener('click', (event) => {
-      event.stopPropagation();
-      wrap.classList.toggle('portal-i-open');
-    });
-    badge.insertAdjacentElement('beforebegin', wrap);
-    wrap.appendChild(badge);
-    const icon = document.createElement('span');
-    icon.className = 'portal-badge-info-icon';
-    icon.setAttribute('aria-hidden', 'true');
-    icon.innerHTML = DEAL_INFO_ICON_SVG;
-    wrap.appendChild(icon);
-    const tip = document.createElement('span');
-    tip.className =
-      'portal-i-tip z-50 w-72 rounded-md border bg-popover p-4 text-sm leading-relaxed text-popover-foreground shadow-md';
-    tip.textContent = text;
-    wrap.appendChild(tip);
-  };
-
-  // Click-to-open (see wrapDealBadgeWithTooltip) needs a matching click-
-  // outside-to-close, or a tapped-open tooltip never closes again. Wired
-  // once globally, guarded so repeat calls from the MutationObserver-driven
-  // run() don't stack duplicate listeners.
-  let dealBadgeTooltipOutsideWired = false;
-  const ensureDealBadgeTooltipOutsideHandler = () => {
-    if (dealBadgeTooltipOutsideWired) return;
-    dealBadgeTooltipOutsideWired = true;
-    document.addEventListener('click', (event) => {
-      document.querySelectorAll('.portal-i-icon.portal-i-open').forEach((el) => {
-        if (!el.contains(event.target)) el.classList.remove('portal-i-open');
-      });
-    });
   };
 
   // The status badge's own "i" tooltip button (native Radix, for Ожидает
@@ -1045,18 +1085,18 @@
   // the native "flex shrink-0 items-center gap-1" wrapper (see q_ in the
   // compiled bundle) — Radix only portals the tooltip's *content* into the
   // DOM while open, so this sibling is reliably just the trigger button.
-  // Hidden unconditionally now (replaced by wrapDealBadgeWithTooltip
-  // wherever there's explainer text; just hidden with nothing added back
-  // for Готов к финансированию/Профинансировано, same as before).
+  // Hidden unconditionally (the badge itself becomes the trigger instead,
+  // via attachDealTooltip, wherever there's explainer text — nothing added
+  // back for Готов к финансированию/Профинансировано, same as before).
   const trimDealStatusInfo = (row) => {
     const badge = row.querySelector('[data-testid^="badge-status-"]');
     if (!badge) return;
     applyDealBadgeStyle(badge);
-    if (badge.closest('.portal-i-icon')) return;
+    if (badge.classList.contains('portal-tip-trigger')) return;
     const infoBtn = badge.nextElementSibling;
     if (infoBtn) infoBtn.style.display = 'none';
     const infoText = DEAL_STATUS_INFO[badge.textContent.trim()];
-    if (infoText) wrapDealBadgeWithTooltip(badge, infoText);
+    if (infoText) attachDealTooltip(badge, infoText);
   };
 
   // A flagged deal (Дефолт/Просрочка) is the one main status for that row —
@@ -1077,11 +1117,13 @@
     if (!flagBadge) return false;
 
     applyDealBadgeStyle(flagBadge);
+    if (!flagBadge.classList.contains('portal-tip-trigger')) {
+      const infoText = DEAL_STATUS_INFO[flagBadge.textContent.trim()];
+      if (infoText) attachDealTooltip(flagBadge, infoText);
+    }
     if (!badgeGroup.dataset.portalFlagSimplified) {
       badgeGroup.dataset.portalFlagSimplified = 'true';
       primaryWrap.style.display = 'none';
-      const infoText = DEAL_STATUS_INFO[flagBadge.textContent.trim()];
-      if (infoText) wrapDealBadgeWithTooltip(flagBadge, infoText);
     }
     return true;
   };
@@ -1319,7 +1361,7 @@
     const tableWrap = list.parentElement;
     if (!tableWrap) return false;
 
-    ensureDealBadgeTooltipOutsideHandler();
+    ensureDealTooltipOutsideHandler();
 
     // The page root is shared markup with Обзор (same "mx-auto max-w-5xl"
     // combo, which is why applyOverviewTheme's own generic selector also

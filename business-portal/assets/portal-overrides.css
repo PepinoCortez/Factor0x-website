@@ -865,35 +865,44 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   opacity: 0.8;
 }
 
-/* Custom hover/focus tooltip for the Дефолт/Просрочка "i" (added by
-   buildDealInfoIcon in portal-overrides.js) — the native badge ships with
-   no explainer at all, so this can't reuse a real Radix tooltip instance.
-   The trigger reuses the app's own tooltip-button classes for a pixel match;
-   only the popup itself (position/visibility) is bespoke, its colors still
-   come from the shared bg-popover/text-popover-foreground/shadow-md classes
-   set directly on the element in JS, not duplicated here. */
-.portal-i-icon {
-  position: relative;
-  cursor: pointer;
-}
-
-.portal-i-tip {
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
+/* Shared floating tooltip (see attachDealTooltip in portal-overrides.js) —
+   one node appended straight to <body> and positioned via
+   getBoundingClientRect on open, used by the New Application autofill
+   note's "i" and every Статус badge below. Fixed positioning means it's
+   never clipped by a rounded card's own overflow:hidden (e.g.
+   .portal-deals-table needs that for its corners) the way a nested
+   position:absolute child inside the trigger used to be. Colors are
+   explicit here rather than the app's own bg-popover/text-popover-
+   foreground tokens — those default to a plain white/near-black pair with
+   no dark-mode override anywhere in the compiled app, which is its own
+   separate light-popup-on-a-dark-page bug this happens to sidestep. */
+.portal-floating-tip {
+  position: fixed;
+  z-index: 9999;
+  width: 288px;
+  max-width: calc(100vw - 16px);
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #1A1A1D;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+  color: #F5F2E9;
+  font-size: 0.85rem;
+  line-height: 1.5;
   opacity: 0;
-  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.12s ease;
 }
 
-.portal-i-icon:hover .portal-i-tip,
-.portal-i-icon:focus-visible .portal-i-tip,
-.portal-i-icon.portal-i-open .portal-i-tip {
+.portal-floating-tip-visible {
   opacity: 1;
-  visibility: visible;
   pointer-events: auto;
+}
+
+/* The trigger itself (an icon, or — for Статус badges — the pill with no
+   separate icon at all now) just needs to read as hoverable/tappable. */
+.portal-tip-trigger {
+  cursor: pointer;
 }
 
 /* Subtitle + summary badge share one line (ensureDealsSummaryBar in
@@ -985,21 +994,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: rgba(255, 255, 255, 0.06) !important;
   border-color: rgba(255, 255, 255, 0.16) !important;
   color: rgba(245, 242, 233, 0.75) !important;
-}
-
-/* The small "i" living inside the badge+icon hover group (see
-   wrapDealBadgeWithTooltip in portal-overrides.js) — same muted tone as
-   .portal-lock-icon elsewhere in this file, sized down slightly since it
-   now sits right next to a same-height pill instead of alone. */
-.portal-badge-info-icon {
-  display: inline-flex;
-  flex-shrink: 0;
-  color: rgba(245, 242, 233, 0.45);
-}
-
-.portal-badge-info-icon svg {
-  width: 13px;
-  height: 13px;
 }
 
 /* "Новая заявка": restyle to match the landing page's "Get financing"
