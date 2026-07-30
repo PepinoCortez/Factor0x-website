@@ -99,14 +99,19 @@
   --ov-page-bg: #F4F4F5;
 }
 
-/* The globe/theme-toggle/bell buttons in the header, and the two dropdown
-   panels they open, are part of that same permanently-dark chrome (see the
-   --sidebar note above) — not the content underneath. Re-pinning the six
-   neutral tokens back to their dark values on just this subtree keeps them
-   rendering as light-on-dark in light mode too, instead of going dark-on-
-   dark and disappearing against the header they live in. */
+/* The globe/theme-toggle/bell buttons in the header, the two dropdown
+   panels they open, and the left nav rail (including "Что будет после
+   подачи" / "Подсказки", injected inside that same rail by
+   findGlobalNavSidebar — see portal-newapp-sidebar below) are all part of
+   that same permanently-dark chrome (see the --sidebar note above), not
+   the content underneath. Re-pinning the six neutral tokens back to their
+   dark values on just this subtree keeps them rendering as light-on-dark
+   in light mode too, instead of going dark-on-dark and disappearing —
+   which is exactly what happened to portal-newapp-steps' text before this
+   rule covered [data-slot='sidebar'] too. */
 .portal-light-theme .portal-notif-group,
-.portal-light-theme .portal-notif-panel {
+.portal-light-theme .portal-notif-panel,
+.portal-light-theme [data-slot='sidebar'] {
   --ov-tint-rgb: 255, 255, 255;
   --ov-muted-rgb: 245, 242, 233;
   --ov-text: #F5F2E9;
