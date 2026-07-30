@@ -932,30 +932,41 @@
   // touching the DOM structure (list-deals's own cards, and their onClick/
   // Link navigation, are untouched).
 
-  // Status badges that are self-explanatory on their own — the "i" next to
-  // them is pure noise. Left alone: "Ожидает загрузки документов" /
-  // "Расчёт ставки" (both benefit from the explainer) and the rate's own
-  // "i" (untouched, native to the app).
-  const DEAL_STATUS_HIDE_INFO = new Set(['Профинансировано', 'Готов к финансированию']);
-
-  // The status badge's own "i" tooltip button is always its next sibling
-  // inside the native "flex shrink-0 items-center gap-1" wrapper (see q_ in
-  // the compiled bundle) — Radix only portals the tooltip's *content* into
-  // the DOM while open, so this sibling is reliably just the trigger button.
-  const trimDealStatusInfo = (row) => {
-    const badge = row.querySelector('[data-testid^="badge-status-"]');
-    if (!badge) return;
-    const infoBtn = badge.nextElementSibling;
-    if (infoBtn && DEAL_STATUS_HIDE_INFO.has(badge.textContent.trim())) {
-      infoBtn.style.display = 'none';
-    }
-  };
-
-  // Дефолт/Просрочка ship with no explainer at all in the native component —
-  // these two are exactly the statuses worth explaining, so one gets added.
-  const DEAL_FLAG_INFO = {
+  // Every status with a real explainer now gets the same treatment —
+  // Дефолт/Просрочка already had a custom hover icon (no native explainer
+  // existed for them); Ожидает загрузки документов/Расчёт ставки had a
+  // native Radix "i" instead. Unified so hovering (or tapping) the BADGE
+  // ITSELF opens the tooltip, not just a separate small icon next to it —
+  // see wrapDealBadgeWithTooltip below. Text for the native two is copied
+  // verbatim from their own description field in P_ in the compiled
+  // bundle. Готов к финансированию/Профинансировано stay unexplained,
+  // they're self-evident.
+  const DEAL_STATUS_INFO = {
     'Дефолт': 'Сделка не погашена в установленный срок и переведена в статус дефолта. Пеня продолжает начисляться до полного погашения.',
     'Просрочка': 'Срок оплаты по сделке прошёл. Идёт начисление пени — свяжитесь с дебитором или с нами, если нужна помощь.',
+    'Ожидает загрузки документов': 'Нужно загрузить документы по сделке, чтобы мы начали проверку.',
+    'Расчёт ставки': 'Рассчитывается ставка финансирования: документы получены, идёт оценка и расчёт ставки по сделке.',
+  };
+
+  // Native badgeClassName reuses the exact same --status-warning token for
+  // both "Просрочка" (a problem) and "Готов к финансированию" (good news) —
+  // indistinguishable at a glance despite opposite meaning. Six distinct
+  // tones instead, applied via .portal-deal-badge plus one of these below
+  // (see CSS) — doesn't touch the shared --status-* vars themselves, just
+  // what these six specific labels render as in this one table.
+  const DEAL_STATUS_TONE = {
+    'Дефолт': 'danger',
+    'Просрочка': 'warning',
+    'Ожидает загрузки документов': 'neutral',
+    'Расчёт ставки': 'info',
+    'Готов к финансированию': 'gold',
+    'Профинансировано': 'success',
+  };
+
+  const applyDealBadgeStyle = (badgeEl) => {
+    badgeEl.classList.add('portal-deal-badge');
+    const tone = DEAL_STATUS_TONE[badgeEl.textContent.trim()];
+    if (tone) badgeEl.classList.add('portal-badge-' + tone);
   };
 
   // Same visual recipe as the app's own tooltip trigger button (identical
@@ -981,6 +992,73 @@
     return wrap;
   };
 
+  // Wraps an existing badge (moving it, not cloning it — same "React
+  // doesn't mind a relocated node it still owns" rule the rest of this
+  // file leans on) together with a small icon into one .portal-i-icon
+  // group, so the tooltip opens on hovering the PILL itself, not just the
+  // icon next to it. Click both stops propagation (the row above this is a
+  // Link to the deal's own page — without this a tap would navigate there
+  // instead of showing the tooltip) and toggles portal-i-open explicitly,
+  // since :hover/:focus-visible alone don't reliably fire on a tap for a
+  // custom, non-native interactive element.
+  const wrapDealBadgeWithTooltip = (badge, text) => {
+    const wrap = document.createElement('span');
+    wrap.className = 'portal-i-icon inline-flex items-center gap-1.5';
+    wrap.tabIndex = 0;
+    wrap.setAttribute('role', 'button');
+    wrap.setAttribute('aria-label', badge.textContent.trim() + ' — пояснение');
+    wrap.addEventListener('click', (event) => {
+      event.stopPropagation();
+      wrap.classList.toggle('portal-i-open');
+    });
+    badge.insertAdjacentElement('beforebegin', wrap);
+    wrap.appendChild(badge);
+    const icon = document.createElement('span');
+    icon.className = 'portal-badge-info-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = DEAL_INFO_ICON_SVG;
+    wrap.appendChild(icon);
+    const tip = document.createElement('span');
+    tip.className =
+      'portal-i-tip z-50 w-72 rounded-md border bg-popover p-4 text-sm leading-relaxed text-popover-foreground shadow-md';
+    tip.textContent = text;
+    wrap.appendChild(tip);
+  };
+
+  // Click-to-open (see wrapDealBadgeWithTooltip) needs a matching click-
+  // outside-to-close, or a tapped-open tooltip never closes again. Wired
+  // once globally, guarded so repeat calls from the MutationObserver-driven
+  // run() don't stack duplicate listeners.
+  let dealBadgeTooltipOutsideWired = false;
+  const ensureDealBadgeTooltipOutsideHandler = () => {
+    if (dealBadgeTooltipOutsideWired) return;
+    dealBadgeTooltipOutsideWired = true;
+    document.addEventListener('click', (event) => {
+      document.querySelectorAll('.portal-i-icon.portal-i-open').forEach((el) => {
+        if (!el.contains(event.target)) el.classList.remove('portal-i-open');
+      });
+    });
+  };
+
+  // The status badge's own "i" tooltip button (native Radix, for Ожидает
+  // загрузки документов/Расчёт ставки) is always its next sibling inside
+  // the native "flex shrink-0 items-center gap-1" wrapper (see q_ in the
+  // compiled bundle) — Radix only portals the tooltip's *content* into the
+  // DOM while open, so this sibling is reliably just the trigger button.
+  // Hidden unconditionally now (replaced by wrapDealBadgeWithTooltip
+  // wherever there's explainer text; just hidden with nothing added back
+  // for Готов к финансированию/Профинансировано, same as before).
+  const trimDealStatusInfo = (row) => {
+    const badge = row.querySelector('[data-testid^="badge-status-"]');
+    if (!badge) return;
+    applyDealBadgeStyle(badge);
+    if (badge.closest('.portal-i-icon')) return;
+    const infoBtn = badge.nextElementSibling;
+    if (infoBtn) infoBtn.style.display = 'none';
+    const infoText = DEAL_STATUS_INFO[badge.textContent.trim()];
+    if (infoText) wrapDealBadgeWithTooltip(badge, infoText);
+  };
+
   // A flagged deal (Дефолт/Просрочка) is the one main status for that row —
   // "Профинансировано" is still true, but it belongs in the deal's own
   // detail view, not competing for attention here. Hides the whole native
@@ -998,13 +1076,12 @@
     );
     if (!flagBadge) return false;
 
+    applyDealBadgeStyle(flagBadge);
     if (!badgeGroup.dataset.portalFlagSimplified) {
       badgeGroup.dataset.portalFlagSimplified = 'true';
       primaryWrap.style.display = 'none';
-      const infoText = DEAL_FLAG_INFO[flagBadge.textContent.trim()];
-      if (infoText) {
-        flagBadge.insertAdjacentElement('afterend', buildDealInfoIcon(infoText));
-      }
+      const infoText = DEAL_STATUS_INFO[flagBadge.textContent.trim()];
+      if (infoText) wrapDealBadgeWithTooltip(flagBadge, infoText);
     }
     return true;
   };
@@ -1241,6 +1318,8 @@
 
     const tableWrap = list.parentElement;
     if (!tableWrap) return false;
+
+    ensureDealBadgeTooltipOutsideHandler();
 
     // The page root is shared markup with Обзор (same "mx-auto max-w-5xl"
     // combo, which is why applyOverviewTheme's own generic selector also
