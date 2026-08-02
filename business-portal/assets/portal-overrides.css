@@ -2051,6 +2051,31 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   flex-direction: column !important;
 }
 
+/* Дата инвойса / Срок оплаты (Invoice Date / Payment Due Date) are the one
+   pair asked to stay side by side even on a portrait phone, unlike every
+   other pair here (Сумма/Валюта, Дебитор/Страна) — both are short, fixed-
+   format date inputs (dd.mm.yyyy) that never wrap or need the full row
+   width the way a company name or amount can, so two-up doesn't cramp
+   them the way it would the others. :has(#invoiceDate) targets that
+   specific grid only (an ID inside :has() outweighs the class-substring
+   specificity of the collapse rule above, so !important here isn't even
+   load-bearing, just consistent with it) — the collapse rule still
+   applies normally to every other pair in this card.
+   minmax(0, 1fr), not plain 1fr: a bare 1fr track is really minmax(auto,
+   1fr) — its floor is the date input's own min-content width (~190px,
+   whatever a native date field's mm/dd/yyyy chrome needs), which a 358px-
+   wide phone has no room for twice over. Confirmed directly: with plain
+   1fr the card itself rendered ~440px wide, pushing Payment Due Date's
+   whole column off the right edge of the screen. minmax(0, 1fr) lets the
+   track (and the input inside it) actually shrink to fit. */
+@media (max-width: 640px) {
+  .portal-newapp-data-card .grid:has(#invoiceDate) {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+  }
+}
+
 /* Tighter vertical rhythm between field rows (native gap-5 = 20px, gap-4 =
    16px) — shorter inputs above and a denser stack read as a more composed
    form instead of a padded-out one. Exact class names, confirmed from the
