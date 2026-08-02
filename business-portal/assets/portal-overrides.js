@@ -742,14 +742,10 @@
   // on the native "Загружено" text, which this never touches) rather than
   // re-deriving it, so it stays correct after this rewrites the other text.
   const softenDocStatusTone = () => {
-    newAppDocStatus().rows.forEach(({ key, required, uploaded }) => {
+    newAppDocStatus().rows.forEach(({ key, uploaded }) => {
       const badge = document.querySelector('[data-testid="badge-doc-status-' + key + '"]');
       if (!badge) return;
-      if (required) {
-        if (!uploaded) setTextIfChanged(badge, t('Не загружено', 'Not uploaded'));
-      } else {
-        badge.classList.toggle('portal-doc-badge-hidden', !uploaded);
-      }
+      if (!uploaded) setTextIfChanged(badge, t('Не загружено', 'Not uploaded'));
     });
   };
 

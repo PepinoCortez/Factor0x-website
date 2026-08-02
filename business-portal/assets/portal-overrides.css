@@ -1892,44 +1892,54 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: rgba(var(--ov-tint-rgb), 0.14) !important;
 }
 
-/* "Можно догрузить позже": no status badge while nothing's attached yet —
-   just icon, name, button (see softenDocStatusTone in portal-overrides.js).
-   Still shows "Загружено" once it actually is one.
-   visibility (not display:none): the badge and the Upload button share one
-   flex row (badge, then button) — display:none drops the badge out of that
-   row's layout entirely, so a hidden badge's row lets its button slide left
-   into the gap while every required row's button stays put one badge-width
-   further right. The whole checklist's Upload buttons then read as two
-   different columns depending on which group they're in — exactly the
-   ragged-looking column this fixes: invisible but still occupying its own
-   layout box keeps every row's button at the same x regardless of group. */
-.portal-doc-badge-hidden {
-  visibility: hidden;
-}
-
-/* On mobile, the status/Upload row (badge + hidden file input + button —
-   a plain sibling of the icon+label row above it, not nested inside it;
-   see the doc-row grid revert note above for why these two rows can't be
-   merged into one without risking the reparent-related React crash that
-   happened here before) natively carries pl-12 — Tailwind's own choice to
-   indent it under the label text rather than the icon, so it doesn't
-   visually align with anything above it. Combined with the badge/button
-   sitting bunched together on the left with dead space trailing after
-   them, the whole two-row block read as disjointed rather than one
-   cohesive unit. Flush left (matching the icon+label row's own left
-   edge) + a tightened negative margin-top (pulling it right up against
-   that row, leaving the *next document's* own gap-3 above its icon+label
-   row untouched — margin only affects the edge it's declared on) makes
-   the pair read as one two-line block: icon/label/tag on line one, status
-   +Upload on line two. justify-content:space-between then fills that
-   second line edge-to-edge — badge (or its invisible reserved space, see
-   .portal-doc-badge-hidden above) at the start, Upload at the true end,
-   instead of both crowded together with empty space trailing after. */
+/* ---- Mobile: every document row shares one structure, top to bottom ----
+   icon+label, then status (now shown for every document — see
+   softenDocStatusTone in portal-overrides.js, which used to hide it for
+   anything optional and untouched; not just a mobile change, that read as
+   "why does only Invoice/Contract have a status?" on desktop too), then a
+   full-width Upload button. Desktop keeps the two native sibling rows
+   (icon+label, then status+button side by side) — this only touches the
+   status+button row, and only below 640px. */
 @media (max-width: 640px) {
+  /* The status/Upload row (badge + hidden file input + button — a plain
+     sibling of the icon+label row above it, not nested inside it; see the
+     doc-row grid revert note above for why these two rows can't be merged
+     into one without risking the reparent-related React crash that
+     happened here before) natively carries pl-12 — Tailwind's own choice
+     to indent it under the label text rather than the icon — and lays
+     badge/button out side by side. column + flush-left is what turns it
+     into its own two lines (status, then Upload) instead of one cramped
+     row; the tightened negative margin-top pulls it up against the
+     icon+label row above (margin only affects the edge it's declared on,
+     so the *next* document's own gap-3 above its own icon+label row is
+     untouched) so the three lines read as one document block, not two
+     disjointed ones. */
   .portal-newapp-docs-card .flex.items-center.gap-3.pl-12 {
+    flex-direction: column;
+    align-items: flex-start;
     padding-left: 0 !important;
-    justify-content: space-between;
-    margin-top: -7px;
+    gap: 8px;
+    margin-top: -4px;
+  }
+
+  /* Upload, full width — a thumb-sized target instead of a narrow button
+     off to one side, and (native justify-center, already part of this
+     button's own classes) keeps its icon+label pair centered once it's
+     wide enough for that to matter. */
+  .portal-newapp-docs-card .flex.items-center.gap-3.pl-12 button[data-testid^="button-upload-"] {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* Group heading: title + caption ("can't submit without these" / "attach
+     now, or add later...") were side by side (space-between) — enough
+     room for that on desktop, not on a 350px-wide phone card, where the
+     caption crowding the title made *both* wrap and collide. Stacked
+     instead: title on its own line, caption below it, both full width. */
+  .portal-doc-group-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
   }
 }
 
