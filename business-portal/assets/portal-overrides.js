@@ -2287,6 +2287,14 @@
   // the browser paints that frame. A setTimeout would push the patch into a
   // later macrotask, letting the browser paint the raw/unthemed DOM first —
   // that's what caused the visible flash of unstyled content on every nav.
-  const observerRoot = document.getElementById('root') || document.body;
+  // Must be document.body, not #root: the mobile nav drawer (shadcn's
+  // Sidebar swapping to a Radix Sheet below the md breakpoint) portals its
+  // content straight to <body>, as a sibling of #root rather than a
+  // descendant of it. Observing #root alone meant opening that drawer for
+  // the first time never fired this observer, so translatePage() never got
+  // a chance to run on it — its "Обзор"/"Мои сделки"/etc. stayed in the
+  // bundle's native Russian even in English mode, no matter how many other
+  // in-app mutations had already re-run translatePage() successfully.
+  const observerRoot = document.body;
   new MutationObserver(run).observe(observerRoot, { childList: true, subtree: true });
 })();
