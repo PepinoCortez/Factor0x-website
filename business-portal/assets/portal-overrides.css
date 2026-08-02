@@ -1887,6 +1887,32 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   visibility: hidden;
 }
 
+/* On mobile, the status/Upload row (badge + hidden file input + button —
+   a plain sibling of the icon+label row above it, not nested inside it;
+   see the doc-row grid revert note above for why these two rows can't be
+   merged into one without risking the reparent-related React crash that
+   happened here before) natively carries pl-12 — Tailwind's own choice to
+   indent it under the label text rather than the icon, so it doesn't
+   visually align with anything above it. Combined with the badge/button
+   sitting bunched together on the left with dead space trailing after
+   them, the whole two-row block read as disjointed rather than one
+   cohesive unit. Flush left (matching the icon+label row's own left
+   edge) + a tightened negative margin-top (pulling it right up against
+   that row, leaving the *next document's* own gap-3 above its icon+label
+   row untouched — margin only affects the edge it's declared on) makes
+   the pair read as one two-line block: icon/label/tag on line one, status
+   +Upload on line two. justify-content:space-between then fills that
+   second line edge-to-edge — badge (or its invisible reserved space, see
+   .portal-doc-badge-hidden above) at the start, Upload at the true end,
+   instead of both crowded together with empty space trailing after. */
+@media (max-width: 640px) {
+  .portal-newapp-docs-card .flex.items-center.gap-3.pl-12 {
+    padding-left: 0 !important;
+    justify-content: space-between;
+    margin-top: -7px;
+  }
+}
+
 /* ---- Inside the form: "Данные по инвойсу" / "Документы" side by side.
    Documents are the active thing the visitor works on; the data fields are
    a byproduct of them, so they sit next to (not above/below) each other. ---- */
