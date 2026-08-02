@@ -918,44 +918,271 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   overflow: hidden;
 }
 
-/* Both Архив and Мои сделки are already natively swipeable on narrow
-   viewports — the real <table>/CSS-grid content is wider than the card
-   (~1297px / ~940px) and sits inside its own native overflow-auto
-   wrapper — but nothing about either card hints that there's more to the
-   right. A short user glancing at DEAL-0009 / Lulu Group International
-   sees a card that looks complete and has no reason to try swiping it.
-   This right-edge fade is a pure affordance hint (pointer-events:none,
-   doesn't touch the actual scroll container) so the cut-off edge reads
-   as "more here" instead of looking like the row was simply clipped.
+/* ---- Rotate-to-landscape prompt: Мои сделки / Архив on a portrait phone ----
+   Same idea as the landing page's own invoice table (.rotate-hint /
+   .landscape-modal-open in style.css + main.js) — both tables are wide by
+   nature (7-8 columns) and previously only fit a portrait phone by
+   scrolling sideways with no visual cue that more content sat off-screen.
+   Rather than that landing-page implementation's approach (a JS-driven
+   fullscreen overlay it reparents DOM nodes into on 'orientationchange'),
+   this is plain CSS: ensureRotateHint in portal-overrides.js inserts the
+   hint once as a plain sibling right before the table card, and which one
+   is visible is entirely driven by these (max-width:960px) portrait/
+   landscape media queries — no JS orientation listener needed, and it
+   can't drift out of sync with the CSS. */
+.portal-rotate-hint {
+  display: none;
+}
 
-   The two cards need different anchors: .portal-archive-table IS the
-   356px card the user sees (its content scrolls inside a native wrapper
-   several levels *inside* it), so the fade goes directly on it and
-   overflow:hidden clips the fade to its own rounded corner. Мои сделки
-   is the other way around — .portal-deals-table is the *inner* 940px
-   min-w content itself, positioned by its own native ".overflow-x-auto"
-   parent (the actual 356px-wide scrollport); anchoring the fade there
-   instead is what makes it sit at the visible right edge rather than
-   940px away, off-screen. */
-@media (max-width: 900px) {
+@media (max-width: 960px) and (orientation: portrait) {
+  .portal-rotate-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 48px 24px 52px;
+    text-align: center;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
+    background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg);
+  }
+
+  .portal-rotate-hint-phone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+  }
+
+  .portal-rotate-hint-phone svg {
+    width: 36px;
+    height: auto;
+    color: rgba(244, 210, 132, 0.9);
+    animation: portal-rotate-hint-phone 2.4s ease-in-out infinite;
+    transform-origin: center center;
+  }
+
+  @keyframes portal-rotate-hint-phone {
+    0%, 15%  { transform: rotate(0deg); }
+    55%, 80% { transform: rotate(90deg); }
+    100%     { transform: rotate(0deg); }
+  }
+
+  .portal-rotate-hint-text {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ov-text);
+    line-height: 1.3;
+  }
+
+  .portal-rotate-hint-sub {
+    margin: -8px 0 0;
+    font-size: 12px;
+    color: rgba(var(--ov-muted-rgb), 0.6);
+    line-height: 1.5;
+  }
+
+  /* The table/list card itself, not the hint, is what steps aside here —
+     both cards keep their normal (scrollable, wide) layout at every other
+     breakpoint; only this exact portrait phone case swaps one for the
+     other. */
+  .portal-deals-table,
   .portal-archive-table {
-    position: relative;
+    display: none;
+  }
+}
+
+/* ---- Landscape: no sideways scroll, real content instead ----
+   The hint above only ever shows in portrait — here the actual table
+   is what's visible, refit to actually fill a landscape phone's width
+   (not the 940px/1297px desktop content the pre-scroll era relied on
+   scrolling to reach) so it needs no horizontal scroll of its own. */
+@media (max-width: 960px) and (orientation: landscape) {
+  .portal-deals-page .overflow-x-auto,
+  .portal-archive-table {
+    overflow-x: hidden !important;
   }
 
-  .portal-deals-page .overflow-x-auto {
-    position: relative;
+  /* Мои сделки: the desktop template's two flexible tracks — Дебитор
+     (min 200px) and Статус (min 180px) — are genuine floors a CSS grid
+     won't shrink below, and the five fixed tracks alone already total
+     580px; there's no landscape phone width that fits the desktop
+     template. Dropping both floors to minmax(0, Nfr) is what lets the
+     *tracks* shrink — but .portal-deals-table (the grid rows' own
+     ancestor) carries a separate, native min-w-[940px] Tailwind class of
+     its own, a hard floor on the *container*. Without also overriding
+     that, the grid still had 940px to distribute across these smaller
+     tracks (confirmed directly: the 2fr/1fr tracks resolved to ~355px/
+     ~177px, exactly what 940px minus the fixed tracks splits to, not
+     what the ~600-800px landscape viewport actually left available) — no
+     visible scrollbar since overflow-x is hidden here, just the Статус/
+     Отсчёт columns silently cut off past the viewport edge. Smaller fixed
+     tracks + font-size below keep the short columns (ID/Сумма/Ставка/
+     Погашение) readable at the width that leaves for them.
+
+     Статус is fixed px here, not a second fr share like desktop — a
+     landscape phone with the (still md+ width) persistent nav rail
+     showing leaves as little as ~520px total for all 8 columns; splitting
+     the leftover 2-3 ways gave Статус as little as ~39px, nowhere near
+     enough for its own badge + padding (confirmed directly — that's what
+     produced the "FinancedDefault" run-together text). Дебитор is the
+     one column that actually degrades gracefully when squeezed (ellipsis
+     + a title= tooltip fallback, already in place), so it's the only
+     one left as minmax(0, 1fr), absorbing whatever the fixed columns
+     (now including Статус) don't need. */
+  .portal-deals-table {
+    min-width: 0 !important;
+    width: 100% !important;
   }
 
-  .portal-archive-table::after,
-  .portal-deals-page .overflow-x-auto::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 28px;
-    pointer-events: none;
-    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.4));
+  .portal-deals-header,
+  .portal-deals-list [data-testid^="card-deal-"] > div {
+    grid-template-columns: 58px minmax(0, 1fr) 62px 48px 56px 68px 82px 2px !important;
+    column-gap: 4px !important;
+  }
+
+  /* Header labels are plain <span>s with no width/overflow handling of
+     their own (fine on desktop, where every track has room to spare) —
+     "Repayment" and "Countdown" are two separate spans that, once their
+     tracks shrink to 64px/78px, each render past their own column with no
+     clipping and visually run together with zero gap between them, same
+     underlying issue as .portal-deal-countdown's overflow above. */
+  .portal-deals-header > * {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Same clipping backstop on every data row's own cells (ID/Сумма/Ставка/
+     Погашение — Дебитор/Отсчёт/Статус already have their own more
+     specific handling above/below): at these track widths, "AED 128,000"
+     runs right up against the column edge with nothing to spare, and
+     without a hard clip it visibly bleeds into Ставка next to it. */
+  .portal-deals-list [data-testid^="card-deal-"] > div > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .portal-deals-header,
+  .portal-deals-list [data-testid^="card-deal-"] > div,
+  .portal-deals-list [data-testid^="badge-status-"] {
+    font-size: 11px !important;
+  }
+
+  .portal-deals-list [data-testid^="badge-status-"] {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    padding: 3px 6px !important;
+  }
+
+  /* Статус's own cell (8th child of the row — see the grid-template
+     comment above) can carry more than just the badge: a stage word and
+     an overdue/late-fee caption alongside it, same "align-items doesn't
+     stretch its children to the cell's width" shape as .portal-deal-
+     countdown above. overflow:hidden on the cell itself is the backstop —
+     whatever's inside stays visually clipped to its 82px track instead of
+     spilling past the row's right edge. */
+  .portal-deals-list [data-testid^="card-deal-"] > div > :nth-child(8) {
+    overflow: hidden;
+  }
+
+  /* .portal-deal-countdown (the grid cell itself) sizes correctly to its
+     78px track (min-width:0 already handles that), but its own
+     align-items:center means ITS children size to their own natural
+     content width rather than being capped to the cell — "overdue 60
+     days" / "late fee AED 3,240" both render wider than 78px regardless,
+     and since the cell's own overflow-x is visible (desktop has room, so
+     this was never a problem there), that overflow spills out over
+     Статус instead of being clipped. Each line's own overflow:hidden +
+     text-overflow:ellipsis (already set, see the base rule) only engages
+     once something actually caps its width — max-width:100% here is that
+     cap, resolved against the (correctly 78px) parent. */
+  .portal-deal-countdown-days,
+  .portal-deal-countdown-penalty {
+    max-width: 100%;
+  }
+
+  .portal-deal-countdown-days {
+    font-size: 0.66rem;
+  }
+
+  .portal-deal-countdown-penalty {
+    font-size: 0.6rem;
+  }
+
+  /* Архив: same underlying issue, different mechanism — table-layout:fixed
+     treats each column's explicit px width (32/115/420/140/100/125/135/130/
+     100, summing to 1297px) as a hard floor the table can't shrink below
+     no matter what its own width/max-width is set to (confirmed directly:
+     even an inline width:356px!important on the <table> itself was
+     ignored while those px column widths stood). Percentages aren't a
+     floor — they're a share of the table's own resolved width — so
+     switching to percentages is what actually lets the whole table
+     compress to fit a landscape phone. Weighted by each column's real
+     content (see the 0-based index comment on ensureArchiveRowFormatted
+     above — nth-child is that index + 1): Комиссия/Вы получили (7/8) are
+     "AED 9,250" / "AED 175,750" in full, not the abbreviated Сумма/Ставка
+     figures, so they need more room than a proportional share of the
+     original 125px/135px would give them — confirmed by first rendering
+     this with a mechanical proportional split, which wrapped "AED 9,250"
+     mid-word into an unreadable "D 9,250" line break. Дебитор gives up
+     the most (29% -> 22%): a landscape phone is still only ~500-600px of
+     actual table width even once the sidebar/page padding are accounted
+     for, nowhere near enough to keep every column's desktop share and
+     still fit the numeric ones on one line — ellipsis (already in place)
+     is what a long company name degrades to instead. */
+  .portal-archive-table thead th:nth-child(1),
+  .portal-archive-table tbody td:nth-child(1) { width: 3% !important; }
+  .portal-archive-table thead th:nth-child(2),
+  .portal-archive-table tbody td:nth-child(2) { width: 9% !important; }
+  .portal-archive-table thead th:nth-child(3),
+  .portal-archive-table tbody td:nth-child(3) { width: 21% !important; }
+  .portal-archive-table thead th:nth-child(4),
+  .portal-archive-table tbody td:nth-child(4) { width: 12% !important; }
+  .portal-archive-table thead th:nth-child(5),
+  .portal-archive-table tbody td:nth-child(5) { width: 8% !important; }
+  .portal-archive-table thead th:nth-child(7),
+  .portal-archive-table tbody td:nth-child(7) { width: 13% !important; }
+  .portal-archive-table thead th:nth-child(8),
+  .portal-archive-table tbody td:nth-child(8) { width: 14% !important; }
+  .portal-archive-table thead th:nth-child(11),
+  .portal-archive-table tbody td:nth-child(11) { width: 13% !important; }
+  .portal-archive-table thead th:nth-child(12),
+  .portal-archive-table tbody td:nth-child(12) { width: 7% !important; }
+
+  /* The "Как рассчитано" (i) tooltip-trigger buttons on Ставка/Комиссия/
+     Вы получили exist to explain the calculation behind each figure — a
+     nice-to-have popover, not the figure itself. At this width they're
+     what push "AED 9,250" into wrapping onto an unreadable second line;
+     dropping them (chevron-expand's own icon isn't a button, untouched)
+     gives that text the few extra px it needs to stay on one line. */
+  .portal-archive-table [data-testid="table-archive"] td button {
+    display: none;
+  }
+
+  /* Комиссия's own second line (the rate the fee was computed at) is
+     already shown in full one column over, in Ставка — dropping the
+     repeat here is the same "give up the least-needed thing first"
+     tradeoff as Дебитор's shrink above, not an information loss. */
+  .portal-archive-table [data-testid="table-archive"] tbody td:nth-child(7) > div > div > div:last-child {
+    display: none;
+  }
+
+  .portal-archive-table [data-testid="table-archive"] th,
+  .portal-archive-table [data-testid="table-archive"] td {
+    padding: 6px 5px !important;
+    font-size: 11px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .portal-archive-table [data-testid="table-archive"] th {
+    font-size: 9.5px !important;
   }
 }
 

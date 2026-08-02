@@ -1572,6 +1572,35 @@
     badge.classList.toggle('portal-deals-summary-ok', problemCount === 0);
   };
 
+  // ---- Rotate-to-landscape prompt for Мои сделки / Архив ----
+  // Same idea as the landing page's own invoice table (rotateHint /
+  // openLandscapeModal in main.js): both tables are wide by nature (7-8
+  // columns) and only fit a portrait phone by scrolling sideways, which is
+  // finicky and easy to miss entirely. Rather than that landing-page
+  // implementation's approach (a JS-driven fullscreen overlay it reparents
+  // DOM nodes into on 'orientationchange'), this is plain CSS: the hint is
+  // inserted once as a plain sibling right before the table card, and which
+  // one is visible is entirely driven by the (max-width:960px) portrait/
+  // landscape media queries in portal-overrides.css — no JS orientation
+  // listener needed, and it can't drift out of sync with the CSS.
+  const ensureRotateHint = (anchor, subtitleRu, subtitleEn) => {
+    if (!anchor || anchor.previousElementSibling?.classList.contains('portal-rotate-hint')) return;
+    const hint = document.createElement('div');
+    hint.className = 'portal-rotate-hint';
+    hint.innerHTML =
+      '<div class="portal-rotate-hint-phone">' +
+      '<svg viewBox="0 0 48 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">' +
+      '<rect x="2" y="2" width="44" height="76" rx="7" stroke="currentColor" stroke-width="3"/>' +
+      '<circle cx="24" cy="68" r="3" fill="currentColor"/>' +
+      '<rect x="18" y="8" width="12" height="3" rx="1.5" fill="currentColor" opacity="0.4"/>' +
+      '</svg></div>' +
+      '<p class="portal-rotate-hint-text"></p>' +
+      '<p class="portal-rotate-hint-sub"></p>';
+    hint.querySelector('.portal-rotate-hint-text').textContent = t('Переверните телефон горизонтально', 'Rotate your phone to landscape');
+    hint.querySelector('.portal-rotate-hint-sub').textContent = t(subtitleRu, subtitleEn);
+    anchor.parentElement.insertBefore(hint, anchor);
+  };
+
   const applyDealsTheme = () => {
     const list = document.querySelector('[data-testid="list-deals"]');
     if (!list) return false;
@@ -1591,6 +1620,11 @@
 
     tableWrap.classList.add('portal-deals-table');
     list.classList.add('portal-deals-list');
+    ensureRotateHint(
+      tableWrap,
+      'Таблица сделок лучше смотрится в альбомном режиме',
+      'The deals table fits better in landscape mode'
+    );
     const headerRow = tableWrap.firstElementChild;
     if (headerRow && headerRow !== list) {
       headerRow.classList.add('portal-deals-header');
@@ -1700,6 +1734,11 @@
     if (card) {
       card.classList.add('portal-archive-table');
       ensureArchivePageWidened(card);
+      ensureRotateHint(
+        card,
+        'Таблица архива лучше смотрится в альбомном режиме',
+        'The archive table fits better in landscape mode'
+      );
     }
 
     table.querySelectorAll('[data-testid^="row-archive-"]').forEach(ensureArchiveRowFormatted);
