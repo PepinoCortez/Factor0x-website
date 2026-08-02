@@ -2315,25 +2315,47 @@
     });
   };
 
-  // ---- Mobile nav drawer: close automatically when a nav link is tapped.
-  // shadcn's Sidebar doesn't do this on its own — clicking "Мои сделки" /
-  // "My Deals" navigates to the new page but leaves the Sheet sitting open
-  // on top of it until the user separately taps the backdrop. Delegated on
-  // document and registered once here (menu buttons remount on every route
-  // change, a listener bound to the link itself wouldn't survive that).
-  // There's no direct handle on the Sheet's own React state from outside,
-  // so this closes it the same way a real user pressing Escape would:
-  // dispatching that keydown is what Radix's own Dialog/Sheet listens for.
-  // Deferred a tick so it can't fight the same click's own routing logic.
-  document.addEventListener('click', (event) => {
-    const link = event.target.closest('[data-slot="sidebar-menu-button"]');
-    if (!link) return;
+  // ---- Mobile nav drawer: close automatically ----
+  // shadcn's Sidebar doesn't do either of these on its own. There's no
+  // direct handle on the Sheet's own React open/close state from outside,
+  // so both cases below close it the same way a real user pressing Escape
+  // would: dispatching that keydown is what Radix's own Dialog/Sheet
+  // listens for.
+  const closeMobileSidebar = () => {
     if (!document.querySelector('[data-slot="sidebar"].fixed[data-state="open"]')) return;
+    document.dispatchEvent(new KeyboardEvent('keydown', {
+      key: 'Escape', code: 'Escape', keyCode: 27, which: 27, bubbles: true, cancelable: true,
+    }));
+  };
+
+  // 1) Tapping a nav link — clicking "Мои сделки" / "My Deals" navigates to
+  // the new page but leaves the Sheet sitting open on top of it until the
+  // user separately taps the backdrop. Delegated on document and
+  // registered once here (menu buttons remount on every route change, a
+  // listener bound to the link itself wouldn't survive that). Deferred a
+  // tick so it can't fight the same click's own routing logic.
+  document.addEventListener('click', (event) => {
+    if (!event.target.closest('[data-slot="sidebar-menu-button"]')) return;
+    window.setTimeout(closeMobileSidebar, 0);
+  });
+
+  // 2) Rotating the phone — a portrait phone narrow enough to still be
+  // "mobile" (< the md breakpoint) after rotating to landscape (e.g. an
+  // iPhone SE: 375 portrait -> 667 landscape, both under 768) keeps
+  // rendering the same Sheet-based drawer rather than swapping to the
+  // desktop rail, and it stays open across the rotation with nothing to
+  // prompt the user to close it. resize is what actually fires here (both
+  // on a real rotation and via viewport-size changes in general);
+  // orientationchange is the standard companion for real devices — same
+  // deferred-check idea as main.js's own handleOrientationChange for the
+  // landing page's rotate-hint modal, just closing instead of opening.
+  window.addEventListener('resize', () => {
+    if (window.matchMedia('(orientation: landscape)').matches) closeMobileSidebar();
+  });
+  window.addEventListener('orientationchange', () => {
     window.setTimeout(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', {
-        key: 'Escape', code: 'Escape', keyCode: 27, which: 27, bubbles: true, cancelable: true,
-      }));
-    }, 0);
+      if (window.matchMedia('(orientation: landscape)').matches) closeMobileSidebar();
+    }, 300);
   });
 
   const run = () => {
