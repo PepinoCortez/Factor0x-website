@@ -1173,10 +1173,14 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 
     invoiceListLinks.forEach(link => {
       link.addEventListener('click', () => {
-        setInvoiceTableOpen(true);
-        requestAnimationFrame(() => {
-          moreInvoices.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
+        if (isPortraitMobile()) {
+          showRotateHint();
+        } else {
+          setInvoiceTableOpen(true);
+          requestAnimationFrame(() => {
+            moreInvoices.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }
       });
     });
   }
