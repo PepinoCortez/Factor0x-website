@@ -1647,9 +1647,17 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 /* "Можно догрузить позже": no status badge while nothing's attached yet —
    just icon, name, button (see softenDocStatusTone in portal-overrides.js).
-   Still shows "Загружено" once it actually is one. */
+   Still shows "Загружено" once it actually is one.
+   visibility (not display:none): the badge and the Upload button share one
+   flex row (badge, then button) — display:none drops the badge out of that
+   row's layout entirely, so a hidden badge's row lets its button slide left
+   into the gap while every required row's button stays put one badge-width
+   further right. The whole checklist's Upload buttons then read as two
+   different columns depending on which group they're in — exactly the
+   ragged-looking column this fixes: invisible but still occupying its own
+   layout box keeps every row's button at the same x regardless of group. */
 .portal-doc-badge-hidden {
-  display: none;
+  visibility: hidden;
 }
 
 /* ---- Inside the form: "Данные по инвойсу" / "Документы" side by side.
