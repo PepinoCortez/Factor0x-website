@@ -1001,6 +1001,26 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    (not the 940px/1297px desktop content the pre-scroll era relied on
    scrolling to reach) so it needs no horizontal scroll of its own. */
 @media (max-width: 960px) and (orientation: landscape) {
+  /* Below the md breakpoint (768px) shadcn's Sidebar renders as the
+     mobile Sheet (.fixed, its own open/close handled elsewhere in this
+     file) — but plenty of real phones are wider than 768px in landscape
+     (iPhone 13: 390 portrait -> 844 landscape) while still very much
+     being a phone, not a tablet. At that width the component instead
+     renders its *desktop* variant: a permanent, always-visible rail
+     that isn't a drawer at all, so there's no "closing" it — it just
+     sits there eating ~256px that a landscape phone doesn't have to
+     spare, which is exactly the ~500-600px squeeze the column widths a
+     few rules down were built around. Tried making it collapse to its
+     own icon-only rail state instead of hiding it outright (shadcn's
+     Sidebar does support that) — its own logo/label header doesn't
+     participate in that collapse, so "Factor0x" just overflowed a 48px
+     rail into the content next to it. Hiding it outright avoids that
+     bug entirely; main already flexes to fill the freed width on its
+     own, confirmed directly, no extra margin/width rule needed. */
+  [data-slot="sidebar"]:not(.fixed) {
+    display: none !important;
+  }
+
   .portal-deals-page .overflow-x-auto,
   .portal-archive-table {
     overflow-x: hidden !important;
