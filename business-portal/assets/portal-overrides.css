@@ -178,6 +178,19 @@ main,
   background: transparent;
 }
 
+/* On mobile, shadcn's Sidebar swaps from the desktop inline rail (a
+   "group peer ... hidden md:block" placeholder — genuinely meant to stay
+   transparent, see above) to a Radix Sheet: same [data-slot='sidebar'],
+   now `position: fixed` and floating above the page as a real drawer. The
+   transparent rule above then left it see-through, so the page content
+   underneath (Overview heading, gold CTA button) showed straight through
+   the nav links instead of a clean opaque panel. `.fixed` only ever
+   appears on the mobile Sheet variant, so this can't touch the desktop
+   rail. */
+[data-slot='sidebar'].fixed {
+  background: hsl(var(--sidebar));
+}
+
 
 /* The real source of the persistent dark rounded panel: shadcn's
    SidebarInset renders <main data-slot="sidebar-inset"> with a
@@ -903,6 +916,47 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
     inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
     0 18px 48px rgba(0, 0, 0, calc(0.16 * var(--ov-shadow-scale))) !important;
   overflow: hidden;
+}
+
+/* Both Архив and Мои сделки are already natively swipeable on narrow
+   viewports — the real <table>/CSS-grid content is wider than the card
+   (~1297px / ~940px) and sits inside its own native overflow-auto
+   wrapper — but nothing about either card hints that there's more to the
+   right. A short user glancing at DEAL-0009 / Lulu Group International
+   sees a card that looks complete and has no reason to try swiping it.
+   This right-edge fade is a pure affordance hint (pointer-events:none,
+   doesn't touch the actual scroll container) so the cut-off edge reads
+   as "more here" instead of looking like the row was simply clipped.
+
+   The two cards need different anchors: .portal-archive-table IS the
+   356px card the user sees (its content scrolls inside a native wrapper
+   several levels *inside* it), so the fade goes directly on it and
+   overflow:hidden clips the fade to its own rounded corner. Мои сделки
+   is the other way around — .portal-deals-table is the *inner* 940px
+   min-w content itself, positioned by its own native ".overflow-x-auto"
+   parent (the actual 356px-wide scrollport); anchoring the fade there
+   instead is what makes it sit at the visible right edge rather than
+   940px away, off-screen. */
+@media (max-width: 900px) {
+  .portal-archive-table {
+    position: relative;
+  }
+
+  .portal-deals-page .overflow-x-auto {
+    position: relative;
+  }
+
+  .portal-archive-table::after,
+  .portal-deals-page .overflow-x-auto::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 28px;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.4));
+  }
 }
 
 /* Page root — 1400px, 8% wider than .portal-deals-page's 1296px (a later,
@@ -2299,4 +2353,20 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: rgba(var(--ov-tint-rgb), 0.12);
   border-color: rgba(var(--ov-tint-rgb), 0.3);
   color: var(--ov-text);
+}
+
+/* ---- Deal detail "Deal Status" stepper ([data-testid="stage-stepper"],
+   native component, no override hook of its own) on narrow screens: its 5
+   steps are equal flex-1 columns (~55-60px each at 390px wide), and each
+   step's label sits in a plain centered <span> with no side padding of
+   its own. A short label (e.g. "Approved", "Financed") renders wide
+   enough to fill essentially its whole column, so two neighboring labels'
+   text touches edge-to-edge with zero gap — reads as one glued word
+   ("ApprovedFinanced") instead of two. Padding on the column itself (not
+   the span) opens a visible gap at every boundary without changing the
+   stepper's own width math. */
+@media (max-width: 640px) {
+  [data-testid="stage-stepper"] > div {
+    padding: 0 3px;
+  }
 }
