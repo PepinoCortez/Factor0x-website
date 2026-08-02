@@ -443,17 +443,34 @@
   // links. Found by walking up from the "Новая заявка" link itself (no
   // stable test-id to anchor on here) until an ancestor's text contains all
   // four labels, so it doesn't depend on the rail's own markup/classes.
+  //
+  // In English mode the rail's own text gets rewritten to English by
+  // translatePage() the very first time run() completes — and unlike `page`,
+  // it never remounts, so it stays English (already translated) on every
+  // later run() too. Matching only the Russian original meant this whole
+  // lookup — and the hints it locates a home for — worked exactly once, on
+  // whichever route happened to load first, and silently returned null (no
+  // hints ever inserted again) on every route visited after that. Same
+  // reasoning as the dual-language check on the overview activity card
+  // above: accept either language's text so this doesn't depend on whether
+  // translatePage() has already run yet.
   const GLOBAL_NAV_LABELS = ['Обзор', 'Новая заявка', 'Мои сделки', 'Архив'];
+
+  const includesEitherLang = (text, ruLabel) =>
+    text.includes(ruLabel) || text.includes(BUNDLE_RU_EN[ruLabel]);
 
   const findGlobalNavSidebar = () => {
     const newAppLink = Array.from(document.querySelectorAll('a, button, [role="link"]')).find(
-      (el) => el.textContent.trim() === 'Новая заявка'
+      (el) => {
+        const text = el.textContent.trim();
+        return text === 'Новая заявка' || text === BUNDLE_RU_EN['Новая заявка'];
+      }
     );
     if (!newAppLink) return null;
     let node = newAppLink.parentElement;
     while (node && node !== document.body) {
       const text = node.textContent || '';
-      if (GLOBAL_NAV_LABELS.every((label) => text.includes(label))) return node;
+      if (GLOBAL_NAV_LABELS.every((label) => includesEitherLang(text, label))) return node;
       node = node.parentElement;
     }
     return null;
@@ -461,11 +478,16 @@
 
   // Proxies to the app's own SPA routing (same trick as the old upload
   // shortcut card): clicking the real nav link gets client-side navigation
-  // for free, instead of a full-page window.location reload.
+  // for free, instead of a full-page window.location reload. `label` is
+  // always the Russian original from the call site — same dual-language
+  // reasoning as findGlobalNavSidebar just above applies here too (e.g. the
+  // "Active Deals" metric card's click-through to "Мои сделки" only ever
+  // worked on the first route visited, same underlying bug).
   const findNavLink = (label) =>
-    Array.from(document.querySelectorAll('a, button, [role="link"]')).find(
-      (el) => el.textContent.trim() === label
-    );
+    Array.from(document.querySelectorAll('a, button, [role="link"]')).find((el) => {
+      const text = el.textContent.trim();
+      return text === label || text === BUNDLE_RU_EN[label];
+    });
 
   // The MutationObserver driving run() watches childList/subtree, and
   // `el.textContent = x` always replaces child nodes (even when the text is
