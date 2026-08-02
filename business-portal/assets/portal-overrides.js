@@ -564,10 +564,24 @@
   // native parent already holds its <label> too (a "flex flex-col gap-2"
   // stack, confirmed from the live DOM), so it can't just become the
   // position:relative anchor directly — top:50% would center against the
-  // whole label+field block, not the field's own row. Instead: insert the
-  // icon as a plain new sibling right after the field (nothing native ever
-  // moves), mark that shared parent as the anchor, and position the icon
-  // with a one-time measurement of the field's own offset within it.
+  // whole label+field block, not just the field's own row.
+  // Used to position the icon with a one-time JS measurement of the
+  // field's offsetTop instead of the bottom-anchored CSS below — that
+  // measurement is only as good as the layout at the moment it runs, and
+  // baked in whatever the label's height happened to be right then (one
+  // line vs. wrapped to two, e.g. "Payment Due Date" squeezed into the
+  // narrower of two side-by-side columns on mobile) as a fixed pixel
+  // offset from the *top*. Any reflow afterwards (a web font finishing
+  // its swap, the label wrapping differently at another width) left it
+  // stale with no recheck, since the whole point of the dataset guard is
+  // to never touch it again. Anchoring from the *bottom* instead (see
+  // .portal-lock-anchor > .portal-lock-icon in portal-overrides.css)
+  // sidesteps this entirely: every locked field/trigger this file touches
+  // shares the same 38px min-height (.border-input's own rule), and here
+  // the field's bottom edge always lines up with the anchor's own bottom
+  // edge regardless of how tall the label above it happens to render — so
+  // a fixed CSS offset from the bottom stays correct no matter what the
+  // label does.
   const NEWAPP_LOCKED_SIBLING_ICON_IDS = ['invoiceAmount', 'obligorName', 'invoiceDate', 'dueDate'];
 
   const addNewAppLockIcons = (form) => {
@@ -583,7 +597,6 @@
       icon.setAttribute('aria-hidden', 'true');
       icon.innerHTML = NEWAPP_LOCK_ICON_SVG;
       field.insertAdjacentElement('afterend', icon);
-      icon.style.top = field.offsetTop + field.offsetHeight / 2 + 'px';
     });
   };
 
@@ -629,7 +642,6 @@
       icon.setAttribute('aria-hidden', 'true');
       icon.innerHTML = NEWAPP_LOCK_ICON_SVG;
       trigger.insertAdjacentElement('afterend', icon);
-      icon.style.top = trigger.offsetTop + trigger.offsetHeight / 2 + 'px';
     });
   };
 

@@ -152,6 +152,22 @@ body,
   background: var(--ov-page-bg);
 }
 
+/* No page ever needs to scroll sideways here — every table wide enough to
+   have once needed it now either scrolls within its own card (Мои
+   сделки/Архив, both already scoped to their own overflow) or is refit to
+   fit the viewport in landscape (see the rules further down). Without
+   this, iOS Safari's elastic overscroll still lets a swipe drag the
+   *whole page* a few px sideways and bounce back even when nothing
+   actually overflows — no wider element to find or fix, just the
+   platform's default rubber-banding on an axis this app never uses.
+   Same fix already in place on the main landing page (see the portrait
+   media query in the root style.css). */
+html,
+body {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
 body {
   margin: 0;
   position: relative;
@@ -1151,17 +1167,20 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
      original 125px/135px would give them — confirmed by first rendering
      this with a mechanical proportional split, which wrapped "AED 9,250"
      mid-word into an unreadable "D 9,250" line break. Дебитор gives up
-     the most (29% -> 22%): a landscape phone is still only ~500-600px of
-     actual table width even once the sidebar/page padding are accounted
-     for, nowhere near enough to keep every column's desktop share and
-     still fit the numeric ones on one line — ellipsis (already in place)
-     is what a long company name degrades to instead. */
+     the most (18%) — its own ellipsis (already in place) is what a long
+     company name degrades to, unlike a date or number that needs to stay
+     on one line intact. Дата закрытия (12, 7% -> 10%) was the one column
+     that still didn't have room for its own "09.05.26" once the sidebar
+     started hiding in this same landscape breakpoint (see the rule at
+     the top of this file) freed up real width to redistribute — 7% of
+     even a same-page-wider table still clipped the date value itself,
+     not just its header, into "09.05...". */
   .portal-archive-table thead th:nth-child(1),
   .portal-archive-table tbody td:nth-child(1) { width: 3% !important; }
   .portal-archive-table thead th:nth-child(2),
   .portal-archive-table tbody td:nth-child(2) { width: 9% !important; }
   .portal-archive-table thead th:nth-child(3),
-  .portal-archive-table tbody td:nth-child(3) { width: 21% !important; }
+  .portal-archive-table tbody td:nth-child(3) { width: 18% !important; }
   .portal-archive-table thead th:nth-child(4),
   .portal-archive-table tbody td:nth-child(4) { width: 12% !important; }
   .portal-archive-table thead th:nth-child(5),
@@ -1173,7 +1192,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   .portal-archive-table thead th:nth-child(11),
   .portal-archive-table tbody td:nth-child(11) { width: 13% !important; }
   .portal-archive-table thead th:nth-child(12),
-  .portal-archive-table tbody td:nth-child(12) { width: 7% !important; }
+  .portal-archive-table tbody td:nth-child(12) { width: 10% !important; }
 
   /* The "Как рассчитано" (i) tooltip-trigger buttons on Ставка/Комиссия/
      Вы получили exist to explain the calculation behind each figure — a
@@ -2158,9 +2177,17 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    sibling instead, placed with an absolute position — the field/trigger's
    *existing* parent becomes the anchor rather than a new wrapper it gets
    moved into (that parent also holds a <label>, so top:50% here would
-   center against the whole label+field block — the icon's `top` is set
-   inline in JS instead, from a one-time measurement of the field's own
-   offset within this anchor). */
+   center against the whole label+field block, not just the field's own
+   row).
+   bottom (not top): every locked field/trigger this positions against
+   shares the same 38px min-height (.border-input's own rule) and its
+   bottom edge always lines up with this anchor's own bottom edge —
+   label height above it (one line, or wrapped to two on a narrow mobile
+   column) never affects that. 12px = (38px field height - 14px icon
+   height) / 2, i.e. centered against the field regardless of the label.
+   Anchoring from the top used to need a one-time JS measurement instead
+   (see the comment on NEWAPP_LOCKED_SIBLING_ICON_IDS in
+   portal-overrides.js for why that went stale) — this needs none. */
 .portal-lock-anchor {
   position: relative;
 }
@@ -2172,7 +2199,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-lock-anchor > .portal-lock-icon {
   position: absolute;
   right: 12px;
-  transform: translateY(-50%);
+  bottom: 12px;
   pointer-events: none;
 }
 
