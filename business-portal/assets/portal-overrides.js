@@ -2254,6 +2254,27 @@
     });
   };
 
+  // ---- Mobile nav drawer: close automatically when a nav link is tapped.
+  // shadcn's Sidebar doesn't do this on its own — clicking "Мои сделки" /
+  // "My Deals" navigates to the new page but leaves the Sheet sitting open
+  // on top of it until the user separately taps the backdrop. Delegated on
+  // document and registered once here (menu buttons remount on every route
+  // change, a listener bound to the link itself wouldn't survive that).
+  // There's no direct handle on the Sheet's own React state from outside,
+  // so this closes it the same way a real user pressing Escape would:
+  // dispatching that keydown is what Radix's own Dialog/Sheet listens for.
+  // Deferred a tick so it can't fight the same click's own routing logic.
+  document.addEventListener('click', (event) => {
+    const link = event.target.closest('[data-slot="sidebar-menu-button"]');
+    if (!link) return;
+    if (!document.querySelector('[data-slot="sidebar"].fixed[data-state="open"]')) return;
+    window.setTimeout(() => {
+      document.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Escape', code: 'Escape', keyCode: 27, which: 27, bubbles: true, cancelable: true,
+      }));
+    }, 0);
+  });
+
   const run = () => {
     const overviewDone = applyOverviewTheme();
     const newApplicationDone = applyNewApplicationTheme();
