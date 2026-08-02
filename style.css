@@ -6887,8 +6887,10 @@ footer {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 8px 14px;
+    height: 42px;
+    padding: 0 14px;
     font-size: 12px;
+    box-sizing: border-box;
   }
 
   #hero {
