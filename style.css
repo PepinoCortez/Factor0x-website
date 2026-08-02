@@ -6883,6 +6883,14 @@ footer {
     width: 92px;
   }
 
+  #nav .btn-nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
   #hero {
     padding: 56px 16px 40px;
   }
