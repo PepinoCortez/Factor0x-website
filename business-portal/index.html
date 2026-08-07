@@ -8,6 +8,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- Restores the real sub-route after the /404.html redirect (see that
+         file) — this must run before the app bundle below, which reads
+         location on mount to pick a route. A plain synchronous script
+         always runs before a `type="module"` one (module scripts are
+         deferred by spec, same as `defer`), so placing it earlier here is
+         enough — no defer/async needed on this one. -->
+    <script>
+      (function () {
+        var params = new URLSearchParams(location.search);
+        var redirect = params.get('redirect');
+        if (redirect === null) return;
+        params.delete('redirect');
+        var query = params.toString();
+        var target = '/business-portal/' + redirect + (query ? '?' + query : '') + location.hash;
+        history.replaceState(null, '', target);
+      })();
+    </script>
     <script type="module" crossorigin src="/business-portal/assets/index-DRkE2vTi.js"></script>
     <link rel="stylesheet" crossorigin href="/business-portal/assets/index-Fw-zsoxe.css">
     <!-- portal-overrides.css/js are served with a 4h cache-control and have

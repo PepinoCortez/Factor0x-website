@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Factor0x</title>
+    <script>
+      // GitHub Pages has no server-side routing — it serves this file (with
+      // an HTTP 404 status) for any request that doesn't match a real file.
+      // The Business Portal is a client-side SPA, so every one of its
+      // sub-routes (/business-portal/deals, /business-portal/archive, ...)
+      // has no matching file on disk and lands here on a hard reload or
+      // direct link (e.g. switching language, which reloads the current
+      // page to re-render it — see setLanguage in portal-overrides.js).
+      // Redirect to the SPA's real entry point with the intended path
+      // preserved in a query param; its own inline script decodes it and
+      // restores the URL via history.replaceState before the app's router
+      // ever reads location, so it mounts on the correct route.
+      (function () {
+        var path = location.pathname;
+        if (path.indexOf('/business-portal/') === 0) {
+          var rest = path.slice('/business-portal/'.length);
+          location.replace(
+            '/business-portal/?redirect=' + encodeURIComponent(rest) + location.search.replace(/^\?/, '&') + location.hash
+          );
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <h1>404</h1>
+    <p>Page not found.</p>
+  </body>
+</html>
