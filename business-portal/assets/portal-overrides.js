@@ -410,19 +410,90 @@
   // inside it. Every DOM change below respects that line.
   // ---------------------------------------------------------------------
 
-  const NEWAPP_DOC_ORDER = [
-    { key: 'invoice', required: true },
-    { key: 'contract', required: true },
-    { key: 'purchase_order', required: false },
-    { key: 'delivery_note', required: false },
-    { key: 'acceptance_certificate', required: false },
-    { key: 'bill_of_lading', required: false },
-    { key: 'debt_confirmation', required: false },
-  ];
+  // Deal type (Товары/Goods vs Услуги/Service) — drives which of the
+  // checklist's documents are shown/required below. Persisted so it
+  // survives a refresh; nothing server-side reads this yet (there's no
+  // deal-type field in the compiled bundle's own form), same "front end
+  // only, for now" footing as the rest of this page's mocked autofill.
+  const DEAL_TYPE_STORAGE_KEY = 'portalNewAppDealType';
+  const getDealType = () => {
+    try {
+      return localStorage.getItem(DEAL_TYPE_STORAGE_KEY) === 'service' ? 'service' : 'goods';
+    } catch (error) {
+      return 'goods';
+    }
+  };
+  const setDealType = (type) => {
+    try {
+      localStorage.setItem(DEAL_TYPE_STORAGE_KEY, type);
+    } catch (error) {
+      // ignore — worst case the toggle resets to Goods on next visit
+    }
+  };
 
-  const newAppDocLabel = (key) => {
-    const el = document.querySelector('[data-testid="text-doc-label-' + key + '"]');
-    return el ? el.textContent.trim() : key;
+  // Every document slot the checklist can show, by deal type, in display
+  // order. `step` is the new 3-group structure (1 = Tax Invoice, 2 =
+  // required-for-review, 3 = recommended/can-add-later). Every key but
+  // 'delivery_order_do' is one of the compiled bundle's own 7 fixed
+  // document slots — reused rather than replaced so upload/replace and the
+  // real "Загружено" badge stay 100% native; only the label text, step
+  // grouping and visual order are this file's own doing (see
+  // restructureNewAppDocuments). 'delivery_note' carries a different
+  // meaning per type (Delivery Note for Goods, Service Completion/Act for
+  // Service) instead of spending one of the 7 native slots on a document
+  // that's never shown for the other type at all. The native
+  // 'debt_confirmation' slot has no place in either list and stays hidden
+  // in both. 'delivery_order_do' has no native counterpart — it's built
+  // from scratch by ensureSyntheticDeliveryOrderRow, cloned from an
+  // existing row so it looks identical to one.
+  const NEWAPP_DOC_CONFIG = {
+    goods: [
+      { key: 'invoice', step: 1,
+        label: t('Tax Invoice — налоговый счёт', 'Tax Invoice') },
+      { key: 'delivery_note', step: 2,
+        label: t('Delivery Note — накладная, подтверждение отгрузки', 'Delivery Note — shipment confirmation') },
+      { key: 'contract', step: 3,
+        label: t('Contract / Agreement — договор с дебитором', 'Contract / Agreement — with the debtor') },
+      { key: 'purchase_order', step: 3,
+        label: t('PO (Purchase Order) — заказ на закупку', 'PO (Purchase Order)') },
+      { key: 'delivery_order_do', step: 3, synthetic: true,
+        label: t('Delivery Order (DO) — распоряжение на выдачу', 'Delivery Order (DO)') },
+      { key: 'acceptance_certificate', step: 3,
+        label: t('GRN (Goods Receipt Note) — акт приёмки, дебитор подтвердил получение', 'GRN (Goods Receipt Note) — debtor confirmed receipt') },
+      { key: 'bill_of_lading', step: 3,
+        label: t('Транспортные документы — waybill / Bill of Lading', 'Transport documents — waybill / Bill of Lading') },
+    ],
+    service: [
+      { key: 'invoice', step: 1,
+        label: t('Tax Invoice — налоговый счёт', 'Tax Invoice') },
+      { key: 'delivery_note', step: 2,
+        label: t('Service Completion / Акт — подтверждение оказания услуг', 'Service Completion / Act — confirms the service was performed') },
+      { key: 'contract', step: 3,
+        label: t('Contract / Agreement — договор с дебитором', 'Contract / Agreement — with the debtor') },
+      { key: 'purchase_order', step: 3,
+        label: t('PO (Purchase Order) — заказ на закупку', 'PO (Purchase Order)') },
+    ],
+  };
+
+  // Fixed visual order (CSS `order`, not DOM position — see
+  // restructureNewAppDocuments for why) for every key across both types, so
+  // switching type never has to recompute positions, just show/hide.
+  const NEWAPP_DOC_VISUAL_ORDER = {
+    invoice: 0,
+    delivery_note: 2,
+    contract: 10,
+    purchase_order: 11,
+    delivery_order_do: 12,
+    acceptance_certificate: 13,
+    bill_of_lading: 14,
+    debt_confirmation: 99,
+  };
+
+  const isDocUploaded = (key) => {
+    const badge = document.querySelector('[data-testid="badge-doc-status-' + key + '"]');
+    if (!badge) return false;
+    const txt = badge.textContent.trim();
+    return txt === 'Загружено' || txt === BUNDLE_RU_EN['Загружено'];
   };
 
   const newAppFieldWrapper = (field) => field.closest('.flex.flex-col.gap-2') || field.parentElement;
@@ -521,29 +592,139 @@
     }
   };
 
-  // Every field but the comment is filled from the uploaded documents, not
-  // typed in by the visitor — locked (disabled) rather than editable. A
+  // Every field but the comment is filled from the Tax Invoice once it's
+  // uploaded, not typed in by the visitor from the start — locked
+  // (disabled) until then, rather than editable from the first render. A
   // disabled field is automatically excluded from native constraint
   // validation, so this alone is enough to keep the old required-field gate
   // from blocking submit on these; the submit gate that actually matters now
   // is the document checklist (see updateNewAppSubmitGate).
-  const NEWAPP_LOCKED_FIELD_IDS = ['invoiceAmount', 'currency', 'obligorName', 'obligorCountry', 'invoiceDate', 'dueDate'];
+  //
+  // Three states, driven entirely by the invoice's own upload badge (see
+  // updateNewAppAutofillFlow): 'empty' (no invoice yet — disabled, generic
+  // placeholder), 'processing' (invoice just uploaded — disabled, "Данные
+  // извлекаются…" for a beat, long enough to read as real work happening),
+  // 'filled' (mock values applied, fields unlocked — the visitor can
+  // correct anything, see wireNewAppManualEditTracking for the "Изменено
+  // вручную" tag that follows). No real OCR/invoice parsing exists yet —
+  // same honest placeholder footing as the rest of this prototype (e.g.
+  // the notification bell, or the demo document upload).
+  const NEWAPP_AUTOFILL_INPUT_IDS = ['invoiceNumber', 'invoiceAmount', 'obligorName', 'obligorTrn', 'invoiceDate', 'dueDate'];
+  const NEWAPP_AUTOFILL_SELECT_IDS = ['currency', 'obligorCountry'];
 
-  // The two free-text fields shipped with "Например, ..." typing hints —
-  // wrong tone now that nobody types into them.
   const NEWAPP_LOCKED_PLACEHOLDER = t('Определится автоматически', 'Determined automatically');
+  const NEWAPP_PROCESSING_PLACEHOLDER = t('Данные извлекаются…', 'Extracting data…');
 
-  const lockNewAppDataFields = (form) => {
-    NEWAPP_LOCKED_FIELD_IDS.forEach((id) => {
+  // Fabricated, but plausible, values an uploaded Tax Invoice would have
+  // actually produced — same two demo debtors already seen elsewhere on
+  // this portal (Обзор's own activity feed), so the mock data reads as
+  // part of one consistent demo, not an arbitrary placeholder.
+  const isoDateOffset = (days) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  };
+  const NEWAPP_MOCK_AUTOFILL = {
+    invoiceNumber: 'INV-2026-00482',
+    invoiceAmount: '48500',
+    currency: 'AED',
+    obligorName: 'Lulu Group International',
+    obligorTrn: '100234567800003',
+    obligorCountry: 'United Arab Emirates',
+    invoiceDate: isoDateOffset(-10),
+    dueDate: isoDateOffset(45),
+  };
+
+  const applyNewAppAutofillState = (form, state) => {
+    NEWAPP_AUTOFILL_INPUT_IDS.forEach((id) => {
       const field = form.querySelector('#' + id);
       if (!field) return;
-      if (field.tagName === 'INPUT' && field.placeholder !== NEWAPP_LOCKED_PLACEHOLDER) {
-        field.placeholder = NEWAPP_LOCKED_PLACEHOLDER;
+      const wrapper = newAppFieldWrapper(field);
+      if (state === 'filled') {
+        field.disabled = false;
+        wrapper.classList.remove('portal-field-locked');
+        field.placeholder = '';
+        if (!field.dataset.portalAutofilled) {
+          const mock = NEWAPP_MOCK_AUTOFILL[id];
+          if (mock !== undefined) {
+            field.value = mock;
+            field.dataset.portalAutoValue = mock;
+            // wireNewAppFieldMuting only brightens a field once the
+            // visitor actually touches it — a value autofill itself sets
+            // is real data from the first frame, not a placeholder still
+            // waiting for a first touch, so it gets the same "active"
+            // treatment immediately.
+            wrapper.classList.add('portal-field-active');
+          }
+          field.dataset.portalAutofilled = 'true';
+        }
+      } else {
+        field.disabled = true;
+        wrapper.classList.add('portal-field-locked');
+        field.placeholder = state === 'processing' ? NEWAPP_PROCESSING_PLACEHOLDER : NEWAPP_LOCKED_PLACEHOLDER;
+        delete field.dataset.portalAutofilled;
       }
-      if (field.disabled) return;
-      field.disabled = true;
-      field.classList.add('portal-field-locked');
     });
+
+    NEWAPP_AUTOFILL_SELECT_IDS.forEach((id) => {
+      const trigger = form.querySelector('#' + id);
+      if (!trigger) return;
+      trigger.classList.toggle('portal-field-locked', state !== 'filled');
+      // Chevron stays hidden only while the trigger is actually inert —
+      // once unlocked it's a real dropdown again and needs its own
+      // affordance back.
+      const chevron = trigger.querySelector('.lucide-chevron-down');
+      if (chevron) chevron.style.display = state === 'filled' ? '' : 'none';
+      const valueSpan = trigger.querySelector('span');
+      if (state === 'filled') {
+        if (!trigger.dataset.portalAutofilled) {
+          const mock = NEWAPP_MOCK_AUTOFILL[id];
+          if (valueSpan && mock !== undefined) setTextIfChanged(valueSpan, mock);
+          trigger.dataset.portalAutoValue = mock;
+          trigger.dataset.portalAutofilled = 'true';
+          newAppFieldWrapper(trigger).classList.add('portal-field-active');
+        }
+      } else {
+        if (valueSpan) setTextIfChanged(valueSpan, state === 'processing' ? NEWAPP_PROCESSING_PLACEHOLDER : NEWAPP_LOCKED_PLACEHOLDER);
+        delete trigger.dataset.portalAutofilled;
+      }
+    });
+
+    // The lock icon only means something while the field is actually
+    // locked — once autofill unlocks it, the cue would read backwards.
+    document.querySelectorAll('.portal-lock-icon').forEach((icon) => {
+      icon.style.display = state === 'filled' ? 'none' : '';
+    });
+
+    syncNewAppDateOverlays(form);
+  };
+
+  // Advances/re-applies the empty → processing → filled state machine
+  // above. Runs on every run() tick (cheap — each branch below is a no-op
+  // once its own condition stops matching), driven purely by the invoice's
+  // own native upload badge rather than anything this file controls
+  // directly, so it reacts correctly whether the visitor uploads, is
+  // already-uploaded on mount, or (hypothetically) the document gets
+  // cleared — see isDocUploaded.
+  const updateNewAppAutofillFlow = (form) => {
+    const invoiceUploaded = isDocUploaded('invoice');
+    let state = form.dataset.portalAutofillState || 'empty';
+
+    if (!invoiceUploaded) {
+      state = 'empty';
+      form.dataset.portalAutofillState = state;
+    } else if (state === 'empty') {
+      state = 'processing';
+      form.dataset.portalAutofillState = state;
+      clearTimeout(form._portalAutofillTimer);
+      form._portalAutofillTimer = setTimeout(() => {
+        form.dataset.portalAutofillState = 'filled';
+        applyNewAppAutofillState(form, 'filled');
+        updateNewAppLiveState(form);
+      }, 1300);
+    }
+
+    applyNewAppAutofillState(form, state);
   };
 
   // A lucide "lock" glyph — same visual family as the rest of this file's
@@ -582,7 +763,7 @@
   // edge regardless of how tall the label above it happens to render — so
   // a fixed CSS offset from the bottom stays correct no matter what the
   // label does.
-  const NEWAPP_LOCKED_SIBLING_ICON_IDS = ['invoiceAmount', 'obligorName', 'invoiceDate', 'dueDate'];
+  const NEWAPP_LOCKED_SIBLING_ICON_IDS = ['invoiceNumber', 'invoiceAmount', 'obligorName', 'obligorTrn', 'invoiceDate', 'dueDate'];
 
   const addNewAppLockIcons = (form) => {
     NEWAPP_LOCKED_SIBLING_ICON_IDS.forEach((id) => {
@@ -619,24 +800,11 @@
   const addNewAppSelectLockIcons = (form) => {
     NEWAPP_LOCKED_SELECT_IDS.forEach((id) => {
       const trigger = form.querySelector('#' + id);
-      if (!trigger) return;
-
-      // AED / United Arab Emirates are real defaults, not empty placeholders
-      // — reads as data already determined, unlike Сумма/Дебитор's honest
-      // "Определится автоматически". Overwriting the value span's text (its
-      // color already inherits the trigger's own dim placeholder tone — see
-      // the [role="combobox"] color rule in portal-overrides.css) makes all
-      // locked fields read the same way.
-      const valueSpan = trigger.querySelector('span');
-      if (valueSpan) setTextIfChanged(valueSpan, NEWAPP_LOCKED_PLACEHOLDER);
-
-      if (trigger.dataset.portalLockIconAdded) return;
+      if (!trigger || trigger.dataset.portalLockIconAdded) return;
       const anchor = trigger.parentElement;
       if (!anchor) return;
       trigger.dataset.portalLockIconAdded = 'true';
       anchor.classList.add('portal-lock-anchor');
-      const chevron = trigger.querySelector('.lucide-chevron-down');
-      if (chevron) chevron.style.display = 'none';
       const icon = document.createElement('span');
       icon.className = 'portal-lock-icon';
       icon.setAttribute('aria-hidden', 'true');
@@ -645,20 +813,18 @@
     });
   };
 
-  // "Краткое описание товаров/услуг" is repurposed as the one thing left for
-  // the visitor to actually do here: flag it if the auto-filled data above
-  // is wrong. No real document parsing exists yet (see lockNewAppDataFields)
-  // — until it does, this comment is how a visitor corrects a bad value.
+  // "Краткое описание товаров/услуг" is repurposed as free-form context
+  // about the deal — the autofilled fields above now have their own
+  // correction path (just edit them; see applyNewAppAutofillState /
+  // wireNewAppManualEditTracking for the "Изменено вручную" tag that
+  // follows).
   const repurposeNewAppComment = (form) => {
     const textarea = form.querySelector('#description');
     if (!textarea || textarea.dataset.portalRepurposed) return;
     textarea.dataset.portalRepurposed = 'true';
     const label = form.querySelector('label[for="description"]');
     if (label) setTextIfChanged(label, t('Комментарий (необязательно)', 'Comment (optional)'));
-    textarea.placeholder = t(
-      'Если что-то из данных выше определено неверно — опишите здесь, и мы это учтём',
-      "If anything above was picked up incorrectly, describe it here and we'll take it into account"
-    );
+    textarea.placeholder = t('Дополнительная информация по сделке', 'Additional information about the deal');
   };
 
   // Set by applyNewAppColumnsLayout below (which runs first — see the
@@ -728,12 +894,19 @@
     });
   };
 
+  // "required" now means step 1 or 2 (Tax Invoice + the deal-type-specific
+  // step 2 document) — everything in step 3 is the "can add later" group,
+  // same two-tier split the rest of this file (submit gate, progress copy)
+  // already expects, just driven by the 3-step config instead of the old
+  // flat required/optional list.
   const newAppDocStatus = () => {
-    const rows = NEWAPP_DOC_ORDER.map(({ key, required }) => {
-      const badge = document.querySelector('[data-testid="badge-doc-status-' + key + '"]');
-      const uploaded = !!badge && badge.textContent.trim() === 'Загружено';
-      return { key, required, uploaded, label: newAppDocLabel(key) };
-    });
+    const config = NEWAPP_DOC_CONFIG[getDealType()];
+    const rows = config.map(({ key, step, label }) => ({
+      key,
+      required: step <= 2,
+      uploaded: isDocUploaded(key),
+      label: label.split(' — ')[0],
+    }));
     const requiredTotal = rows.filter((r) => r.required).length;
     const missingRequired = rows.filter((r) => r.required && !r.uploaded).map((r) => r.label);
     return {
@@ -777,61 +950,244 @@
     if (progressBar) progressBar.classList.add('portal-hidden-package-progress');
   };
 
-  // Groups the 7 document rows into "needed to start" vs "can wait"
-  // sections — WITHOUT reparenting the row elements themselves (an earlier
-  // version wrapped each group's rows in its own new div and moved the
-  // rows into it). That reparenting crashed React on navigating away from
-  // this page: unmounting removes each node from the parent React itself
-  // rendered it into, and once a row's actual DOM parent no longer matches
-  // that (it's inside this file's wrapper div instead), React's own
-  // cleanup throws "NotFoundError: Failed to execute 'removeChild'" and
-  // leaves the next page's mount half-done — a blank #root, needing a hard
-  // reload to recover. NEWAPP_DOC_ORDER already matches the native render
-  // order (confirmed from the compiled component's own document-type
-  // array) and happens to list every required doc before every optional
-  // one, so the same visual grouping is achievable by just inserting two
-  // heading elements as new siblings at the boundary — nothing native
-  // ever changes parents.
-  const groupNewAppDocuments = () => {
-    const firstBadge = document.querySelector('[data-testid="badge-doc-status-invoice"]');
-    const firstRow = firstBadge && firstBadge.closest('.flex.flex-col.gap-3');
-    if (!firstRow) return;
-    const rowsContainer = firstRow.parentElement;
-    if (!rowsContainer || rowsContainer.classList.contains('portal-doc-rows-grouped')) return;
-    rowsContainer.classList.add('portal-doc-rows-grouped');
+  // ---- Goods/Service toggle, document relabeling, visual reordering ----
+  //
+  // Reordering here uses CSS `order` (rowsContainer is forced to a flex
+  // column in portal-overrides.css) instead of moving rows in the DOM. The
+  // native order is fixed — invoice, contract, purchase_order,
+  // delivery_note, acceptance_certificate, bill_of_lading,
+  // debt_confirmation — and the new 3-step grouping doesn't match that
+  // order (delivery_note needs to visually sit in step 2, ahead of
+  // contract/purchase_order in step 3, despite rendering after them
+  // natively). `order` changes visual position without touching a single
+  // DOM parent, so it carries none of the reparenting risk documented
+  // above (and still demonstrated lower down for the group headings,
+  // which are brand-new nodes inserted as siblings, never moved rows).
+  const NEWAPP_STEP_HEADING_ORDER = { 1: -1, 2: 1, 3: 9 };
 
-    const buildHeading = (title, hint, className) => {
+  // Delivery Order (DO) has no native document slot to reuse — built once
+  // by cloning the Purchase Order row (identical markup/classes, so it's
+  // indistinguishable from a real one) and re-keying its data-testids from
+  // ...-purchase_order to ...-delivery_order_do. After that every generic
+  // key-based lookup elsewhere in this file (badge/button/label selectors)
+  // works on it exactly like a native row; only the upload interaction
+  // itself (wireSyntheticDocRow) has to be hand-built, since there's no
+  // React component backing this one.
+  let syntheticDoRow = null;
+  const ensureSyntheticDeliveryOrderRow = (rowsContainer) => {
+    if (syntheticDoRow && rowsContainer.contains(syntheticDoRow)) return syntheticDoRow;
+    const sourceBadge = document.querySelector('[data-testid="badge-doc-status-purchase_order"]');
+    const sourceRow = sourceBadge && sourceBadge.closest('.flex.flex-col.gap-3');
+    if (!sourceRow) return null;
+    const clone = sourceRow.cloneNode(true);
+    clone.classList.add('portal-doc-row-synthetic');
+    clone.querySelectorAll('[data-testid]').forEach((el) => {
+      el.setAttribute('data-testid', el.getAttribute('data-testid').replace('purchase_order', 'delivery_order_do'));
+    });
+    clone.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+    sourceRow.insertAdjacentElement('afterend', clone);
+    wireSyntheticDocRow(clone);
+    syntheticDoRow = clone;
+    return clone;
+  };
+
+  const wireSyntheticDocRow = (row) => {
+    const key = 'delivery_order_do';
+    const badge = row.querySelector('[data-testid="badge-doc-status-' + key + '"]');
+    const button = row.querySelector('[data-testid="button-upload-' + key + '"]');
+    const fileInput = row.querySelector('input[type="file"]');
+    if (badge) setTextIfChanged(badge, t('Не загружено', 'Not uploaded'));
+    if (!button) return;
+    button.type = 'button';
+    button.addEventListener('click', () => {
+      if (button.disabled) return;
+      if (fileInput) {
+        fileInput.onchange = () => {
+          if (!fileInput.files || !fileInput.files[0]) return;
+          if (badge) setTextIfChanged(badge, t('Загружено', 'Uploaded'));
+          setTextIfChanged(button, t('Заменить', 'Replace'));
+        };
+        fileInput.click();
+      } else {
+        if (badge) setTextIfChanged(badge, t('Загружено', 'Uploaded'));
+        setTextIfChanged(button, t('Заменить', 'Replace'));
+      }
+    });
+  };
+
+  // "Создаёт черновик и автоматически заполняет данные заявки" — the one
+  // row-level caption the brief actually calls out by name; every other
+  // row's description is folded straight into its own label text instead
+  // (see NEWAPP_DOC_CONFIG), so this is the only row that needs its own
+  // second line.
+  const ensureInvoiceRowCaption = (row, labelEl) => {
+    if (!labelEl || row.querySelector('.portal-doc-row-caption')) return;
+    const caption = document.createElement('p');
+    caption.className = 'portal-doc-row-caption';
+    caption.textContent = t(
+      'Создаёт черновик и автоматически заполняет данные заявки',
+      'Creates a draft and fills in the application data automatically'
+    );
+    labelEl.insertAdjacentElement('afterend', caption);
+  };
+
+  // Adds "Просмотреть" next to "Заменить" once a row is uploaded — reads
+  // the row's own hidden file input directly (works for native rows too:
+  // the <input type="file"> is a real DOM node regardless of who rendered
+  // it, so its .files[0] is readable here even though the upload itself is
+  // handled entirely inside the compiled bundle). Opens the visitor's own
+  // file via a blob URL — a real preview of what they actually attached,
+  // not a mocked viewer.
+  const ensureDocPreviewButton = (key, row) => {
+    const uploadBtn = document.querySelector('[data-testid="button-upload-' + key + '"]');
+    if (!uploadBtn) return;
+    const existing = row.querySelector('.portal-doc-preview-btn');
+    if (!isDocUploaded(key)) {
+      if (existing) existing.remove();
+      return;
+    }
+    if (existing) return;
+    const previewBtn = uploadBtn.cloneNode(true);
+    previewBtn.classList.add('portal-doc-preview-btn');
+    previewBtn.removeAttribute('data-testid');
+    previewBtn.type = 'button';
+    previewBtn.disabled = false;
+    setTextIfChanged(previewBtn, t('Просмотреть', 'View'));
+    previewBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const fileInput = row.querySelector('input[type="file"]');
+      const file = fileInput && fileInput.files && fileInput.files[0];
+      if (file) {
+        window.open(URL.createObjectURL(file), '_blank', 'noopener');
+      }
+    });
+    uploadBtn.insertAdjacentElement('afterend', previewBtn);
+  };
+
+  const ensureDealTypeToggle = (rowsContainer, form) => {
+    if (rowsContainer.parentElement && rowsContainer.parentElement.querySelector('.portal-dealtype-toggle')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'portal-dealtype-toggle';
+    wrap.setAttribute('role', 'tablist');
+
+    const makeBtn = (type, label) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'portal-dealtype-btn';
+      btn.textContent = label;
+      btn.dataset.dealType = type;
+      btn.setAttribute('role', 'tab');
+      btn.addEventListener('click', () => {
+        if (getDealType() === type) return;
+        setDealType(type);
+        wrap.querySelectorAll('.portal-dealtype-btn').forEach((b) => {
+          b.classList.toggle('portal-dealtype-btn-active', b.dataset.dealType === type);
+          b.setAttribute('aria-selected', String(b.dataset.dealType === type));
+        });
+        restructureNewAppDocuments(form);
+        updateNewAppLiveState(form);
+      });
+      return btn;
+    };
+
+    const goodsBtn = makeBtn('goods', t('Товары (Goods)', 'Goods'));
+    const serviceBtn = makeBtn('service', t('Услуги (Service)', 'Service'));
+    const current = getDealType();
+    goodsBtn.classList.toggle('portal-dealtype-btn-active', current === 'goods');
+    goodsBtn.setAttribute('aria-selected', String(current === 'goods'));
+    serviceBtn.classList.toggle('portal-dealtype-btn-active', current === 'service');
+    serviceBtn.setAttribute('aria-selected', String(current === 'service'));
+    wrap.append(goodsBtn, serviceBtn);
+
+    rowsContainer.insertAdjacentElement('beforebegin', wrap);
+  };
+
+  const rebuildDocGroupHeadings = (rowsContainer) => {
+    if (rowsContainer.dataset.portalHeadingsBuilt) return;
+    rowsContainer.dataset.portalHeadingsBuilt = 'true';
+
+    const buildHeading = (title, hint, order, className) => {
       const heading = document.createElement('div');
       heading.className = 'portal-doc-group-heading ' + className;
+      heading.style.order = String(order);
       const titleEl = document.createElement('span');
       titleEl.className = 'portal-doc-group-title';
       titleEl.textContent = title;
       const hintEl = document.createElement('span');
       hintEl.className = 'portal-doc-group-hint';
       hintEl.textContent = hint;
-      heading.appendChild(titleEl);
-      heading.appendChild(hintEl);
+      heading.append(titleEl, hintEl);
       return heading;
     };
 
-    const requiredHeading = buildHeading(
-      t('Необходимо для старта', 'Needed to start'),
-      t('без этого заявку не отправить', "can't submit without these"),
-      'portal-doc-group-required'
-    );
-    const laterHeading = buildHeading(
-      t('Можно догрузить позже', 'Can add later'),
+    rowsContainer.appendChild(buildHeading(
+      t('Шаг 1 — обязательно', 'Step 1 — required'),
+      t('создаёт заявку и запускает автозаполнение', 'creates the application and starts autofill'),
+      NEWAPP_STEP_HEADING_ORDER[1], 'portal-doc-group-required'
+    ));
+    rowsContainer.appendChild(buildHeading(
+      t('Шаг 2 — обязательно для отправки на анализ', 'Step 2 — required to submit for review'),
+      t("без этого заявку не отправить", "can't submit without this"),
+      NEWAPP_STEP_HEADING_ORDER[2], 'portal-doc-group-required'
+    ));
+    rowsContainer.appendChild(buildHeading(
+      t('Желательно — можно догрузить позже', 'Recommended — can add later'),
       t('приложите сразу или добавьте потом в карточке сделки', 'attach now, or add later from the deal card'),
-      'portal-doc-group-later'
-    );
+      NEWAPP_STEP_HEADING_ORDER[3], 'portal-doc-group-later'
+    ));
+  };
 
-    firstRow.insertAdjacentElement('beforebegin', requiredHeading);
+  const restructureNewAppDocuments = (form) => {
+    const firstBadge = document.querySelector('[data-testid="badge-doc-status-invoice"]');
+    const firstRow = firstBadge && firstBadge.closest('.flex.flex-col.gap-3');
+    if (!firstRow) return;
+    const rowsContainer = firstRow.parentElement;
+    if (!rowsContainer) return;
+    rowsContainer.classList.add('portal-doc-rows-grouped');
 
-    const firstOptional = NEWAPP_DOC_ORDER.find(({ required }) => !required);
-    const firstOptionalBadge =
-      firstOptional && document.querySelector('[data-testid="badge-doc-status-' + firstOptional.key + '"]');
-    const firstOptionalRow = firstOptionalBadge && firstOptionalBadge.closest('.flex.flex-col.gap-3');
-    if (firstOptionalRow) firstOptionalRow.insertAdjacentElement('beforebegin', laterHeading);
+    ensureSyntheticDeliveryOrderRow(rowsContainer);
+    ensureDealTypeToggle(rowsContainer, form);
+
+    const dealType = getDealType();
+    const visibleByKey = {};
+    NEWAPP_DOC_CONFIG[dealType].forEach((entry) => { visibleByKey[entry.key] = entry; });
+    const invoiceUploaded = isDocUploaded('invoice');
+
+    Object.keys(NEWAPP_DOC_VISUAL_ORDER).forEach((key) => {
+      const badge = document.querySelector('[data-testid="badge-doc-status-' + key + '"]');
+      const row = badge && badge.closest('.flex.flex-col.gap-3');
+      if (!row) return;
+      const entry = visibleByKey[key];
+      if (!entry) {
+        row.style.display = 'none';
+        return;
+      }
+      row.style.display = '';
+      row.style.order = String(NEWAPP_DOC_VISUAL_ORDER[key]);
+
+      const labelEl = document.querySelector('[data-testid="text-doc-label-' + key + '"]');
+      const labelTag = dealType + ':' + key;
+      if (labelEl && labelEl.dataset.portalDocLabelFor !== labelTag) {
+        labelEl.dataset.portalDocLabelFor = labelTag;
+        setTextIfChanged(labelEl, entry.label);
+      }
+
+      if (key === 'invoice') {
+        ensureInvoiceRowCaption(row, labelEl);
+      } else {
+        // Every document but the invoice itself waits for the invoice —
+        // it's the one that creates the draft in the first place.
+        const btn = document.querySelector('[data-testid="button-upload-' + key + '"]');
+        if (btn) {
+          btn.disabled = !invoiceUploaded;
+          btn.title = invoiceUploaded ? '' : t('Сначала загрузите инвойс', 'Upload the invoice first');
+        }
+      }
+      ensureDocPreviewButton(key, row);
+    });
+
+    rebuildDocGroupHeadings(rowsContainer);
   };
 
   // Replaces the bare "Загружено 0 из 7 документов" deficit-framed counter
@@ -874,12 +1230,104 @@
     });
   };
 
-  // Submit only needs the two documents that actually block underwriting —
-  // the other five, and every data field, stay optional at this stage.
+  // Front-end-only placeholder: the compiled bundle has no company-profile
+  // document-expiry data to read yet. Stays null (nothing expired) until
+  // that's wired up — flip expiredDocName to a string here to preview the
+  // blocked state.
+  const COMPANY_DOC_STATUS = { expiredDocName: null };
+
+  const updateCompanyDocStatusRow = (submitSection) => {
+    const row = submitSection.querySelector('.portal-company-doc-status');
+    if (!row) return;
+    const textEl = row.querySelector('span');
+    const expired = COMPANY_DOC_STATUS.expiredDocName;
+    row.classList.toggle('portal-company-doc-status-bad', !!expired);
+    textEl.textContent = expired
+      ? t('Истёк срок ' + expired + ' — обновите в профиле', expired + ' has expired — update it in your profile')
+      : t('Документы компании: актуальны ✓', 'Company documents: up to date ✓');
+  };
+
+  // Submit now needs every step 1 + step 2 document for the current deal
+  // type, plus the company profile's own documents being current — the
+  // other (step 3) documents, and every data field, stay optional at this
+  // stage.
   const updateNewAppSubmitGate = (form) => {
     const submitBtn = form.querySelector('[data-testid="button-submit-application"]');
     if (!submitBtn) return;
-    submitBtn.disabled = newAppDocStatus().missingRequired.length > 0;
+    const submitSection = submitBtn.parentElement;
+    const docs = newAppDocStatus();
+    const expired = COMPANY_DOC_STATUS.expiredDocName;
+    submitBtn.disabled = docs.missingRequired.length > 0 || !!expired;
+
+    if (submitSection) {
+      updateCompanyDocStatusRow(submitSection);
+      const missingEl = submitSection.querySelector('.portal-newapp-submit-missing');
+      if (missingEl) {
+        const showMissing = !expired && docs.missingRequired.length > 0;
+        missingEl.hidden = !showMissing;
+        if (showMissing) {
+          setTextIfChanged(missingEl, t('Не загружен ', 'Missing: ') + docs.missingRequired.join(', '));
+        }
+      }
+    }
+  };
+
+  // One-time construction of everything around the Submit button: the
+  // company-documents status line, the secondary "Сохранить черновик"
+  // button, and the missing-documents caption — all added as new children
+  // *inside* submitSection (the existing native "flex justify-end" row),
+  // never as its siblings. submitSection is already a `form`-level CSS
+  // Grid item with its own column/row/self-alignment (see
+  // .portal-newapp-submit-row in portal-overrides.css) — a new sibling
+  // would need that same grid placement worked out from scratch, where a
+  // new child just rides along inside the row submitSection already has.
+  // portal-overrides.css turns that row into a wrapping flex row and gives
+  // the status line and the missing-docs caption flex-basis:100% each, so
+  // they each force their own full-width line while Save Draft/Submit
+  // still sit side by side on the line between them. Content is filled in
+  // afterwards, every tick, by updateNewAppSubmitGate above.
+  const ensureNewAppFooterExtras = (form) => {
+    const submitBtn = form.querySelector('[data-testid="button-submit-application"]');
+    if (!submitBtn) return;
+    const submitSection = submitBtn.parentElement;
+    if (!submitSection) return;
+
+    if (!submitSection.querySelector('.portal-company-doc-status')) {
+      const row = document.createElement('div');
+      row.className = 'portal-company-doc-status';
+      const textEl = document.createElement('span');
+      row.appendChild(textEl);
+      const link = document.createElement('a');
+      link.href = '#';
+      link.className = 'portal-company-doc-status-link';
+      link.textContent = t('Перейти в профиль', 'Go to profile');
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        const navLink = findNavLink('Профиль компании');
+        if (navLink) navLink.click();
+      });
+      row.appendChild(link);
+      submitSection.insertAdjacentElement('afterbegin', row);
+    }
+
+    if (!submitSection.querySelector('.portal-newapp-draft-btn')) {
+      const draftBtn = document.createElement('button');
+      draftBtn.type = 'button';
+      draftBtn.className = 'portal-newapp-draft-btn';
+      const defaultLabel = t('Сохранить черновик', 'Save Draft');
+      draftBtn.textContent = defaultLabel;
+      draftBtn.addEventListener('click', () => {
+        draftBtn.textContent = t('Черновик сохранён ✓', 'Draft saved ✓');
+        setTimeout(() => { draftBtn.textContent = defaultLabel; }, 2000);
+      });
+      submitBtn.insertAdjacentElement('beforebegin', draftBtn);
+    }
+
+    if (!submitSection.querySelector('.portal-newapp-submit-missing')) {
+      const missingEl = document.createElement('p');
+      missingEl.className = 'portal-newapp-submit-missing';
+      submitSection.appendChild(missingEl);
+    }
   };
 
   // Splits the page into "Данные по инвойсу" (left) / "Документы" (right)
@@ -947,10 +1395,244 @@
     return dataCard;
   };
 
+  // ---- Three fields the compiled bundle never rendered (Номер инвойса,
+  // Запрашиваемая сумма, TRN дебитора) — built by cloning an existing
+  // field's own wrapper (same label/input markup and classes the bundle
+  // itself uses) rather than hand-authoring Tailwind classes, so they're
+  // guaranteed to look like every other field here. Inserted as new
+  // siblings of the native two-up grid rows (Сумма/Валюта,
+  // Дебитор/Страна) — never *into* one, which would either squeeze a
+  // third field into a two-column grid or require moving Валюта/Страна
+  // out to make room, both of which risk the exact reparenting crash
+  // documented above applyNewAppColumnsLayout. Each new field lands
+  // directly below the pair it's conceptually attached to instead of
+  // splitting the pair itself.
+  const cloneNewAppField = (sourceId, newId, labelText, placeholder, inputType) => {
+    const sourceField = document.querySelector('#' + sourceId);
+    if (!sourceField) return null;
+    const sourceWrapper = newAppFieldWrapper(sourceField);
+    if (!sourceWrapper) return null;
+    const clone = sourceWrapper.cloneNode(true);
+    clone.querySelectorAll('.portal-lock-icon, .portal-date-overlay, .portal-manual-tag').forEach((el) => el.remove());
+    clone.classList.remove('portal-field-locked', 'portal-field-active', 'portal-field-invalid', 'portal-lock-anchor', 'portal-date-anchor');
+    const input = clone.querySelector('#' + sourceId);
+    if (!input) return null;
+    input.id = newId;
+    input.name = newId;
+    input.value = '';
+    input.disabled = false;
+    input.required = false;
+    input.removeAttribute('data-testid');
+    input.classList.remove('portal-field-locked');
+    if (inputType) input.type = inputType;
+    input.placeholder = placeholder;
+    const label = clone.querySelector('label');
+    if (label) {
+      label.setAttribute('for', newId);
+      label.textContent = labelText;
+    }
+    return clone;
+  };
+
+  const ensureNewAppCustomFields = (dataCard, form) => {
+    if (form.dataset.portalCustomFieldsAdded) return;
+    const amountInput = form.querySelector('#invoiceAmount');
+    const obligorInput = form.querySelector('#obligorName');
+    if (!amountInput || !obligorInput) return;
+
+    const amountRow = amountInput.closest('[class*="grid-cols"]') || newAppFieldWrapper(amountInput);
+    const obligorRow = obligorInput.closest('[class*="grid-cols"]') || newAppFieldWrapper(obligorInput);
+
+    const invoiceNumberField = cloneNewAppField(
+      'invoiceAmount', 'invoiceNumber',
+      t('Номер инвойса', 'Invoice Number'),
+      NEWAPP_LOCKED_PLACEHOLDER, 'text'
+    );
+    if (invoiceNumberField) amountRow.insertAdjacentElement('beforebegin', invoiceNumberField);
+
+    const requestedAmountField = cloneNewAppField(
+      'invoiceAmount', 'requestedAmount',
+      t('Запрашиваемая сумма', 'Requested Amount'),
+      t('Введите сумму', 'Enter the amount'), 'number'
+    );
+    if (requestedAmountField) {
+      amountRow.insertAdjacentElement('afterend', requestedAmountField);
+      requestedAmountField.classList.remove('portal-field-locked');
+      const input = requestedAmountField.querySelector('#requestedAmount');
+      input.disabled = false;
+      const hint = document.createElement('p');
+      hint.className = 'portal-field-hint';
+      hint.textContent = t('Не больше суммы инвойса', 'Cannot exceed the invoice amount');
+      requestedAmountField.appendChild(hint);
+      input.addEventListener('input', () => validateRequestedAmount(form));
+    }
+
+    const trnField = cloneNewAppField(
+      'obligorName', 'obligorTrn',
+      t('TRN дебитора', 'Debtor TRN'),
+      t('15 цифр', '15 digits'), 'text'
+    );
+    if (trnField) {
+      obligorRow.insertAdjacentElement('afterend', trnField);
+      const input = trnField.querySelector('#obligorTrn');
+      input.setAttribute('inputmode', 'numeric');
+      input.setAttribute('maxlength', '15');
+      const hint = document.createElement('p');
+      hint.className = 'portal-field-hint';
+      trnField.appendChild(hint);
+      input.addEventListener('input', () => validateObligorTrn(form));
+    }
+
+    form.dataset.portalCustomFieldsAdded = 'true';
+  };
+
+  const setFieldHintState = (wrapper, neutralText, errorText, isError) => {
+    const hint = wrapper.querySelector('.portal-field-hint');
+    if (!hint) return;
+    wrapper.classList.toggle('portal-field-invalid', !!isError);
+    hint.classList.toggle('portal-field-hint-error', !!isError);
+    const text = isError ? errorText : neutralText;
+    // .hidden (not :empty — see setTextIfChanged's own nodeValue-mutation
+    // note above) — once a text node has held real content, mutating it
+    // back to '' leaves an empty text node in place, which :empty no
+    // longer matches.
+    hint.hidden = !text;
+    setTextIfChanged(hint, text);
+  };
+
+  const validateRequestedAmount = (form) => {
+    const field = form.querySelector('#requestedAmount');
+    if (!field) return true;
+    const wrapper = newAppFieldWrapper(field);
+    const amountField = form.querySelector('#invoiceAmount');
+    const requested = parseFloat(field.value);
+    const invoiceAmt = parseFloat(amountField && amountField.value);
+    const invalid = field.value !== '' && !Number.isNaN(requested) && !Number.isNaN(invoiceAmt) && requested > invoiceAmt;
+    setFieldHintState(
+      wrapper,
+      t('Не больше суммы инвойса', 'Cannot exceed the invoice amount'),
+      t('Превышает сумму инвойса', 'Exceeds the invoice amount'),
+      invalid
+    );
+    return !invalid;
+  };
+
+  const validateObligorTrn = (form) => {
+    const field = form.querySelector('#obligorTrn');
+    if (!field) return true;
+    const wrapper = newAppFieldWrapper(field);
+    const invalid = field.value !== '' && !/^\d{15}$/.test(field.value);
+    setFieldHintState(wrapper, '', t('TRN должен содержать 15 цифр', 'TRN must be exactly 15 digits'), invalid);
+    return !invalid;
+  };
+
+  // ---- "27 Sep 2026" everywhere, for native <input type="date"> fields
+  // whose own browser-native display is a locale-dependent dd/mm/yyyy
+  // control this file can't reformat directly. Overlays a plain span with
+  // the requested format on top (new sibling — same anchor technique as
+  // the lock icon above, never a wrapping div around the field itself) and
+  // makes the native text transparent so only the overlay's own text
+  // shows; the native input underneath is untouched and still opens the
+  // real date picker on click (the overlay has pointer-events:none).
+  const NEWAPP_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const formatNewAppSpecDate = (iso) => {
+    if (!iso) return '';
+    const parts = iso.split('-');
+    if (parts.length !== 3) return '';
+    const [y, m, d] = parts.map(Number);
+    if (!y || !m || !d) return '';
+    return d + ' ' + NEWAPP_MONTHS[m - 1] + ' ' + y;
+  };
+
+  const NEWAPP_DATE_FIELD_IDS = ['invoiceDate', 'dueDate'];
+
+  const wireNewAppDateDisplay = (form) => {
+    NEWAPP_DATE_FIELD_IDS.forEach((id) => {
+      const field = form.querySelector('#' + id);
+      if (!field || field.dataset.portalDateOverlayAdded) return;
+      field.dataset.portalDateOverlayAdded = 'true';
+      const anchor = field.parentElement;
+      if (!anchor) return;
+      anchor.classList.add('portal-date-anchor');
+      const overlay = document.createElement('span');
+      overlay.className = 'portal-date-overlay';
+      field.insertAdjacentElement('afterend', overlay);
+      const sync = () => { overlay.textContent = formatNewAppSpecDate(field.value); };
+      field.addEventListener('input', sync);
+      field.addEventListener('change', sync);
+      sync();
+    });
+  };
+
+  const syncNewAppDateOverlays = (form) => {
+    NEWAPP_DATE_FIELD_IDS.forEach((id) => {
+      const field = form.querySelector('#' + id);
+      const overlay = field && field.parentElement && field.parentElement.querySelector('.portal-date-overlay');
+      if (field && overlay) overlay.textContent = formatNewAppSpecDate(field.value);
+    });
+  };
+
+  // "Изменено вручную" — follows any autofillable field once its value no
+  // longer matches what autofill itself last set (see
+  // applyNewAppAutofillState, which stores that baseline in
+  // dataset.portalAutoValue on each field/trigger).
+  const NEWAPP_MANUAL_TAG_TEXT = t('Изменено вручную', 'Manually edited');
+
+  const ensureManualEditTag = (wrapper) => {
+    if (wrapper.querySelector('.portal-manual-tag')) return;
+    const label = wrapper.querySelector('label');
+    if (!label) return;
+    const tag = document.createElement('span');
+    tag.className = 'portal-manual-tag';
+    tag.textContent = NEWAPP_MANUAL_TAG_TEXT;
+    label.appendChild(tag);
+  };
+
+  const removeManualEditTag = (wrapper) => {
+    const tag = wrapper.querySelector('.portal-manual-tag');
+    if (tag) tag.remove();
+  };
+
+  const wireNewAppManualEditTracking = (form) => {
+    NEWAPP_AUTOFILL_INPUT_IDS.forEach((id) => {
+      const field = form.querySelector('#' + id);
+      if (!field || field.dataset.portalManualWired) return;
+      field.dataset.portalManualWired = 'true';
+      field.addEventListener('input', () => {
+        const wrapper = newAppFieldWrapper(field);
+        if (field.dataset.portalAutoValue === undefined) return;
+        if (field.value !== field.dataset.portalAutoValue) ensureManualEditTag(wrapper);
+        else removeManualEditTag(wrapper);
+      });
+    });
+    NEWAPP_AUTOFILL_SELECT_IDS.forEach((id) => {
+      const trigger = form.querySelector('#' + id);
+      if (!trigger || trigger.dataset.portalManualWired) return;
+      trigger.dataset.portalManualWired = 'true';
+      // The trigger has no native 'input' event of its own — its value
+      // span only changes once the visitor actually picks something from
+      // the real dropdown, so checking after click/blur (same two events
+      // wireNewAppFieldMuting already listens for) is enough.
+      ['click', 'blur'].forEach((evt) => trigger.addEventListener(evt, () => {
+        setTimeout(() => {
+          if (trigger.dataset.portalAutoValue === undefined) return;
+          const valueSpan = trigger.querySelector('span');
+          const wrapper = newAppFieldWrapper(trigger);
+          if (valueSpan && valueSpan.textContent.trim() !== trigger.dataset.portalAutoValue) {
+            ensureManualEditTag(wrapper);
+          } else {
+            removeManualEditTag(wrapper);
+          }
+        }, 0);
+      }));
+    });
+  };
+
   const updateNewAppLiveState = (form) => {
     updateNewAppProgressCopy();
     updateNewAppSubmitGate(form);
     softenDocStatusTone();
+    updateNewAppAutofillFlow(form);
   };
 
   const buildNewAppSidebar = () => {
@@ -1105,16 +1787,19 @@
     }
     fixNonSubmitButtonTypes(form);
     hideNewAppPackageProgress(form);
-    groupNewAppDocuments();
+    restructureNewAppDocuments(form);
     wireNewAppSubmit(form);
 
     const dataCard = applyNewAppColumnsLayout(form);
+    ensureNewAppCustomFields(dataCard, form);
     wireNewAppFieldMuting(dataCard);
-    lockNewAppDataFields(form);
     addNewAppLockIcons(form);
     addNewAppSelectLockIcons(form);
+    wireNewAppDateDisplay(form);
+    wireNewAppManualEditTracking(form);
     repurposeNewAppComment(form);
     ensureNewAppAutoFillNote(dataCard);
+    ensureNewAppFooterExtras(form);
 
     // "Что будет после подачи" / "Подсказки" / mini-summary now live in the
     // spare room below the four links of the persistent nav rail instead of
