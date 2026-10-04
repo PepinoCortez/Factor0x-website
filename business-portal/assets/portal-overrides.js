@@ -1193,7 +1193,14 @@
   };
 
   const ensureDealTypeToggle = (rowsContainer, form) => {
-    if (rowsContainer.parentElement && rowsContainer.parentElement.querySelector('.portal-dealtype-toggle')) return;
+    // Checked globally, not scoped to rowsContainer's own parent — the
+    // toggle is actually inserted next to the "Документы" heading futher
+    // down this function, which lives in a different ancestor. Scoping
+    // this guard to the wrong subtree meant it never found the one
+    // already inserted and created a fresh one on every single run() tick
+    // (confirmed in production: dozens of stacked toggles after a few
+    // seconds on the page).
+    if (document.querySelector('.portal-dealtype-toggle')) return;
     const wrap = document.createElement('div');
     wrap.className = 'portal-dealtype-toggle';
     wrap.setAttribute('role', 'tablist');
