@@ -1787,21 +1787,27 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   text-transform: none !important;
 }
 
-/* ---- Document checklist: "needed to start" vs "can wait" ----
+/* ---- Document checklist: Step 1 / Step 2 / Recommended ----
    Headings are inserted as plain siblings of the native document rows
-   (see groupNewAppDocuments in portal-overrides.js) rather than each
+   (see restructureNewAppDocuments in portal-overrides.js) rather than each
    group's rows being moved into its own wrapper div — an earlier version
    did that and crashed React on navigating away from this page, since
    unmounting removes each row from the parent React itself rendered it
    into, and a reparented row's actual DOM parent no longer matched that.
-   No wrapper now means no spacing-utility parent to hang a "gap between
-   this group's own rows" rule on — targets consecutive rows directly
-   under the rows container instead, which the `+` combinator already
-   limits to true neighbors (skips any pair with a heading between them,
-   so this doesn't stack on top of .portal-doc-group-heading's own 10px
-   bottom padding below). */
-.portal-doc-rows-grouped > .flex.flex-col.gap-3 + .flex.flex-col.gap-3 {
-  margin-top: 16px;
+   The 3-step order doesn't match the native row order any more either
+   (Delivery Note/Service Completion needs to visually sit in Step 2, ahead
+   of documents the bundle renders it after) — restructureNewAppDocuments
+   sets a CSS `order` on every row and heading instead of moving anything,
+   which is why this container has to actually become a flex column (the
+   native layout it shipped with is irrelevant now; `order` only works on
+   flex/grid items). `gap` here replaces the old DOM-adjacency margin hack
+   that used to sit in this rule's place — `order` breaks visual adjacency
+   away from DOM adjacency, so a `+` combinator can no longer be trusted to
+   mean "next on screen". */
+.portal-doc-rows-grouped {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px;
 }
 
 .portal-doc-group-heading {
@@ -1895,6 +1901,127 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--ov-text);
+}
+
+/* Tax Invoice's own second line ("Создаёт черновик и автоматически
+   заполняет данные заявки") — see ensureInvoiceRowCaption. Same tone/size
+   as the group hint captions, sits directly under the label it explains. */
+.portal-doc-row-caption {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgba(var(--ov-muted-rgb), 0.6);
+}
+
+/* Goods/Service — a plain two-way segmented control above the checklist
+   (see ensureDealTypeToggle). Same bordered-pill recipe as the rest of
+   this file's own controls (.portal-theme-trigger, .portal-newapp-summary-
+   back), not a new visual language. */
+.portal-dealtype-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
+  border-radius: 10px;
+  background: rgba(var(--ov-tint-rgb), 0.04);
+}
+
+.portal-dealtype-btn {
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: rgba(var(--ov-muted-rgb), 0.78);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 7px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.portal-dealtype-btn:hover {
+  color: var(--ov-text);
+}
+
+.portal-dealtype-btn-active {
+  background: rgba(var(--ov-tint-rgb), 0.14);
+  color: var(--ov-text);
+  font-weight: 600;
+}
+
+/* "Просмотреть" — cloned straight from the row's own "Заменить" button
+   (see ensureDocPreviewButton), so it inherits every one of that button's
+   classes already; this only pulls it back to a quieter, outlined tone so
+   two visually-identical buttons don't sit side by side. */
+.portal-doc-preview-btn {
+  background: transparent !important;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.2) !important;
+  color: rgba(var(--ov-muted-rgb), 0.85) !important;
+  box-shadow: none !important;
+}
+
+/* "Изменено вручную" — appended into a field's own <label>, same
+   placement trick as .portal-doc-row-primary-tag above. */
+.portal-manual-tag {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 7px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(244, 196, 100, 0.14);
+  border: 1px solid rgba(244, 196, 100, 0.3);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: rgba(244, 196, 100, 0.95);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Static hint under Запрашиваемая сумма / validation message under TRN
+   дебитора (see ensureNewAppCustomFields / validateRequestedAmount /
+   validateObligorTrn). Empty by default for TRN (no error yet) — collapses
+   to nothing rather than reserving an empty line. */
+.portal-field-hint {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  color: rgba(var(--ov-muted-rgb), 0.55);
+}
+
+.portal-field-hint:empty {
+  display: none;
+}
+
+.portal-field-hint-error {
+  color: rgba(229, 72, 77, 0.92);
+}
+
+/* "27 Sep 2026" overlay for the two native <input type="date"> fields (see
+   wireNewAppDateDisplay) — the native control's own dd/mm/yyyy text is
+   made transparent so only this sits visibly on top; pointer-events:none
+   means clicks still fall through to the real input and open its date
+   picker. Anchored the same way as .portal-lock-icon (new sibling, never a
+   wrapping div — see the comment above NEWAPP_LOCKED_SIBLING_ICON_IDS in
+   portal-overrides.js for why). */
+.portal-date-anchor {
+  position: relative;
+}
+
+.portal-date-anchor input[type="date"] {
+  color: transparent !important;
+}
+
+.portal-date-overlay {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 0.875rem;
+  color: rgba(var(--ov-muted-rgb), 0.78);
+}
+
+.portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active .portal-date-overlay {
+  color: #fff;
 }
 
 /* Document icons: soften the identical 7-in-a-row look, then bring
@@ -2039,17 +2166,25 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   order: 3;
   justify-self: stretch;
   align-self: end;
-  /* Native classes are "flex justify-end" — the button itself doesn't
-     stretch to fill a flex row just because the row is wide, so centering
-     lives here on the row and the actual 2/3 width lives on the button
-     below, not on this row. */
-  justify-content: center;
+  /* Now holds 4 children, not 1 (see ensureNewAppFooterExtras): the
+     company-documents status line and the missing-documents caption each
+     force their own full-width line via flex-basis: 100% below, while
+     Сохранить черновик / Отправить — ordinary, non-basis children — share
+     whatever line is left between those two, right-aligned. wrap is what
+     makes a basis:100% child actually start a new line instead of just
+     stretching this (already wide) row further. */
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  row-gap: 10px;
+  column-gap: 12px;
   margin: 0 0 24px;
   z-index: 2;
 }
 
 .portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"] {
-  width: 66.67%;
+  flex: 0 0 auto;
+  padding: 0 32px;
 }
 
 @media (max-width: 1100px) {
@@ -2084,8 +2219,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
     margin: 0;
   }
 
-  .portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"] {
-    width: 100%;
+  /* Save Draft / Submit stack full-width too at this point — a narrow
+     column has no room left for them to share a line. */
+  .portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"],
+  .portal-new-application-page form > .portal-newapp-submit-row .portal-newapp-draft-btn {
+    flex: 1 1 100%;
   }
 }
 
@@ -2137,13 +2275,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   gap: 10px;
 }
 
-/* Every field here except the comment is now genuinely locked (disabled —
-   see lockNewAppDataFields in portal-overrides.js), so this dim-until-
-   touched treatment only ever applies to them in practice: they can't be
-   focused/touched, so they stay dim permanently, reading as "system value",
-   not "empty field waiting for input". #description is excluded below —
-   it's the one field a visitor actually uses, so it stays at full
-   brightness from the start instead of waiting for a first touch. */
+/* Every autofillable field is locked (disabled) until the Tax Invoice is
+   uploaded and processed — see applyNewAppAutofillState in
+   portal-overrides.js — so this dim-until-touched treatment mostly applies
+   to them while they can't be focused/touched, reading as "system value",
+   not "empty field waiting for input". #description and #requestedAmount
+   are excluded below — both are fields a visitor actually types into from
+   the start (the comment always was; Requested Amount never autofills at
+   all — see NEWAPP_MOCK_AUTOFILL, which has no entry for it), so they stay
+   at full brightness instead of waiting for a first touch. */
 .portal-newapp-data-card .flex.flex-col.gap-2 input,
 .portal-newapp-data-card .flex.flex-col.gap-2 select,
 .portal-newapp-data-card .flex.flex-col.gap-2 textarea,
@@ -2159,7 +2299,8 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   opacity: 1;
 }
 
-.portal-newapp-data-card #description {
+.portal-newapp-data-card #description,
+.portal-newapp-data-card #requestedAmount {
   opacity: 1 !important;
 }
 
@@ -2266,12 +2407,75 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: #fff !important;
 }
 
-/* Submit stays inert (not just visually muted) until the two documents that
-   actually gate underwriting — Invoice + Contract — are attached. */
+/* Submit stays inert (not just visually muted) until every Step 1 + Step 2
+   document for the current deal type is attached, and the company's own
+   profile documents are current (see updateNewAppSubmitGate). */
 .portal-new-application-page [data-testid="button-submit-application"]:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+/* "Сохранить черновик" — same outlined-pill recipe as
+   .portal-newapp-summary-back (the review overlay's own secondary
+   button), kept as its own class since the two live in different parts of
+   the page. */
+.portal-newapp-draft-btn {
+  flex: 0 0 auto;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.18);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(var(--ov-muted-rgb), 0.85);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0 20px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.portal-newapp-draft-btn:hover {
+  background: rgba(var(--ov-tint-rgb), 0.06);
+  border-color: rgba(var(--ov-tint-rgb), 0.3);
+}
+
+/* Company documents status line, above Save Draft/Submit (see
+   ensureNewAppFooterExtras) — flex-basis: 100% forces it onto its own line
+   inside .portal-newapp-submit-row's wrapping flex row. */
+.portal-company-doc-status {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: rgba(var(--ov-muted-rgb), 0.75);
+}
+
+.portal-company-doc-status-bad {
+  color: rgba(229, 72, 77, 0.92);
+}
+
+.portal-company-doc-status-link {
+  color: var(--ov-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+/* "Не загружен ..." under the buttons once Submit is disabled by a missing
+   document (see updateNewAppSubmitGate) — empty (and collapsed via
+   :empty) once nothing's missing. */
+.portal-newapp-submit-missing {
+  flex: 1 1 100%;
+  margin: 0;
+  text-align: right;
+  font-size: 0.78rem;
+  color: rgba(229, 72, 77, 0.85);
+}
+
+.portal-newapp-submit-missing:empty {
+  display: none;
 }
 
 /* ---- "Что будет после подачи" / "Подсказки" — injected into the spare
