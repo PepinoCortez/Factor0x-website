@@ -1193,46 +1193,51 @@
   };
 
   const ensureDealTypeToggle = (rowsContainer, form) => {
-    // Checked globally, not scoped to rowsContainer's own parent — the
-    // toggle is actually inserted next to the "Документы" heading futher
-    // down this function, which lives in a different ancestor. Scoping
-    // this guard to the wrong subtree meant it never found the one
-    // already inserted and created a fresh one on every single run() tick
-    // (confirmed in production: dozens of stacked toggles after a few
-    // seconds on the page).
-    if (document.querySelector('.portal-dealtype-toggle')) return;
-    const wrap = document.createElement('div');
-    wrap.className = 'portal-dealtype-toggle';
-    wrap.setAttribute('role', 'tablist');
+    // Builds the toggle at most once (reuses the existing node on every
+    // later call) — but *placement* is checked and self-corrected on every
+    // call below, rather than only ever attempted once. An earlier version
+    // placed it once and never again: if the "Документы" heading lookup
+    // happened to miss on that one call (a timing fluke — this runs on
+    // every DOM mutation, including ones from well before the heading
+    // itself had mounted), the toggle got stuck wherever the fallback put
+    // it, permanently, with no later call ever retrying. Checking
+    // nextElementSibling before each move keeps this idempotent once
+    // correctly placed — no repeated DOM mutation, no retrigger risk.
+    let wrap = document.querySelector('.portal-dealtype-toggle');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.className = 'portal-dealtype-toggle';
+      wrap.setAttribute('role', 'tablist');
 
-    const makeBtn = (type, label) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'portal-dealtype-btn';
-      btn.textContent = label;
-      btn.dataset.dealType = type;
-      btn.setAttribute('role', 'tab');
-      btn.addEventListener('click', () => {
-        if (getDealType() === type) return;
-        setDealType(type);
-        wrap.querySelectorAll('.portal-dealtype-btn').forEach((b) => {
-          b.classList.toggle('portal-dealtype-btn-active', b.dataset.dealType === type);
-          b.setAttribute('aria-selected', String(b.dataset.dealType === type));
+      const makeBtn = (type, label) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'portal-dealtype-btn';
+        btn.textContent = label;
+        btn.dataset.dealType = type;
+        btn.setAttribute('role', 'tab');
+        btn.addEventListener('click', () => {
+          if (getDealType() === type) return;
+          setDealType(type);
+          wrap.querySelectorAll('.portal-dealtype-btn').forEach((b) => {
+            b.classList.toggle('portal-dealtype-btn-active', b.dataset.dealType === type);
+            b.setAttribute('aria-selected', String(b.dataset.dealType === type));
+          });
+          restructureNewAppDocuments(form);
+          updateNewAppLiveState(form);
         });
-        restructureNewAppDocuments(form);
-        updateNewAppLiveState(form);
-      });
-      return btn;
-    };
+        return btn;
+      };
 
-    const goodsBtn = makeBtn('goods', t('Товары (Goods)', 'Goods'));
-    const serviceBtn = makeBtn('service', t('Услуги (Service)', 'Service'));
-    const current = getDealType();
-    goodsBtn.classList.toggle('portal-dealtype-btn-active', current === 'goods');
-    goodsBtn.setAttribute('aria-selected', String(current === 'goods'));
-    serviceBtn.classList.toggle('portal-dealtype-btn-active', current === 'service');
-    serviceBtn.setAttribute('aria-selected', String(current === 'service'));
-    wrap.append(goodsBtn, serviceBtn);
+      const goodsBtn = makeBtn('goods', t('Товары (Goods)', 'Goods'));
+      const serviceBtn = makeBtn('service', t('Услуги (Service)', 'Service'));
+      const current = getDealType();
+      goodsBtn.classList.toggle('portal-dealtype-btn-active', current === 'goods');
+      goodsBtn.setAttribute('aria-selected', String(current === 'goods'));
+      serviceBtn.classList.toggle('portal-dealtype-btn-active', current === 'service');
+      serviceBtn.setAttribute('aria-selected', String(current === 'service'));
+      wrap.append(goodsBtn, serviceBtn);
+    }
 
     // On the same line as the "Документы" heading, flush right — found by
     // its stable Russian text (translatePage hasn't run yet at this point
@@ -1244,8 +1249,10 @@
     );
     if (docsHeading && docsHeading.parentElement) {
       docsHeading.parentElement.classList.add('portal-docs-header-row');
-      docsHeading.insertAdjacentElement('afterend', wrap);
-    } else {
+      if (docsHeading.nextElementSibling !== wrap) {
+        docsHeading.insertAdjacentElement('afterend', wrap);
+      }
+    } else if (!wrap.isConnected) {
       rowsContainer.insertAdjacentElement('beforebegin', wrap);
     }
   };
