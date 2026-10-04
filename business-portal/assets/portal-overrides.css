@@ -1897,7 +1897,8 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-doc-group-heading::before {
   position: absolute;
   left: 0;
-  top: 2px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -1944,23 +1945,24 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 /* The step the spotlight container currently surrounds (Шаг 1/Шаг 2
    only — Шаг 3 never scales, see the spec this was built against) —
-   title, hint and circle each step up through the same scale increments
-   used elsewhere on this page rather than a literal +20% multiply, per
-   the spec's own "через ступени существующей шкалы" wording. The circle's
-   own true size isn't this file's doing in the sense of a type-scale
-   step, so it uses a relative +20% transform instead (same technique as
-   the row icon's own scale, .portal-doc-row-scaled further down). The
-   matching row-level bump is .portal-doc-row-scaled below. */
+   title and hint 1.5x their base size (explicitly asked for as a literal
+   multiplier here, unlike the rest of this card's +20%-via-scale-steps
+   convention). The circle keeps its own existing +20% (transform:
+   scale(1.2)) — only asked to change the text here — combined with
+   translateY(-50%) in one transform (not two separate declarations,
+   which would just overwrite each other) so it stays vertically
+   centered against the now much-taller two-line title+hint block
+   instead of drifting toward the top once that block grows. */
 .portal-doc-group-heading.portal-doc-step-scaled .portal-doc-group-title {
-  font-size: 0.95rem;
+  font-size: 1.275rem;
 }
 
 .portal-doc-group-heading.portal-doc-step-scaled .portal-doc-group-hint {
-  font-size: 0.85rem;
+  font-size: 1.17rem;
 }
 
 .portal-doc-group-heading.portal-doc-step-scaled::before {
-  transform: scale(1.2);
+  transform: translateY(-50%) scale(1.2);
 }
 
 /* The icon+label wrapper (confirmed from the compiled component: a plain
