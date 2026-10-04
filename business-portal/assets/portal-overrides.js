@@ -1231,40 +1231,19 @@
     });
   };
 
-  // Front-end-only placeholder: the compiled bundle has no company-profile
-  // document-expiry data to read yet. Stays null (nothing expired) until
-  // that's wired up — flip expiredDocName to a string here to preview the
-  // blocked state.
-  const COMPANY_DOC_STATUS = { expiredDocName: null };
-
-  const updateCompanyDocStatusRow = (submitSection) => {
-    const row = submitSection.querySelector('.portal-company-doc-status');
-    if (!row) return;
-    const textEl = row.querySelector('span');
-    const expired = COMPANY_DOC_STATUS.expiredDocName;
-    row.classList.toggle('portal-company-doc-status-bad', !!expired);
-    textEl.textContent = expired
-      ? t('Истёк срок ' + expired + ' — обновите в профиле', expired + ' has expired — update it in your profile')
-      : t('Документы компании: актуальны ✓', 'Company documents: up to date ✓');
-  };
-
-  // Submit now needs every step 1 + step 2 document for the current deal
-  // type, plus the company profile's own documents being current — the
-  // other (step 3) documents, and every data field, stay optional at this
-  // stage.
+  // Submit needs every step 1 + step 2 document for the current deal type —
+  // step 3 documents, and every data field, stay optional at this stage.
   const updateNewAppSubmitGate = (form) => {
     const submitBtn = form.querySelector('[data-testid="button-submit-application"]');
     if (!submitBtn) return;
     const submitSection = submitBtn.parentElement;
     const docs = newAppDocStatus();
-    const expired = COMPANY_DOC_STATUS.expiredDocName;
-    submitBtn.disabled = docs.missingRequired.length > 0 || !!expired;
+    submitBtn.disabled = docs.missingRequired.length > 0;
 
     if (submitSection) {
-      updateCompanyDocStatusRow(submitSection);
       const missingEl = submitSection.querySelector('.portal-newapp-submit-missing');
       if (missingEl) {
-        const showMissing = !expired && docs.missingRequired.length > 0;
+        const showMissing = docs.missingRequired.length > 0;
         missingEl.hidden = !showMissing;
         if (showMissing) {
           setTextIfChanged(missingEl, t('Не загружен ', 'Missing: ') + docs.missingRequired.join(', '));
@@ -1274,42 +1253,23 @@
   };
 
   // One-time construction of everything around the Submit button: the
-  // company-documents status line, the secondary "Сохранить черновик"
-  // button, and the missing-documents caption — all added as new children
-  // *inside* submitSection (the existing native "flex justify-end" row),
-  // never as its siblings. submitSection is already a `form`-level CSS
-  // Grid item with its own column/row/self-alignment (see
-  // .portal-newapp-submit-row in portal-overrides.css) — a new sibling
-  // would need that same grid placement worked out from scratch, where a
-  // new child just rides along inside the row submitSection already has.
-  // portal-overrides.css turns that row into a wrapping flex row and gives
-  // the status line and the missing-docs caption flex-basis:100% each, so
-  // they each force their own full-width line while Save Draft/Submit
-  // still sit side by side on the line between them. Content is filled in
+  // secondary "Сохранить черновик" button and the missing-documents
+  // caption — both added as new children *inside* submitSection (the
+  // existing native "flex justify-end" row), never as its siblings.
+  // submitSection is already a `form`-level CSS Grid item with its own
+  // column/row/self-alignment (see .portal-newapp-submit-row in
+  // portal-overrides.css) — a new sibling would need that same grid
+  // placement worked out from scratch, where a new child just rides along
+  // inside the row submitSection already has. portal-overrides.css turns
+  // that row into a wrapping flex row and gives the missing-docs caption
+  // flex-basis:100%, so it forces its own full-width line while Save
+  // Draft/Submit still sit side by side above it. Content is filled in
   // afterwards, every tick, by updateNewAppSubmitGate above.
   const ensureNewAppFooterExtras = (form) => {
     const submitBtn = form.querySelector('[data-testid="button-submit-application"]');
     if (!submitBtn) return;
     const submitSection = submitBtn.parentElement;
     if (!submitSection) return;
-
-    if (!submitSection.querySelector('.portal-company-doc-status')) {
-      const row = document.createElement('div');
-      row.className = 'portal-company-doc-status';
-      const textEl = document.createElement('span');
-      row.appendChild(textEl);
-      const link = document.createElement('a');
-      link.href = '#';
-      link.className = 'portal-company-doc-status-link';
-      link.textContent = t('Перейти в профиль', 'Go to profile');
-      link.addEventListener('click', (event) => {
-        event.preventDefault();
-        const navLink = findNavLink('Профиль компании');
-        if (navLink) navLink.click();
-      });
-      row.appendChild(link);
-      submitSection.insertAdjacentElement('afterbegin', row);
-    }
 
     if (!submitSection.querySelector('.portal-newapp-draft-btn')) {
       const draftBtn = document.createElement('button');

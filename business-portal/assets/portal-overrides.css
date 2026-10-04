@@ -2439,30 +2439,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-color: rgba(var(--ov-tint-rgb), 0.3);
 }
 
-/* Company documents status line, above Save Draft/Submit (see
-   ensureNewAppFooterExtras) — flex-basis: 100% forces it onto its own line
-   inside .portal-newapp-submit-row's wrapping flex row. */
-.portal-company-doc-status {
-  flex: 1 1 100%;
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-end;
-  gap: 8px;
-  font-size: 0.82rem;
-  color: rgba(var(--ov-muted-rgb), 0.75);
-}
-
-.portal-company-doc-status-bad {
-  color: rgba(229, 72, 77, 0.92);
-}
-
-.portal-company-doc-status-link {
-  color: var(--ov-text);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  white-space: nowrap;
-}
-
 /* "Не загружен ..." under the buttons once Submit is disabled by a missing
    document (see updateNewAppSubmitGate) — empty (and collapsed via
    :empty) once nothing's missing. */
