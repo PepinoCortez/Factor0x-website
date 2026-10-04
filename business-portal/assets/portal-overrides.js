@@ -1029,7 +1029,9 @@
       'Создаёт черновик и автоматически заполняет данные заявки',
       'Creates a draft and fills in the application data automatically'
     );
-    labelEl.insertAdjacentElement('afterend', caption);
+    // Under the whole row (label line + status/Upload line), not wedged
+    // between them — a plain last child of `row` itself.
+    row.appendChild(caption);
   };
 
   // Adds "Просмотреть" next to "Заменить" once a row is uploaded — reads

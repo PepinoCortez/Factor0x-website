@@ -1907,7 +1907,8 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    заполняет данные заявки") — see ensureInvoiceRowCaption. Same tone/size
    as the group hint captions, sits directly under the label it explains. */
 .portal-doc-row-caption {
-  margin: 2px 0 0;
+  margin: 6px 0 0;
+  padding-left: 48px;
   font-size: 0.78rem;
   line-height: 1.4;
   color: rgba(var(--ov-muted-rgb), 0.6);
