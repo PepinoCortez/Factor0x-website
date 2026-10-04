@@ -455,11 +455,11 @@
       { key: 'contract', step: 3,
         label: t('Contract / Agreement — договор с дебитором', 'Contract / Agreement — with the debtor') },
       { key: 'purchase_order', step: 3,
-        label: t('PO (Purchase Order) — заказ на закупку', 'PO (Purchase Order)') },
+        label: t('Purchase Order (PO) — заказ на закупку', 'Purchase Order (PO)') },
       { key: 'delivery_order_do', step: 3, synthetic: true,
         label: t('Delivery Order (DO) — распоряжение на выдачу', 'Delivery Order (DO)') },
       { key: 'acceptance_certificate', step: 3,
-        label: t('GRN (Goods Receipt Note) — акт приёмки, дебитор подтвердил получение', 'GRN (Goods Receipt Note) — debtor confirmed receipt') },
+        label: t('Goods Receipt Note (GRN) — акт приёмки, дебитор подтвердил получение', 'Goods Receipt Note (GRN) — debtor confirmed receipt') },
       { key: 'bill_of_lading', step: 3,
         label: t('Транспортные документы — waybill / Bill of Lading', 'Transport documents — waybill / Bill of Lading') },
     ],
@@ -471,7 +471,7 @@
       { key: 'contract', step: 3,
         label: t('Contract / Agreement — договор с дебитором', 'Contract / Agreement — with the debtor') },
       { key: 'purchase_order', step: 3,
-        label: t('PO (Purchase Order) — заказ на закупку', 'PO (Purchase Order)') },
+        label: t('Purchase Order (PO) — заказ на закупку', 'Purchase Order (PO)') },
     ],
   };
 
