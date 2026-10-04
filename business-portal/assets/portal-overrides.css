@@ -1923,40 +1923,54 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   display: none !important;
 }
 
-/* "Документы" heading's own row — made a flex row so the Goods/Service
-   toggle (appended right after the heading itself — see
-   ensureDealTypeToggle) lands on the same line, pushed flush right by
-   justify-content (the heading's own (now hidden) subtitle, if it's a
-   sibling here too, doesn't affect this: display:none elements don't
-   participate in flex layout). */
-/* Native CardHeader this lives in ships Tailwind's own flex-col (stacking
-   the title above the now-hidden subtitle) — !important on direction here
-   is load-bearing: without it, flex-col's flex-direction wins (equal
-   specificity, but it's a Tailwind utility the native stylesheet defines
-   and this file's own display:flex alone doesn't touch that property), so
-   display:flex alone still stacked the title and toggle vertically
-   instead of placing them side by side (confirmed in production — the
-   toggle sat on its own line below "Документы" despite being the title's
-   own flex sibling). flex-wrap is what lets the toggle drop to its own
-   line on a narrow card instead of overflowing or squeezing the title;
-   with only one item left on that wrapped line, justify-content:
-   space-between naturally left-aligns it (nothing to space it from). */
+/* "Документы" heading's own CardHeader — a 2-column grid instead of a
+   flex row: title (.portal-docs-title-cell) and subtitle
+   (.portal-docs-subtitle) each get an explicit cell in column 1 (row 1
+   and row 2), so they stack exactly like Заявка на финансирование's own
+   heading+subtitle (see .portal-newapp-data-header) instead of competing
+   for one flex line with the toggle. The toggle spans both rows in
+   column 2, centered against the pair. !important on display is
+   load-bearing: the native CardHeader ships Tailwind's own flex/flex-col
+   (equal specificity, different stylesheet — this file's own display
+   alone doesn't win without it; confirmed in production, the toggle sat
+   on its own line below "Документы" before this). */
 .portal-docs-header-row {
-  display: flex !important;
-  flex-direction: row !important;
-  flex-wrap: wrap;
+  display: grid !important;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  column-gap: 12px;
+  /* Same large gap down to "Шаг 1 · Инвойс" as Заявка на финансирование's
+     own header uses down to its first field — see .portal-newapp-data-
+     header's matching value. */
+  padding-bottom: 24px;
 }
 
-/* Goods/Service — a plain two-way segmented control, same line as the
-   "Документы" heading (see .portal-docs-header-row above), kept no taller
-   than the heading text itself. Same bordered-pill recipe as the rest of
+.portal-docs-title-cell {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+/* The small "sits right under the title" gap — same value on both cards
+   (see .portal-newapp-data-subtitle). !important: this native paragraph
+   likely carries its own margin from the compiled bundle's own styling,
+   which this needs to win over consistently rather than depend on
+   whatever that happens to be. */
+.portal-docs-subtitle {
+  grid-column: 1;
+  grid-row: 2;
+  margin-top: 4px !important;
+}
+
+/* Goods/Service — a plain two-way segmented control, spanning both header
+   rows (see .portal-docs-header-row above), kept no taller than the
+   title+subtitle pair together. Same bordered-pill recipe as the rest of
    this file's own controls (.portal-theme-trigger, .portal-newapp-
    summary-back), not a new visual language — only the padding/font-size
    below are new, to fit this spot. */
 .portal-dealtype-toggle {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: center;
   display: inline-flex;
   flex-shrink: 0;
   gap: 4px;
@@ -1964,6 +1978,22 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
   border-radius: 8px;
   background: rgba(var(--ov-tint-rgb), 0.04);
+}
+
+@media (max-width: 640px) {
+  /* No second row of content to span once stacked to a single column —
+     the toggle just becomes its own full-width row, left-aligned, below
+     the title+subtitle pair. */
+  .portal-docs-header-row {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-dealtype-toggle {
+    grid-column: 1;
+    grid-row: 3;
+    justify-self: start;
+    margin-top: 8px;
+  }
 }
 
 .portal-dealtype-btn {
@@ -2528,7 +2558,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    so this tracks --muted-foreground exactly, including if that token
    ever changes. */
 .portal-newapp-data-subtitle {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
   font-size: 0.78rem;
   color: hsl(var(--muted-foreground));
 }
@@ -2538,12 +2568,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    (see .portal-newapp-submit-row), the header has the card's full width to
    itself. overflow-wrap stays as a cheap safety net regardless — no reason
    to drop it now that it isn't load-bearing for anything.
-   padding-bottom trims the native CardHeader gap below the (now one-line)
-   note, so "Сумма инвойса" and the rest of the fields below it sit closer
-   to the header instead of leaving a gap sized for the old, longer note. */
+   padding-bottom is this card's half of the shared header scheme (see
+   .portal-docs-header-row's matching value): a large, consistent gap down
+   to the first field — 8px used to read as the subtitle running straight
+   into "Номер инвойса"'s own label underneath it. */
 .portal-newapp-data-header {
   overflow-wrap: break-word;
-  padding-bottom: 8px;
+  padding-bottom: 24px;
 }
 
 /* Reserves clearance at the bottom of the card's own content for

@@ -1275,16 +1275,22 @@
       wrap.append(goodsBtn, serviceBtn);
     }
 
-    // On the same line as the "Документы" heading, flush right — found by
-    // its stable Russian text (translatePage hasn't run yet at this point
-    // in run(), see the language comment up top, so it's always still
-    // this exact string regardless of the active language), same as the
-    // "Документы" subtitle lookup elsewhere in this file.
+    // Right of the title+subtitle block, vertically centered against both
+    // — found by its stable Russian text (translatePage hasn't run yet at
+    // this point in run(), see the language comment up top, so it's
+    // always still this exact string regardless of the active language),
+    // same as the "Документы" subtitle lookup elsewhere in this file.
+    // portal-docs-header-row turns the header into a 2-column grid (title
+    //+ subtitle stacked in column 1 via their own classes, this toggle
+    // spanning both rows in column 2 — see portal-overrides.css) instead
+    // of reparenting title+subtitle into a new wrapper div, which would
+    // risk the exact crash documented elsewhere in this file.
     const docsHeading = Array.from(document.querySelectorAll('*')).find(
       (el) => el.children.length === 0 && el.textContent.trim() === 'Документы'
     );
     if (docsHeading && docsHeading.parentElement) {
       docsHeading.parentElement.classList.add('portal-docs-header-row');
+      docsHeading.classList.add('portal-docs-title-cell');
       if (docsHeading.nextElementSibling !== wrap) {
         docsHeading.insertAdjacentElement('afterend', wrap);
       }
