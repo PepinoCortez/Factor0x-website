@@ -1683,6 +1683,10 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 7px !important;
   background: rgba(var(--ov-tint-rgb), 0.12) !important;
   color: #fff !important;
+  /* One size for every field's own text/placeholder, and (since native
+     Upload buttons carry .border-input too — see button.border-input
+     just below) every native button's text as well. */
+  font-size: 0.875rem !important;
   box-shadow: none !important;
   transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
@@ -1848,9 +1852,12 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 /* Only "Дополнительно" gets the divider treatment — Шаг 1/Шаг 2 are
    always visually first (see NEWAPP_STEP_HEADING_ORDER), so neither of
-   them needs separating from something above. */
+   them needs separating from something above. No padding-top override
+   here on purpose: an earlier version added one (to clear the border
+   visually), which made the gap *before* "Дополнительно" 8px bigger than
+   the identical gap before "Шаг 2" — the border sits right at the top of
+   the same margin-top every heading already carries instead. */
 .portal-doc-group-heading.portal-doc-group-later {
-  padding-top: 12px;
   border-top: 1px solid rgba(var(--ov-tint-rgb), 0.16);
 }
 
@@ -1959,6 +1966,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   grid-column: 1;
   grid-row: 2;
   margin-top: 4px !important;
+  /* Matches .portal-newapp-data-subtitle's size exactly — this is a
+     native CardDescription (text-sm by default), that one is hand-built;
+     without this they read at two different sizes despite being the same
+     "card subtitle" role. */
+  font-size: 0.78rem !important;
 }
 
 /* Goods/Service — a plain two-way segmented control, spanning both header
@@ -2001,9 +2013,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 6px;
   background: transparent;
   color: rgba(var(--ov-muted-rgb), 0.78);
-  font-size: 0.78rem;
+  /* Same size as every other field's text (.border-input) — this control
+     reads as a field-level choice (Goods vs Service), same role. */
+  font-size: 0.875rem;
   font-weight: 500;
-  padding: 4px 10px;
+  padding: 3px 10px;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
@@ -2232,17 +2246,23 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   grid-column: 1;
   grid-row: 1;
   order: 1;
+  /* start (not the parent grid's own stretch): Документы used to always
+     be the taller card, so stretch only ever benefited Заявка's side (see
+     the comment below) — now that Заявка can end up taller (more fields,
+     the submit row's own reserved 84px), stretch started forcing
+     Документы's box down to match it instead, leaving empty space below
+     its own last row. Sizing to its own content removes that regardless
+     of which card happens to be taller on a given screen. */
+  align-self: start;
 }
 
-/* Документы is the taller card, so its own natural content height is what
-   the grid row (and Заявка's stretched height, see below) is measured
-   against — the native 24px of bottom padding below the last row
-   (Подтверждение долга дебитором) carries straight through into both
-   cards' bottom edge. Trimming it here raises both at once, without
-   touching Заявка's own padding-bottom (still reserved for the submit
-   button, see .portal-newapp-data-card > .p-6.pt-0 below). */
+/* Документы no longer stretches to match Заявка's height (see align-self
+   above), so this is simply the card's own bottom breathing room now —
+   kept equal to the 24px CardHeader already gives it at the top (see
+   .portal-docs-header-row), not trimmed to compensate for a taller
+   sibling the way it used to be. */
 .portal-newapp-docs-card > .p-6.pt-0 {
-  padding-bottom: 0;
+  padding-bottom: 24px;
 }
 
 .portal-new-application-page form > .portal-newapp-data-card {
@@ -2472,7 +2492,9 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-left: 1px solid rgba(var(--ov-tint-rgb), 0.16);
   background: transparent;
   color: rgba(var(--ov-muted-rgb), 0.9);
-  font-size: 0.8rem;
+  /* Same size as every other field's own text (.border-input above) —
+     "AED" is still field content, same role as the number next to it. */
+  font-size: 0.875rem;
   font-weight: 500;
   padding: 2px 4px 2px 10px;
   cursor: pointer;
@@ -2626,7 +2648,9 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 999px;
   background: transparent;
   color: rgba(var(--ov-muted-rgb), 0.85);
-  font-size: 0.82rem;
+  /* Same size as "Отправить" (.border-input and the submit button both
+     use 0.875rem) — one size for every button's own label. */
+  font-size: 0.875rem;
   font-weight: 500;
   padding: 0 20px;
   min-height: 44px;
