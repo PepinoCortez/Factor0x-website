@@ -1829,7 +1829,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    comment above restructureNewAppDocuments), so adjacent-sibling
    selectors can't tell rows/headings apart by DOM adjacency — both of the
    larger tiers are set directly by class instead. */
+/* position:relative anchors .portal-doc-step-spotlight below — an
+   absolutely positioned new sibling, measured and moved to match
+   whichever step is current (see updateNewAppStepSpotlight in
+   portal-overrides.js), never a wrapper the real headings/rows get
+   reparented into (same no-reparenting rule as the rest of this file). */
 .portal-doc-rows-grouped {
+  position: relative;
   display: flex !important;
   flex-direction: column !important;
   gap: 0;
@@ -1843,17 +1849,18 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   margin-top: 14px;
 }
 
+/* 28px, up from the old 20px (and Шаг 1 now carries the same value
+   instead of a 0 override) — one shared number for subtitle->Шаг 1 and
+   every step->step gap, large enough to clear the spotlight's own 16px
+   halo (see HALO in updateNewAppStepSpotlight) without it ever
+   overlapping the step above/below while it's parked there. */
 .portal-doc-group-heading {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
   padding: 4px 0 2px;
-  margin-top: 20px;
-}
-
-.portal-doc-group-step1 {
-  margin-top: 0;
+  margin-top: 28px;
 }
 
 /* Only "Дополнительно" gets the divider treatment — Шаг 1/Шаг 2 are
@@ -1871,6 +1878,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--ov-text);
+  transition: font-size 0.2s ease;
 }
 
 .portal-doc-group-required .portal-doc-group-title::before {
@@ -1882,6 +1890,27 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 50%;
   background: var(--warning);
   vertical-align: middle;
+  transition: width 0.2s ease, height 0.2s ease;
+}
+
+/* The step the spotlight container currently surrounds (Шаг 1/Шаг 2
+   only — Шаг 3 never scales, see the spec this was built against) —
+   title, hint and dot each step up through the same scale increments
+   used elsewhere on this page rather than a literal +20% multiply, per
+   the spec's own "через ступени существующей шкалы" wording. The
+   matching row-level bump is .portal-doc-row-scaled below. */
+.portal-doc-group-heading.portal-doc-step-scaled .portal-doc-group-title {
+  font-size: 0.95rem;
+}
+
+.portal-doc-group-heading.portal-doc-step-scaled .portal-doc-group-hint {
+  font-size: 0.85rem;
+}
+
+.portal-doc-group-heading.portal-doc-step-scaled.portal-doc-group-required .portal-doc-group-title::before {
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
 }
 
 /* The icon+label wrapper (confirmed from the compiled component: a plain
@@ -1902,6 +1931,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-doc-group-hint {
   font-size: 0.78rem;
   color: rgba(var(--ov-muted-rgb), 0.5);
+  transition: font-size 0.2s ease;
 }
 
 /* "Комплектность пакета / Загружено N из M документов" + its progress bar
@@ -1911,22 +1941,14 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   display: none;
 }
 
-/* Highlights whichever row restructureNewAppDocuments has decided is next
-   to upload (Tax Invoice, then the Step 2 document — never both, never
-   neither once both are done; see .portal-doc-row-next in
-   portal-overrides.js) — a plain background tint, same height as every
-   other row (no vertical padding added). Flush (zero side padding) read as
-   if it ended right at the first letter of the label; a 14px bleed
-   (negative margin + matching padding, so icon/text/button don't shift)
-   overcorrected the other way and poked out past the icon on the left.
-   6px keeps the same trick at a size that stays inside the card's own
-   left padding instead of crossing past the icon. */
-.portal-doc-row-next {
-  background: rgba(var(--ov-tint-rgb), 0.045);
-  border-radius: 10px;
-  margin: 0 -6px;
-  padding: 0 6px;
-}
+/* .portal-doc-row-next (see restructureNewAppDocuments in
+   portal-overrides.js — the next required document, Tax Invoice then
+   the Step 2 document) used to carry its own background tint here; the
+   spotlight container (.portal-doc-step-spotlight below) now surrounds
+   that same row instead, so the standalone highlight was removed rather
+   than kept as a redundant second one underneath it. The class stays —
+   .rounded-lg.bg-muted below still uses it to brighten that row's own
+   icon. */
 
 /* The native "Не загружено"/"Загружено" chip has no place in the new row
    format ("[icon] Name   description .... [Upload]") — isDocUploaded()
@@ -2170,6 +2192,76 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-newapp-docs-card .portal-doc-row-next .rounded-lg.bg-muted {
   opacity: 1;
   background: rgba(var(--ov-tint-rgb), 0.14) !important;
+}
+
+/* The accent container itself — one persistent element positioned/sized
+   by updateNewAppStepSpotlight (portal-overrides.js) to match whichever
+   step is current, left/right flush with .portal-doc-rows-grouped (which
+   already spans the same width as every document row, so this needs no
+   extra width math of its own to "match the rows' own edges"); top/
+   height come from that function as inline styles and transition here.
+   Background one tint step up from the old next-row highlight it
+   replaces (.portal-doc-row-next, above); border is the same gold used
+   on "Отправить" (#C79A36) at ~30% opacity, with only a soft matching
+   glow instead of a hard shadow. border-radius smaller than the card's
+   own 12px (never literally "radius minus padding" — that formula goes
+   negative this deep inside the card's own content, past its header) —
+   8px keeps the same smaller-nested-radius relationship used elsewhere
+   on this page (e.g. .portal-newapp-draft-btn) without going to 0.
+   z-index:0 (not just relying on first-child DOM order) belt-and-braces
+   against ever painting over the heading/row text it surrounds. */
+.portal-doc-step-spotlight {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 0;
+  border-radius: 8px;
+  background: rgba(var(--ov-tint-rgb), 0.06);
+  border: 1px solid rgba(199, 154, 54, 0.3);
+  box-shadow: 0 0 16px rgba(199, 154, 54, 0.1);
+  pointer-events: none;
+  opacity: 0;
+  transition: top 0.35s ease-in-out, height 0.35s ease-in-out, opacity 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portal-doc-step-spotlight {
+    transition: opacity 0.2s ease;
+  }
+}
+
+/* Headings/rows painting on top of the spotlight above: they're all
+   plain static-position flow children sharing the same default stacking
+   as each other, so DOM order alone (spotlight inserted first — see
+   updateNewAppStepSpotlight) already puts them above it; nothing extra
+   needed here. */
+
+/* Row-level half of the "current step scales up" treatment (see
+   .portal-doc-step-scaled on the heading side, above) — icon box via
+   transform (its real pixel size is native/compiled, not this file's own
+   doing, so a relative scale avoids hardcoding a guessed base size);
+   name/description bumped the same one step as the scaled heading's own
+   title; Upload button both bigger (precise +20% — 132->158 / 38->46 are
+   this file's own existing sizes, see button[data-testid^="button-upload
+   -"] and .border-input, not native ones) and swapped from its default
+   muted/outlined look to the same filled gold as "Отправить", since a
+   scaled-up step reads as "do this now", not just "available". */
+.portal-doc-row-scaled .rounded-lg.bg-muted {
+  transform: scale(1.2);
+}
+
+.portal-doc-row-scaled [data-testid^="text-doc-label-"],
+.portal-doc-row-scaled .portal-doc-desc {
+  font-size: 0.95rem !important;
+}
+
+.portal-doc-row-scaled button[data-testid^="button-upload-"] {
+  width: 158px !important;
+  min-height: 46px !important;
+  background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124) !important;
+  border-color: #F4D28494 !important;
+  color: #171008 !important;
+  font-weight: 600 !important;
 }
 
 /* ---- Mobile: every document row shares one structure, top to bottom ----

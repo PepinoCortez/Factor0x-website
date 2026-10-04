@@ -1351,6 +1351,89 @@
       : t('Шаг 2 · Подтверждение отгрузки', 'Step 2 · Proof of Shipment'));
   };
 
+  const prefersReducedMotion = () => {
+    try {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  // The accent container that highlights whichever step is current
+  // (restructureNewAppDocuments passes in activeStep — 1, 2 or 3, never
+  // more than one at a time) — one persistent element that moves/resizes
+  // between steps rather than a fresh one per step, per the spec this was
+  // built against ("контейнер — один и тот же элемент, который
+  // перемещается между шагами"). A new sibling appended once into
+  // rowsContainer (never reparenting the real heading/row nodes — see the
+  // no-reparenting note above restructureNewAppDocuments), absolutely
+  // positioned and measured against them instead: rows/headings sit at
+  // whatever height their own (possibly just-changed, see
+  // .portal-doc-step-scaled) content needs, which getBoundingClientRect-
+  // style measurement (here, offsetTop/offsetHeight, both relative to
+  // rowsContainer once it's position:relative) picks up accurately
+  // without having to duplicate that layout math in JS.
+  const updateNewAppStepSpotlight = (rowsContainer, activeStep) => {
+    const heading = rowsContainer.querySelector('.portal-doc-group-step' + activeStep);
+    const rows = Array.from(rowsContainer.children).filter(
+      (el) => el.dataset.step === String(activeStep) && el.style.display !== 'none'
+    );
+    let spotlight = rowsContainer.querySelector(':scope > .portal-doc-step-spotlight');
+    if (!heading || !rows.length) {
+      if (spotlight) spotlight.style.opacity = '0';
+      return;
+    }
+
+    if (!spotlight) {
+      spotlight = document.createElement('div');
+      spotlight.className = 'portal-doc-step-spotlight';
+      // First child, not last — paints *behind* every heading/row sibling
+      // in normal (unpositioned) stacking order, so its background tint
+      // never covers their text/icons/buttons despite being absolutely
+      // positioned over the same area.
+      rowsContainer.insertBefore(spotlight, rowsContainer.firstChild);
+    }
+
+    // ~1/3 less than the card's own 24px content padding (portal-overrides
+    // .css, .portal-newapp-data-card/.portal-newapp-docs-card > .p-6.pt-0)
+    // — the halo this container adds around the tight heading+rows box
+    // it's actually measuring, standing in for real inner padding since
+    // nothing here is reparented into an actual padded box (see above).
+    const HALO = 16;
+    const top = heading.offsetTop - HALO;
+    const bottom = rows.reduce((max, row) => Math.max(max, row.offsetTop + row.offsetHeight), 0) + HALO;
+    const height = bottom - top;
+
+    const alreadyPositioned = spotlight.dataset.portalPositioned === 'true';
+    const unchanged = alreadyPositioned
+      && spotlight.dataset.portalTop === String(top)
+      && spotlight.dataset.portalHeight === String(height);
+    spotlight.style.opacity = '1';
+    if (unchanged) return;
+    spotlight.dataset.portalTop = String(top);
+    spotlight.dataset.portalHeight = String(height);
+
+    if (alreadyPositioned && prefersReducedMotion()) {
+      // No movement animation — a quick cross-fade at the new spot
+      // instead (see the spec's prefers-reduced-motion requirement).
+      spotlight.style.transition = 'opacity 0.2s ease';
+      spotlight.style.opacity = '0';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        spotlight.style.top = top + 'px';
+        spotlight.style.height = height + 'px';
+        spotlight.style.opacity = '1';
+      }));
+    } else {
+      // Either the very first positioning (nothing to animate from yet)
+      // or normal motion, where the stylesheet's own top/height
+      // transition (portal-overrides.css) does the moving/resizing.
+      spotlight.style.transition = '';
+      spotlight.style.top = top + 'px';
+      spotlight.style.height = height + 'px';
+    }
+    spotlight.dataset.portalPositioned = 'true';
+  };
+
   const restructureNewAppDocuments = (form) => {
     const firstBadge = document.querySelector('[data-testid="badge-doc-status-invoice"]');
     const firstRow = firstBadge && firstBadge.closest('.flex.flex-col.gap-3');
@@ -1371,9 +1454,19 @@
     // (Tax Invoice, then the Step 2 document) still needs uploading —
     // never more than one at a time, and none once both are done.
     const step2Entry = NEWAPP_DOC_CONFIG[dealType].find((entry) => entry.step === 2);
+    const step2Uploaded = step2Entry ? isDocUploaded(step2Entry.key) : false;
     const nextRequiredKey = !invoiceUploaded
       ? 'invoice'
-      : (step2Entry && !isDocUploaded(step2Entry.key) ? step2Entry.key : null);
+      : (step2Entry && !step2Uploaded ? step2Entry.key : null);
+
+    // The one step the spotlight container (see updateNewAppStepSpotlight)
+    // currently sits around, and whose own heading/rows scale up (never
+    // Step 3 — it's optional, never the blocking thing to do "right now").
+    // Same progression nextRequiredKey already encodes, just carried as a
+    // step number instead of a document key so Step 3 (which has no
+    // single key of its own) can be reached too, once both required docs
+    // are in.
+    const activeStep = !invoiceUploaded ? 1 : (!step2Uploaded ? 2 : 3);
 
     // Visual order (see NEWAPP_DOC_VISUAL_ORDER) is ascending in insertion
     // order, so a running "previous step seen" is enough to tell the first
@@ -1395,6 +1488,8 @@
       row.style.order = String(NEWAPP_DOC_VISUAL_ORDER[key]);
       row.classList.toggle('portal-doc-row-next', key === nextRequiredKey);
       row.classList.toggle('portal-doc-row-first-in-group', entry.step !== previousStep);
+      row.dataset.step = String(entry.step);
+      row.classList.toggle('portal-doc-row-scaled', entry.step === activeStep && activeStep !== 3);
       previousStep = entry.step;
 
       const labelEl = document.querySelector('[data-testid="text-doc-label-' + key + '"]');
@@ -1414,6 +1509,15 @@
 
     rebuildDocGroupHeadings(rowsContainer);
     syncDocGroupStep2Heading(rowsContainer, dealType);
+
+    // Step 3 never scales (see the spec this was built against) — only
+    // its own heading ever needed checking below.
+    [1, 2].forEach((step) => {
+      const heading = rowsContainer.querySelector('.portal-doc-group-step' + step);
+      if (heading) heading.classList.toggle('portal-doc-step-scaled', step === activeStep);
+    });
+
+    updateNewAppStepSpotlight(rowsContainer, activeStep);
   };
 
   // Replaces the bare "Загружено 0 из 7 документов" deficit-framed counter
