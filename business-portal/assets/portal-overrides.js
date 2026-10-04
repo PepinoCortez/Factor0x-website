@@ -846,7 +846,10 @@
     // file but already initialized by the time this actually runs (this
     // function is only called from applyNewApplicationTheme via run(), at
     // the very end of the file).
-    note.append(t('Поля определяются автоматически.', 'Fields fill in automatically.'));
+    note.append(t(
+      'Поля заполняются автоматически из инвойса. Проверьте их и при необходимости исправьте.',
+      'Fields fill in automatically from the invoice. Check them and correct anything if needed.'
+    ));
     note.appendChild(buildDealInfoIcon(
       t(
         'Загрузите документы, и поля заполнятся автоматически из инвойса. Останется только проверить. Пока документы не загружены.',
@@ -1643,15 +1646,24 @@
     stepsCard.className = 'portal-newapp-side-card';
     const stepsTitle = document.createElement('h2');
     stepsTitle.className = 'portal-newapp-side-title';
-    stepsTitle.textContent = t('Что будет после подачи', 'What happens after you apply');
+    stepsTitle.textContent = t('Как подать заявку', 'How to apply');
     stepsCard.appendChild(stepsTitle);
 
     const stepsList = document.createElement('ol');
     stepsList.className = 'portal-newapp-steps';
     [
-      t('Подаёте заявку — данные и документы уходят на проверку.', 'You submit the application — the data and documents go for review.'),
-      t('Мы оцениваем риск-профиль сделки и рассчитываем ставку.', "We assess the deal's risk profile and calculate the rate."),
-      t('Возвращаемся с предложением по финансированию.', 'We come back with a financing offer.'),
+      t(
+        'Загрузите инвойс — создастся черновик, данные заявки заполнятся автоматически.',
+        'Upload the invoice — a draft is created and the application data fills in automatically.'
+      ),
+      t(
+        'Добавьте подтверждение отгрузки или оказания услуг и отправьте заявку на проверку.',
+        'Add proof of shipment or service delivery and submit the application for review.'
+      ),
+      t(
+        'Решение принимает финансирующий партнёр. Статус заявки отображается в разделе «Мои сделки», о результате мы также уведомим вас по email.',
+        'The financing partner makes the decision. The application status appears under "My Deals", and we’ll also notify you by email once there’s a result.'
+      ),
     ].forEach((text) => {
       const li = document.createElement('li');
       li.textContent = text;
@@ -1824,10 +1836,26 @@
     const subtitleEl = page.querySelector(':scope > div > p');
     if (subtitleEl) {
       setTextIfChanged(subtitleEl, t(
-        'Загрузите документы — остальные поля определятся автоматически.',
-        'Upload the documents — the remaining fields will fill in automatically.'
+        'Загрузите инвойс — данные заявки заполнятся автоматически.',
+        'Upload the invoice — the application data fills in automatically.'
       ));
     }
+
+    // "Документы" card's own native subtitle — found by its stable Russian
+    // text (translatePage hasn't run yet at this point in run(), see the
+    // language comment up top, so it's always still this exact string
+    // regardless of the active language).
+    const docsSubtitleEl = Array.from(form.querySelectorAll('p')).find((el) => {
+      if (el.children.length !== 0) return false;
+      return el.textContent.trim() === 'Приложите пакет документов сразу при подаче — или догрузите позже, в карточке этой сделки.';
+    });
+    if (docsSubtitleEl) {
+      setTextIfChanged(docsSubtitleEl, t(
+        'Загрузите инвойс и подтверждение отгрузки или оказания услуг. Остальные документы можно догрузить позже в карточке сделки.',
+        'Upload the invoice and proof of shipment or service delivery. The other documents can be added later from the deal card.'
+      ));
+    }
+
     fixNonSubmitButtonTypes(form);
     hideNewAppPackageProgress(form);
     restructureNewAppDocuments(form);
