@@ -1696,8 +1696,12 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   min-height: 38px;
 }
 
+/* ~20% shorter than the native 132px, and no user resize handle — that
+   handle sat in the textarea's own bottom-right corner, overlapping the
+   submit row below it at some widths. */
 .portal-new-application-page textarea.border-input {
-  min-height: 132px;
+  min-height: 106px;
+  resize: none;
 }
 
 /* Hide the native number-input spinner (Сумма инвойса) — it clashes with
@@ -1739,8 +1743,9 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 8px !important;
   font-size: 0.875rem !important;
   font-weight: 600 !important;
+  white-space: nowrap;
   min-height: 0 !important;
-  padding: 12px 24px !important;
+  padding: 12px 16px !important;
   box-shadow: none !important;
   transition: transform 0.2s, background 0.2s, border-color 0.2s !important;
 }
@@ -2211,21 +2216,25 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    Documents are the active thing the visitor works on; the data fields are
    a byproduct of them, so they sit next to (not above/below) each other. ---- */
 
-/* `form` itself becomes the grid — the data/docs cards stay exactly where
-   React put them among its direct children (see the comment above
-   applyNewAppColumnsLayout in portal-overrides.js for why: no reparenting,
-   only these classes + grid-column placement). */
+/* `form` no longer shares a single CSS Grid row across both columns —
+   that's what let a taller Документы or a taller Заявка stretch the
+   other to match, and why the submit row had to overlap Заявка's own
+   cell via align-self instead of simply following Комментарий (a real
+   second grid row would have hit the same cross-column interference one
+   level down). flex-direction: column + pulling Документы out via
+   position:absolute (see below) sidesteps that: Заявка and the submit
+   row are the only two items actually in flow, so they just stack one
+   after the other at their own natural heights — no shared row, no
+   overlap possible. The cards stay exactly where React put them among
+   form's direct children regardless (see the comment above
+   applyNewAppColumnsLayout in portal-overrides.js for why — no
+   reparenting, only these classes + positioning). */
 .portal-new-application-page form {
-  display: grid !important;
-  /* Документы (column 1) 15 points wider, Заявка на финансирование
-     (column 2) 15 points narrower than the even 50/50 split. */
-  grid-template-columns: minmax(0, 65fr) minmax(0, 35fr);
-  gap: 24px;
-  /* stretch (not start): both cards share row 1, so this is what makes the
-     shorter Заявка card match Документы's height exactly, top and bottom —
-     see .portal-newapp-data-card below for what fills the resulting extra
-     space. */
-  align-items: stretch;
+  position: relative;
+  display: flex !important;
+  flex-direction: column;
+  gap: 21px;
+  padding-left: calc((100% - 24px) * 0.65 + 24px);
 }
 
 /* 640px was too low for this specific 65/35 split: at anything below
@@ -2235,65 +2244,68 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    this, single column is the only layout that has room for both. */
 @media (max-width: 1100px) {
   .portal-new-application-page form {
-    grid-template-columns: 1fr;
+    padding-left: 0;
   }
 }
 
 /* Документы is the action (upload happens there); Данные is its result
    (fields fill in from what got uploaded) — left-to-right reading order
-   should match that, so Документы sits in the first column now. */
+   should match that, so Документы sits on the left now. Taken out of
+   flow entirely (not just visually first) — its own height no longer has
+   any effect on Заявка/the submit row's own stacking below, or vice
+   versa, which is what used to make the submit row overlap Комментарий:
+   both cards used to share one CSS Grid row, so a taller Документы (or a
+   taller Заявка) stretched the other to match. */
 .portal-new-application-page form > .portal-newapp-docs-card {
-  grid-column: 1;
-  grid-row: 1;
-  order: 1;
-  /* start (not the parent grid's own stretch): Документы used to always
-     be the taller card, so stretch only ever benefited Заявка's side (see
-     the comment below) — now that Заявка can end up taller (more fields,
-     the submit row's own reserved 84px), stretch started forcing
-     Документы's box down to match it instead, leaving empty space below
-     its own last row. Sizing to its own content removes that regardless
-     of which card happens to be taller on a given screen. */
-  align-self: start;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc((100% - 24px) * 0.65);
 }
 
-/* Документы no longer stretches to match Заявка's height (see align-self
-   above), so this is simply the card's own bottom breathing room now —
-   kept equal to the 24px CardHeader already gives it at the top (see
-   .portal-docs-header-row), not trimmed to compensate for a taller
-   sibling the way it used to be. */
+@media (max-width: 1100px) {
+  /* Single column: back in normal flow, first (above Заявка), full width. */
+  .portal-new-application-page form > .portal-newapp-docs-card {
+    position: static;
+    width: auto;
+    order: -1;
+  }
+}
+
+/* No longer stretches to match a sibling's height (nothing shares its row
+   any more) — simply its own bottom breathing room, same 24px the
+   CardHeader already gives it at the top (see .portal-docs-header-row). */
 .portal-newapp-docs-card > .p-6.pt-0 {
   padding-bottom: 24px;
 }
 
+/* Normal flow now (see the comment on `form` above) — no grid placement
+   needed, simply the first in-flow item, full width by default
+   (flex-column's own stretch). */
 .portal-new-application-page form > .portal-newapp-data-card {
-  grid-column: 2;
-  grid-row: 1;
-  order: 2;
-  /* Документы (7 rows) runs taller than Заявка (a handful of fields) —
-     align-items:stretch on the grid (above) is what makes this card match
-     that height exactly, top and bottom, instead of stopping short at its
-     own natural content height. The resulting empty space at the bottom is
-     deliberate — that's where .portal-newapp-submit-row lands (see below). */
+  order: 1;
 }
 
-/* Submit overlaps Заявка на финансирование's own grid cell (same column
-   and row as .portal-newapp-data-card) instead of sitting in a separate
-   full-width row, or actually inside the card's DOM — the last time two of
-   form's top-level sections got nested a level deeper (the old columns-
-   wrapper attempt), React's reconciliation for form's direct children
-   broke and duplicated content. Self-alignment inside the same grid cell
-   gets the same visual result without touching the DOM tree: pinned to
-   the bottom of the now-stretched cell. padding (left/right) matches
-   Заявка's own CardContent padding (p-6 = 24px) so the buttons' outer
-   edges line up with the fields' own edges above them, instead of the
-   row running flush to the column's outer boundary. */
+/* Comment's own trailing space inside the card (14px, same gap as between
+   any two fields — see .gap-5 below) is now independent of the bigger
+   1.5x gap down to the submit row (`form`'s own 21px gap, above): the two
+   no longer have to add up to one shared number the way this padding did
+   when it also had to reserve room for an overlapping button row (was
+   84px). */
+.portal-newapp-data-card > .p-6.pt-0 {
+  padding-bottom: 14px;
+}
+
+/* Submit row: a normal in-flow sibling of Заявка now (see the comment on
+   `form` above) — simply the next block after Комментарий, unable to
+   overlap it regardless of either card's height. padding (left/right)
+   matches Заявка's own CardContent padding (p-6 = 24px) so the buttons'
+   outer edges line up with the fields' own edges above them, instead of
+   the row running flush to the column's outer boundary. */
 .portal-new-application-page form > .portal-newapp-submit-row {
-  grid-column: 2;
-  grid-row: 1;
-  order: 3;
-  justify-self: stretch;
-  align-self: end;
-  padding: 21px 24px 0;
+  order: 2;
+  display: flex;
+  padding: 0 24px;
   /* Holds 3 children (see ensureNewAppFooterExtras): the missing-
      documents caption forces its own full-width line via flex-basis:
      100%, while Сохранить черновик / Отправить — equal-width, flex: 1
@@ -2305,7 +2317,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   row-gap: 10px;
   column-gap: 12px;
   margin: 0 0 24px;
-  z-index: 2;
 }
 
 /* Both buttons equal width, filling the full (now edge-aligned) row
@@ -2321,50 +2332,26 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    "clearly off" treatment for both buttons regardless of which one. */
 .portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"]:disabled,
 .portal-newapp-draft-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
   pointer-events: none;
 }
 
-.portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"]:disabled {
-  background: rgba(var(--ov-tint-rgb), 0.14) !important;
-  border-color: rgba(var(--ov-tint-rgb), 0.18) !important;
-  box-shadow: none !important;
-}
-
+/* Отправить disabled: the gold itself just dims (via the shared opacity
+   rule above) rather than being swapped for a flat gray background —
+   muted gold still reads as "this is the submit button, just not active
+   right now", where gray looked like a plain outline button instead,
+   barely visible against the card. Only the hover shine animation is
+   turned off (it shouldn't play on a button that can't be clicked). */
 .portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"]:disabled::after {
   display: none;
 }
 
 @media (max-width: 1100px) {
-  /* All three still carry an explicit grid-row: 1 from the desktop rules
-     above (never overridden here before) — at a single column that pins
-     all three into the exact same cell, stacked on top of each other
-     instead of one below another. grid-row: auto lets normal top-to-bottom
-     flow take over, so order (1/2/3, already set above) is what actually
-     determines the stacking order here. */
-  .portal-new-application-page form > .portal-newapp-data-card,
-  .portal-new-application-page form > .portal-newapp-docs-card,
+  /* Single column: no bottom margin needed below the submit row now that
+     Документы isn't sitting beside it any more (see the docs-card media
+     query above) — it's simply the last thing on the page. */
   .portal-new-application-page form > .portal-newapp-submit-row {
-    grid-column: 1;
-    grid-row: auto;
-  }
-
-  .portal-new-application-page form > .portal-newapp-data-card {
-    align-self: auto;
-  }
-
-  /* The card's own bottom padding no longer needs to reserve clearance for
-     the button — it's its own row below the card now, not overlapping it. */
-  .portal-newapp-data-card > .p-6.pt-0 {
-    padding-bottom: 24px;
-  }
-
-  /* Single column: no card left to overlap, so submit goes back to being
-     its own full-width row instead of overlaid on Заявка's corner. */
-  .portal-new-application-page form > .portal-newapp-submit-row {
-    justify-self: stretch;
-    align-self: auto;
     margin: 0;
   }
 
@@ -2685,7 +2672,8 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
      use 0.875rem) — one size for every button's own label. */
   font-size: 0.875rem;
   font-weight: 500;
-  padding: 0 20px;
+  white-space: nowrap;
+  padding: 0 14px;
   min-height: 44px;
   cursor: pointer;
   transition: background 0.18s ease, border-color 0.18s ease;
