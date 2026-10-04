@@ -608,7 +608,10 @@
   // same honest placeholder footing as the rest of this prototype (e.g.
   // the notification bell, or the demo document upload).
   const NEWAPP_AUTOFILL_INPUT_IDS = ['invoiceNumber', 'invoiceAmount', 'obligorName', 'obligorTrn', 'invoiceDate', 'dueDate'];
-  const NEWAPP_AUTOFILL_SELECT_IDS = ['currency', 'obligorCountry'];
+  // 'currency' (the native Валюта field) is handled separately now — see
+  // ensureNewAppInlineCurrencyFields — folded into the Сумма инвойса field
+  // itself instead of its own row.
+  const NEWAPP_AUTOFILL_SELECT_IDS = ['obligorCountry'];
 
   const NEWAPP_LOCKED_PLACEHOLDER = t('Определится автоматически', 'Determined automatically');
   const NEWAPP_PROCESSING_PLACEHOLDER = t('Данные извлекаются…', 'Extracting data…');
@@ -648,6 +651,12 @@
     wrapper.classList.remove('portal-field-locked');
     const icon = wrapper.querySelector('.portal-lock-icon');
     if (icon) icon.style.display = 'none';
+    // Сумма инвойса's currency <select> is edited together with the
+    // amount itself — see ensureNewAppInlineCurrencyFields.
+    if (field.id === 'invoiceAmount') {
+      const currencySelect = wrapper.querySelector('.portal-inline-currency');
+      if (currencySelect) currencySelect.disabled = false;
+    }
     field.focus();
   };
 
@@ -658,11 +667,18 @@
       const wrapper = newAppFieldWrapper(field);
       wrapper.classList.toggle('portal-field-skeleton', state === 'processing');
 
+      // Сумма инвойса's own currency <select> (see
+      // ensureNewAppInlineCurrencyFields) mirrors the amount field's
+      // disabled state exactly — they're edited together, unlocked
+      // together (see unlockNewAppField).
+      const currencySelect = id === 'invoiceAmount' ? wrapper.querySelector('.portal-inline-currency') : null;
+
       if (state !== 'filled') {
         field.disabled = true;
         wrapper.classList.add('portal-field-locked');
         // No text during the shimmer — see .portal-field-skeleton.
         field.placeholder = state === 'processing' ? '' : NEWAPP_LOCKED_PLACEHOLDER;
+        if (currencySelect) currencySelect.disabled = true;
         return;
       }
       if (field.dataset.portalAutofilled) return;
@@ -676,6 +692,10 @@
         field.dataset.portalAutoValue = mock;
         field.disabled = true;
         wrapper.classList.add('portal-field-locked', 'portal-field-active');
+        if (currencySelect) {
+          currencySelect.disabled = true;
+          currencySelect.value = NEWAPP_MOCK_AUTOFILL.currency || 'AED';
+        }
         if (icon) {
           icon.innerHTML = NEWAPP_PENCIL_ICON_SVG;
           icon.classList.add('portal-lock-icon-editable');
@@ -696,6 +716,10 @@
         field.disabled = false;
         wrapper.classList.remove('portal-field-locked');
         wrapper.classList.add('portal-field-invalid');
+        if (currencySelect) {
+          currencySelect.disabled = false;
+          currencySelect.value = NEWAPP_MOCK_AUTOFILL.currency || 'AED';
+        }
         if (icon) icon.style.display = 'none';
       }
     });
@@ -847,7 +871,7 @@
   // one-time measurement rather than living inside a React-owned node.
   // The chevron itself is still hidden in place (a style-only change, not
   // a structural one — safe, unlike adding/moving a child).
-  const NEWAPP_LOCKED_SELECT_IDS = ['currency', 'obligorCountry'];
+  const NEWAPP_LOCKED_SELECT_IDS = ['obligorCountry'];
 
   const addNewAppSelectLockIcons = (form) => {
     NEWAPP_LOCKED_SELECT_IDS.forEach((id) => {
@@ -1621,6 +1645,69 @@
     form.dataset.portalCustomFieldsAdded = 'true';
   };
 
+  const NEWAPP_CURRENCY_OPTIONS = ['AED', 'USD', 'EUR'];
+
+  const buildInlineCurrencySelect = (id) => {
+    const select = document.createElement('select');
+    select.className = 'portal-inline-currency';
+    select.id = id;
+    select.setAttribute('aria-label', t('Валюта', 'Currency'));
+    NEWAPP_CURRENCY_OPTIONS.forEach((code) => {
+      const option = document.createElement('option');
+      option.value = code;
+      option.textContent = code;
+      select.appendChild(option);
+    });
+    return select;
+  };
+
+  // "Валюта" removed as its own field — folded into Сумма инвойса
+  // (autofilled together with the amount, locked/unlocked together — see
+  // applyNewAppAutofillState and unlockNewAppField) and into Запрашиваемая
+  // сумма (its own independent, always-editable picker). Both default to
+  // AED when nothing more specific applies — same fallback the native
+  // field itself used before this.
+  const ensureNewAppInlineCurrencyFields = (form) => {
+    if (form.dataset.portalInlineCurrencyAdded) return;
+
+    const nativeCurrency = form.querySelector('#currency');
+    if (nativeCurrency) {
+      const nativeWrapper = newAppFieldWrapper(nativeCurrency);
+      if (nativeWrapper) nativeWrapper.style.display = 'none';
+    }
+
+    const amountInput = form.querySelector('#invoiceAmount');
+    if (amountInput) {
+      // Currency was its own column beside Сумма инвойса in a 2-up grid
+      // row — now that it's hidden, that row only has one real column
+      // left, so it's forced to span the full row width.
+      const amountRow = amountInput.closest('[class*="grid-cols"]');
+      if (amountRow) amountRow.classList.add('portal-amount-row-single');
+      const amountWrapper = newAppFieldWrapper(amountInput);
+      if (amountWrapper) {
+        amountWrapper.classList.add('portal-lock-anchor');
+        const select = buildInlineCurrencySelect('invoiceAmountCurrency');
+        select.disabled = true;
+        select.value = 'AED';
+        amountInput.insertAdjacentElement('afterend', select);
+      }
+    }
+
+    const requestedAmountInput = form.querySelector('#requestedAmount');
+    if (requestedAmountInput) {
+      // .portal-lock-anchor is reused purely for its position:relative —
+      // requestedAmount never gets the locked/padding behavior the rest
+      // of that class implies, since it never carries .portal-field-locked.
+      const requestedWrapper = newAppFieldWrapper(requestedAmountInput);
+      if (requestedWrapper) requestedWrapper.classList.add('portal-lock-anchor');
+      const select = buildInlineCurrencySelect('requestedAmountCurrency');
+      select.value = 'AED';
+      requestedAmountInput.insertAdjacentElement('afterend', select);
+    }
+
+    form.dataset.portalInlineCurrencyAdded = 'true';
+  };
+
   const setFieldHintState = (wrapper, neutralText, errorText, isError) => {
     const hint = wrapper.querySelector('.portal-field-hint');
     if (!hint) return;
@@ -1797,8 +1884,8 @@
 
   const fillNewAppSummary = (overlay, form) => {
     const amount = form.querySelector('#invoiceAmount') && form.querySelector('#invoiceAmount').value;
-    const currencySpan = form.querySelector('#currency span');
-    const currency = currencySpan ? currencySpan.textContent.trim() : '';
+    const currencySelect = form.querySelector('#invoiceAmountCurrency');
+    const currency = currencySelect ? currencySelect.value : '';
     const obligor = form.querySelector('#obligorName') && form.querySelector('#obligorName').value;
     const dueDate = form.querySelector('#dueDate') && form.querySelector('#dueDate').value;
     const docs = newAppDocStatus();
@@ -1959,6 +2046,7 @@
 
     const dataCard = applyNewAppColumnsLayout(form);
     ensureNewAppCustomFields(dataCard, form);
+    ensureNewAppInlineCurrencyFields(form);
     wireNewAppFieldMuting(dataCard);
     addNewAppLockIcons(form);
     addNewAppSelectLockIcons(form);
