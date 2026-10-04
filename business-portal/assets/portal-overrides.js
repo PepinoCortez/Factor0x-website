@@ -1612,17 +1612,15 @@
     const stepsList = document.createElement('ol');
     stepsList.className = 'portal-newapp-steps';
     [
+      t('Загрузите инвойс', 'Upload the invoice'),
+      t('Добавьте подтверждение отгрузки или услуг', 'Add proof of shipment or service'),
       t(
-        'Загрузите инвойс — создастся черновик, данные заявки заполнятся автоматически.',
-        'Upload the invoice — a draft is created and the application data fills in automatically.'
+        'Добавьте дополнительные документы: они помогают быстрее рассмотреть заявку и повышают шансы на одобрение',
+        'Add additional documents: they help the application get reviewed faster and improve approval odds'
       ),
       t(
-        'Добавьте подтверждение отгрузки или оказания услуг и отправьте заявку на проверку.',
-        'Add proof of shipment or service delivery and submit the application for review.'
-      ),
-      t(
-        'Решение принимает финансирующий партнёр. Статус заявки отображается в разделе «Мои сделки», о результате мы также уведомим вас по email.',
-        'The financing partner makes the decision. The application status appears under "My Deals", and we’ll also notify you by email once there’s a result.'
+        'Отправьте — решение примет финансирующий партнёр, статус будет в «Мои сделки»',
+        'Submit — the financing partner makes the decision, status appears under "My Deals"'
       ),
     ].forEach((text) => {
       const li = document.createElement('li');
