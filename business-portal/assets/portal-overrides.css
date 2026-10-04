@@ -1837,136 +1837,51 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-doc-rows-grouped > .flex.flex-col.gap-3 {
   margin-top: 10px;
-  transition: opacity 0.2s ease;
 }
 
 .portal-doc-rows-grouped > .flex.flex-col.gap-3.portal-doc-row-first-in-group {
   margin-top: 14px;
 }
 
-/* Dims a locked step's own rows along with its heading (see
-   .portal-doc-group-heading[data-step-state="locked"] below) — applied
-   per row in restructureNewAppDocuments (portal-overrides.js), keyed off
-   that row's own entry.step rather than DOM/visual adjacency, since
-   Step 3 alone can hold several rows. */
-.portal-doc-rows-grouped > .flex.flex-col.gap-3.portal-doc-row-locked {
-  opacity: 0.4;
-}
-
-/* position:relative + the left padding make room for the numbered
-   circle (::before below) — 20px circle + 10px gap to the text, the
-   same 30px recipe as .portal-newapp-steps (the "Как подать заявку"
-   sidebar) so both use identical numbering chrome. */
 .portal-doc-group-heading {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  padding: 4px 0 2px 30px;
+  padding: 4px 0 2px;
   margin-top: 20px;
-  transition: opacity 0.2s ease;
 }
 
 .portal-doc-group-step1 {
   margin-top: 0;
 }
 
+/* Only "Дополнительно" gets the divider treatment — Шаг 1/Шаг 2 are
+   always visually first (see NEWAPP_STEP_HEADING_ORDER), so neither of
+   them needs separating from something above. No padding-top override
+   here on purpose: an earlier version added one (to clear the border
+   visually), which made the gap *before* "Дополнительно" 8px bigger than
+   the identical gap before "Шаг 2" — the border sits right at the top of
+   the same margin-top every heading already carries instead. */
+.portal-doc-group-heading.portal-doc-group-later {
+  border-top: 1px solid rgba(var(--ov-tint-rgb), 0.16);
+}
+
 .portal-doc-group-title {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--ov-text);
-  transition: font-size 0.2s ease;
 }
 
-/* Current step: one size level up, so it reads as "the one to act on
-   now" among the three — see the matching circle glow below. */
-.portal-doc-group-heading[data-step-state="active"] .portal-doc-group-title {
-  font-size: 0.95rem;
-}
-
-/* The numbered circle itself — same gradient/dark-number recipe as
-   .portal-newapp-steps li::before (the sidebar's own step numbers),
-   copied rather than shared via class since these live in a different
-   part of the page. Steps 1/2 are required, so they're solid gold by
-   default; Step 3 overrides to outline-only below (it's optional). */
-.portal-doc-group-heading::before {
-  position: absolute;
-  left: 0;
-  top: 2px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.72rem;
-  font-weight: 700;
-  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
-}
-
-.portal-doc-group-step1::before {
-  content: '1';
-  color: #171008;
-  background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124);
-}
-
-.portal-doc-group-step2::before {
-  content: '2';
-  color: #171008;
-  background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124);
-}
-
-/* Optional step — contour only, no fill, so it reads as "nice to have"
-   next to Step 1/2's solid-gold "required" circles. */
-.portal-doc-group-step3::before {
-  content: '3';
-  color: #C79A36;
-  background: transparent;
-  border: 1.5px solid rgba(199, 154, 54, 0.55);
-}
-
-/* Done: the circle keeps its own step's fill (gold for 1/2, outline for
-   3 — not that Step 3 ever actually reaches this state in practice, see
-   the stepStates comment in portal-overrides.js, but the rule stays
-   generic rather than hardcoded to just two steps), only the glyph
-   swaps to a checkmark. */
-.portal-doc-group-heading[data-step-state="completed"]::before {
-  content: '✓';
-}
-
-/* Current step's circle gets a soft glow ring on top of its own fill/
-   outline — the brighter, "act now" treatment named in the spec this was
-   built against, distinct from Step 3's permanent outline look (a glow
-   can layer onto either the solid or the outline circle the same way). */
-.portal-doc-group-heading[data-step-state="active"]::before {
-  box-shadow: 0 0 0 3px rgba(199, 154, 54, 0.28);
-}
-
-/* Locked (nothing uploaded yet to unlock Step 2/3): the whole heading —
-   circle included, via the shared opacity — dims along with its own rows
-   (.portal-doc-row-locked above); no separate circle override needed. */
-.portal-doc-group-heading[data-step-state="locked"] {
-  opacity: 0.4;
-}
-
-/* Short connecting tick below each required step's own circle — a full
-   thread running past the document rows between steps isn't reliable
-   here: those rows sit beside the headings as separate flex children
-   (not nested under them — see the no-reparenting note above
-   restructureNewAppDocuments), and can grow taller than usual (a
-   wrapped hint line, a long filename once uploaded), which a fixed-
-   length line can't track. None on Step 3 — it's the last circle, with
-   nothing below to connect to. */
-.portal-doc-group-step1::after,
-.portal-doc-group-step2::after {
+.portal-doc-group-required .portal-doc-group-title::before {
   content: '';
-  position: absolute;
-  left: 9px;
-  top: 24px;
-  width: 1px;
-  height: 14px;
-  background: rgba(var(--ov-tint-rgb), 0.14);
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--warning);
+  vertical-align: middle;
 }
 
 /* The icon+label wrapper (confirmed from the compiled component: a plain

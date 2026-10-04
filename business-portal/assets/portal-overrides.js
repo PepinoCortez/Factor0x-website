@@ -1320,25 +1320,20 @@
     if (rowsContainer.dataset.portalHeadingsBuilt) return;
     rowsContainer.dataset.portalHeadingsBuilt = 'true';
 
-    // Class alone now carries both the numbering (::before/::after in
-    // portal-overrides.css key off .portal-doc-group-step1/2/3 directly)
-    // and the old "required vs later" distinction it replaces — a
-    // separate data-step-state attribute (set per call in
-    // restructureNewAppDocuments, since it depends on live upload state)
-    // layers the active/completed/locked/available look on top.
-    rowsContainer.appendChild(buildDocGroupHeading(
+    const step1Heading = buildDocGroupHeading(
       t('Шаг 1 · Инвойс', 'Step 1 · Invoice'),
       t('Создаёт заявку и заполняет её данные', 'Creates the application and fills in its data'),
-      NEWAPP_STEP_HEADING_ORDER[1], 'portal-doc-group-step1'
-    ));
+      NEWAPP_STEP_HEADING_ORDER[1], 'portal-doc-group-required'
+    );
+    step1Heading.classList.add('portal-doc-group-step1');
+    rowsContainer.appendChild(step1Heading);
+    const step2Heading = buildDocGroupHeading('', t('Нужно для отправки заявки', 'Needed to submit the application'), NEWAPP_STEP_HEADING_ORDER[2], 'portal-doc-group-required');
+    step2Heading.classList.add('portal-doc-group-step2');
+    rowsContainer.appendChild(step2Heading);
     rowsContainer.appendChild(buildDocGroupHeading(
-      '', t('Нужно для отправки заявки', 'Needed to submit the application'),
-      NEWAPP_STEP_HEADING_ORDER[2], 'portal-doc-group-step2'
-    ));
-    rowsContainer.appendChild(buildDocGroupHeading(
-      t('Шаг 3 · Дополнительные документы', 'Step 3 · Additional documents'),
-      t('По желанию: повышают шансы на одобрение', 'Optional: improve your approval odds'),
-      NEWAPP_STEP_HEADING_ORDER[3], 'portal-doc-group-step3'
+      t('Дополнительно', 'Additional'),
+      '',
+      NEWAPP_STEP_HEADING_ORDER[3], 'portal-doc-group-later'
     ));
   };
 
@@ -1376,23 +1371,9 @@
     // (Tax Invoice, then the Step 2 document) still needs uploading —
     // never more than one at a time, and none once both are done.
     const step2Entry = NEWAPP_DOC_CONFIG[dealType].find((entry) => entry.step === 2);
-    const step2Uploaded = step2Entry ? isDocUploaded(step2Entry.key) : false;
     const nextRequiredKey = !invoiceUploaded
       ? 'invoice'
-      : (step2Entry && !step2Uploaded ? step2Entry.key : null);
-
-    // Same "one active step at a time" logic as nextRequiredKey above,
-    // extended to all 3 steps (including Step 3, which never blocks
-    // submission, so it only ever reaches 'active' as an invitation, never
-    // 'completed' — see the spec this was built against). Drives both the
-    // step heading's numbered circle/title (below) and, for whichever
-    // step is 'locked', the dimmed-out state of its own document rows
-    // (.portal-doc-row-locked, applied per row in the loop below).
-    const stepStates = {
-      1: invoiceUploaded ? 'completed' : 'active',
-      2: step2Uploaded ? 'completed' : (invoiceUploaded ? 'active' : 'locked'),
-      3: !invoiceUploaded ? 'locked' : (step2Uploaded ? 'active' : 'available'),
-    };
+      : (step2Entry && !isDocUploaded(step2Entry.key) ? step2Entry.key : null);
 
     // Visual order (see NEWAPP_DOC_VISUAL_ORDER) is ascending in insertion
     // order, so a running "previous step seen" is enough to tell the first
@@ -1414,7 +1395,6 @@
       row.style.order = String(NEWAPP_DOC_VISUAL_ORDER[key]);
       row.classList.toggle('portal-doc-row-next', key === nextRequiredKey);
       row.classList.toggle('portal-doc-row-first-in-group', entry.step !== previousStep);
-      row.classList.toggle('portal-doc-row-locked', stepStates[entry.step] === 'locked');
       previousStep = entry.step;
 
       const labelEl = document.querySelector('[data-testid="text-doc-label-' + key + '"]');
@@ -1434,11 +1414,6 @@
 
     rebuildDocGroupHeadings(rowsContainer);
     syncDocGroupStep2Heading(rowsContainer, dealType);
-
-    [1, 2, 3].forEach((step) => {
-      const heading = rowsContainer.querySelector('.portal-doc-group-step' + step);
-      if (heading) heading.dataset.stepState = stepStates[step];
-    });
   };
 
   // Replaces the bare "Загружено 0 из 7 документов" deficit-framed counter
