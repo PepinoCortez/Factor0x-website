@@ -1922,37 +1922,51 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    justify-content (the heading's own (now hidden) subtitle, if it's a
    sibling here too, doesn't affect this: display:none elements don't
    participate in flex layout). */
+/* Native CardHeader this lives in ships Tailwind's own flex-col (stacking
+   the title above the now-hidden subtitle) — !important on direction here
+   is load-bearing: without it, flex-col's flex-direction wins (equal
+   specificity, but it's a Tailwind utility the native stylesheet defines
+   and this file's own display:flex alone doesn't touch that property), so
+   display:flex alone still stacked the title and toggle vertically
+   instead of placing them side by side (confirmed in production — the
+   toggle sat on its own line below "Документы" despite being the title's
+   own flex sibling). flex-wrap is what lets the toggle drop to its own
+   line on a narrow card instead of overflowing or squeezing the title;
+   with only one item left on that wrapped line, justify-content:
+   space-between naturally left-aligns it (nothing to space it from). */
 .portal-docs-header-row {
-  display: flex;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 10px;
 }
 
 /* Goods/Service — a plain two-way segmented control, same line as the
-   "Документы" heading (see .portal-docs-header-row above). Same
-   bordered-pill recipe as the rest of this file's own controls
-   (.portal-theme-trigger, .portal-newapp-summary-back), not a new visual
-   language. */
+   "Документы" heading (see .portal-docs-header-row above), kept no taller
+   than the heading text itself. Same bordered-pill recipe as the rest of
+   this file's own controls (.portal-theme-trigger, .portal-newapp-
+   summary-back), not a new visual language — only the padding/font-size
+   below are new, to fit this spot. */
 .portal-dealtype-toggle {
   display: inline-flex;
   flex-shrink: 0;
   gap: 4px;
-  padding: 3px;
+  padding: 2px;
   border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
-  border-radius: 10px;
+  border-radius: 8px;
   background: rgba(var(--ov-tint-rgb), 0.04);
 }
 
 .portal-dealtype-btn {
   border: none;
-  border-radius: 7px;
+  border-radius: 6px;
   background: transparent;
   color: rgba(var(--ov-muted-rgb), 0.78);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  padding: 7px 16px;
+  padding: 4px 10px;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
