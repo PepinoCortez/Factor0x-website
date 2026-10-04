@@ -1804,17 +1804,33 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    that used to sit in this rule's place — `order` breaks visual adjacency
    away from DOM adjacency, so a `+` combinator can no longer be trusted to
    mean "next on screen". */
-/* Three-tier vertical rhythm, smallest to largest: rows within the same
-   group (gap, below), a group's heading to its own first row
-   (.portal-doc-row-first-in-group's margin-top), and group to group (the
-   heading's own margin-top) — order reshuffles visual position away from
-   DOM position (see the comment above restructureNewAppDocuments), so
-   adjacent-sibling selectors can't tell these apart; both of the larger
-   tiers are set directly by class instead. */
+/* Three-tier vertical rhythm, smallest to largest — all three set as
+   explicit margin-top, deliberately *not* mixed with flex `gap` (an
+   earlier version used gap:10px as a shared base plus margin-top on top
+   of it for the two bigger tiers — gap and margin both contribute
+   independently, so they silently added together into bigger totals than
+   either number alone suggested, which is how Step 2's heading-to-row gap
+   and the space before "Дополнительно" both ended up larger than
+   intended). Row-to-row is the default (applies to every row); a group's
+   first row gets more (heading-to-row); a heading itself gets the most
+   (group-to-group) except Шаг 1, which is always visually first (see
+   NEWAPP_STEP_HEADING_ORDER) and has nothing above it to separate from.
+   order reshuffles visual position away from DOM position (see the
+   comment above restructureNewAppDocuments), so adjacent-sibling
+   selectors can't tell rows/headings apart by DOM adjacency — both of the
+   larger tiers are set directly by class instead. */
 .portal-doc-rows-grouped {
   display: flex !important;
   flex-direction: column !important;
-  gap: 10px;
+  gap: 0;
+}
+
+.portal-doc-rows-grouped > .flex.flex-col.gap-3 {
+  margin-top: 10px;
+}
+
+.portal-doc-rows-grouped > .flex.flex-col.gap-3.portal-doc-row-first-in-group {
+  margin-top: 14px;
 }
 
 .portal-doc-group-heading {
@@ -1823,14 +1839,9 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   align-items: flex-start;
   gap: 2px;
   padding: 4px 0 2px;
-  margin-top: 26px;
+  margin-top: 20px;
 }
 
-/* Шаг 1 is always visually first (see NEWAPP_STEP_HEADING_ORDER) — nothing
-   above it to separate from. Headings are DOM-appended after every native
-   row (see rebuildDocGroupHeadings), so :first-child can't identify it;
-   it's tagged with this class directly in restructureNewAppDocuments
-   instead. */
 .portal-doc-group-step1 {
   margin-top: 0;
 }
@@ -1839,12 +1850,8 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    always visually first (see NEWAPP_STEP_HEADING_ORDER), so neither of
    them needs separating from something above. */
 .portal-doc-group-heading.portal-doc-group-later {
-  padding-top: 20px;
+  padding-top: 12px;
   border-top: 1px solid rgba(var(--ov-tint-rgb), 0.16);
-}
-
-.portal-doc-row-first-in-group {
-  margin-top: 6px;
 }
 
 .portal-doc-group-title {
@@ -2205,7 +2212,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    touching Заявка's own padding-bottom (still reserved for the submit
    button, see .portal-newapp-data-card > .p-6.pt-0 below). */
 .portal-newapp-docs-card > .p-6.pt-0 {
-  padding-bottom: 8px;
+  padding-bottom: 0;
 }
 
 .portal-new-application-page form > .portal-newapp-data-card {
@@ -2451,17 +2458,17 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   100% { background-position: -200% 0; }
 }
 
-/* Same size/color as "Приложите пакет документов..." (Документы card's
-   own subtitle, native text-sm text-muted-foreground) — hsl(var(...))
-   rather than a hand-picked rgba so this tracks --muted-foreground
-   exactly, including if that token ever changes. */
-/* Sits beside the "Заявка на финансирование" heading itself now (appended
-   as its own last child — see ensureNewAppAutoFillNote), not below it as a
-   separate line. buildDealInfoIcon already sets its own inline-flex
-   display; this just adds the gap from the heading text. */
-.portal-newapp-autofill-note {
-  margin-left: 8px;
-  vertical-align: middle;
+/* "Заявка на финансирование" subtitle — text depends on autofill state
+   (see updateNewAppDataSubtitle), same small/secondary styling as the
+   group hints (.portal-doc-group-hint) and the "Документы" card's own
+   native subtitle (.portal-docs-subtitle below, native text-sm
+   text-muted-foreground) — hsl(var(...)) rather than a hand-picked rgba
+   so this tracks --muted-foreground exactly, including if that token
+   ever changes. */
+.portal-newapp-data-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: hsl(var(--muted-foreground));
 }
 
 /* Used to reserve room for "Отправить" when it sat top-right, overlapping

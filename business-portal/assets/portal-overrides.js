@@ -889,32 +889,36 @@
   // language instead of each hardcoding the string separately.
   const NEWAPP_DATA_HEADING = t('Заявка на финансирование', 'Financing Application');
 
-  const ensureNewAppAutoFillNote = (dataCard) => {
-    if (!dataCard || dataCard.querySelector('.portal-newapp-autofill-note')) return;
+  // One-time: the subtitle line itself — see updateNewAppDataSubtitle for
+  // the text, which depends on the invoice's autofill state and so has to
+  // be refreshed every tick, unlike this element's own creation.
+  const ensureNewAppDataSubtitle = (dataCard) => {
+    if (!dataCard || dataCard.querySelector('.portal-newapp-data-subtitle')) return;
     const heading = Array.from(dataCard.querySelectorAll('*')).find(
       (el) => el.children.length === 0 && el.textContent.trim() === NEWAPP_DATA_HEADING
     );
     if (!heading) return;
-    // Appended *inside* the heading itself (not as a sibling after it) so
-    // the icon sits beside "Заявка на финансирование" on the same line —
-    // buildDealInfoIcon is defined further down this file but already
-    // initialized by the time this actually runs (this function is only
-    // called from applyNewApplicationTheme via run(), at the very end of
-    // the file).
-    const icon = buildDealInfoIcon(
-      t(
-        'Поля заполняются автоматически из инвойса. Проверьте их и при необходимости исправьте.',
-        'Fields fill in automatically from the invoice. Check them and correct anything if needed.'
-      )
-    );
-    icon.classList.add('portal-newapp-autofill-note');
-    heading.appendChild(icon);
+    const subtitle = document.createElement('p');
+    subtitle.className = 'portal-newapp-data-subtitle';
+    heading.insertAdjacentElement('afterend', subtitle);
     // Submit overlaps this same header area (position: sticky, top-right —
     // see .portal-newapp-submit-row) instead of sitting in flow; without a
     // reserved gutter, this text runs straight under the button on every
     // width this column's ever rendered at (confirmed by testing — not
     // only at narrow viewports).
     if (heading.parentElement) heading.parentElement.classList.add('portal-newapp-data-header');
+  };
+
+  const updateNewAppDataSubtitle = (form) => {
+    const subtitle = document.querySelector('.portal-newapp-data-subtitle');
+    if (!subtitle) return;
+    const state = form.dataset.portalAutofillState || 'empty';
+    const text = state === 'filled'
+      ? t('Проверьте данные и укажите запрашиваемую сумму', 'Check the details and enter the requested amount')
+      : state === 'processing'
+        ? t('Извлекаем данные из инвойса…', 'Extracting data from the invoice…')
+        : t('Загрузите инвойс — поля заполнятся автоматически', 'Upload the invoice — fields will fill in automatically');
+    setTextIfChanged(subtitle, text);
   };
 
   const validateNewAppForm = (form) => {
@@ -1725,6 +1729,7 @@
     updateNewAppSubmitGate(form);
     softenDocStatusTone();
     updateNewAppAutofillFlow(form);
+    updateNewAppDataSubtitle(form);
   };
 
   const buildNewAppSidebar = () => {
@@ -1924,15 +1929,28 @@
     const subtitleEl = page.querySelector(':scope > div > p');
     if (subtitleEl) subtitleEl.style.display = 'none';
 
-    // "Документы" card's own native subtitle — found by its stable Russian
-    // text (translatePage hasn't run yet at this point in run(), see the
-    // language comment up top, so it's always still this exact string
-    // regardless of the active language). Removed outright, same as above.
+    // "Документы" card's own native subtitle — repurposed rather than
+    // hidden now, found by its stable Russian text (translatePage hasn't
+    // run yet at this point in run(), see the language comment up top, so
+    // it's always still this exact string regardless of the active
+    // language) the first time, and by its own class on every later tick
+    // (setTextIfChanged's nodeValue-mutation is safe to repeat; re-running
+    // the text-match `find` below isn't wasted work either way, just
+    // slightly less direct once rewritten).
     const docsSubtitleEl = Array.from(form.querySelectorAll('p')).find((el) => {
       if (el.children.length !== 0) return false;
-      return el.textContent.trim() === 'Приложите пакет документов сразу при подаче — или догрузите позже, в карточке этой сделки.';
+      const txt = el.textContent.trim();
+      return txt === 'Приложите пакет документов сразу при подаче — или догрузите позже, в карточке этой сделки.' ||
+        el.classList.contains('portal-docs-subtitle');
     });
-    if (docsSubtitleEl) docsSubtitleEl.style.display = 'none';
+    if (docsSubtitleEl) {
+      docsSubtitleEl.classList.add('portal-docs-subtitle');
+      docsSubtitleEl.style.display = '';
+      setTextIfChanged(docsSubtitleEl, t(
+        'Выберите тип сделки и загрузите документы',
+        'Choose the deal type and upload the documents'
+      ));
+    }
 
     fixNonSubmitButtonTypes(form);
     hideNewAppPackageProgress(form);
@@ -1947,7 +1965,7 @@
     wireNewAppManualEditTracking(form);
     repurposeNewAppComment(form);
     relabelObligorCountryField(form);
-    ensureNewAppAutoFillNote(dataCard);
+    ensureNewAppDataSubtitle(dataCard);
     ensureNewAppFooterExtras(form);
 
     // "Что будет после подачи" / "Подсказки" / mini-summary now live in the
