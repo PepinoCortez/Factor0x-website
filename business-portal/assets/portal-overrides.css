@@ -2228,12 +2228,20 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    overlap possible. The cards stay exactly where React put them among
    form's direct children regardless (see the comment above
    applyNewAppColumnsLayout in portal-overrides.js for why — no
-   reparenting, only these classes + positioning). */
+   reparenting, only these classes + positioning).
+   No gap here any more: the submit row is fused visually onto the
+   bottom of Заявка (see .portal-newapp-submit-row below) so the two
+   must sit flush, with zero space between their boxes — the 1.5x gap
+   above the buttons now lives inside that fused panel as the submit
+   row's own padding-top instead. Документы still needs its old 21px
+   trailing gap when it's back in flow on narrow screens (it stays a
+   separate, un-fused card) — that's added back as its own margin-bottom
+   in the <1100px override below instead of this shared gap. */
 .portal-new-application-page form {
   position: relative;
   display: flex !important;
   flex-direction: column;
-  gap: 21px;
+  gap: 0;
   padding-left: calc((100% - 24px) * 0.65 + 24px);
 }
 
@@ -2264,11 +2272,16 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 @media (max-width: 1100px) {
-  /* Single column: back in normal flow, first (above Заявка), full width. */
+  /* Single column: back in normal flow, first (above Заявка), full width.
+     margin-bottom replaces the form-level gap removed above — that gap
+     is now 0 everywhere (see the comment on `form`) since Заявка and the
+     submit row need to sit flush, but Документы is a separate, un-fused
+     card and still needs its own trailing space before Заявка here. */
   .portal-new-application-page form > .portal-newapp-docs-card {
     position: static;
     width: auto;
     order: -1;
+    margin-bottom: 21px;
   }
 }
 
@@ -2286,37 +2299,74 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   order: 1;
 }
 
-/* Comment's own trailing space inside the card (14px, same gap as between
-   any two fields — see .gap-5 below) is now independent of the bigger
-   1.5x gap down to the submit row (`form`'s own 21px gap, above): the two
-   no longer have to add up to one shared number the way this padding did
-   when it also had to reserve room for an overlapping button row (was
-   84px). */
+/* No trailing padding of its own any more — the submit row is now fused
+   onto this same card (see .portal-newapp-data-card.bg-card and
+   .portal-newapp-submit-row below) as its visual last section, and
+   supplies the entire 1.5x gap above the buttons itself via its own
+   padding-top. Stacking this padding-bottom on top of that would double
+   the gap (14px here + 21px there). */
 .portal-newapp-data-card > .p-6.pt-0 {
-  padding-bottom: 14px;
+  padding-bottom: 0;
+}
+
+/* Fuses the submit row onto the bottom of this card into one seamless
+   panel: this card keeps its own top/left/right border + radius (still
+   a real, separate `form` child — see the no-reparenting note above —
+   just styled to read as one box with its sibling below), but stops
+   short at the bottom, where .portal-newapp-submit-row picks up with a
+   matching background/border and the bottom radius instead. !important
+   to outrank the base .bg-card rule's own !important border/radius
+   (portal-overrides.css, ~line 1670) at equal-or-lower specificity. */
+.portal-new-application-page form > .portal-newapp-data-card.bg-card {
+  border-bottom: none !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
 }
 
 /* Submit row: a normal in-flow sibling of Заявка now (see the comment on
    `form` above) — simply the next block after Комментарий, unable to
-   overlap it regardless of either card's height. padding (left/right)
-   matches Заявка's own CardContent padding (p-6 = 24px) so the buttons'
-   outer edges line up with the fields' own edges above them, instead of
-   the row running flush to the column's outer boundary. */
+   overlap it regardless of either card's height. Styled as that card's
+   own visual continuation rather than a separate floating block: same
+   background/border as .bg-card (portal-overrides.css ~line 1670,
+   copied rather than shared via class since this element doesn't carry
+   React's own "bg-card" class) with no top border (the seam where it
+   meets Заявка, which supplies that edge itself) and the bottom corners
+   rounded to match (Заявка's own bottom corners are flattened to 0 for
+   the same reason — see .portal-newapp-data-card.bg-card above).
+   padding: 24px left/right matches Заявка's own CardContent padding
+   (p-6) so the buttons' outer edges line up with the fields' own edges
+   above them; 21px top is the entire gap down from Комментарий (1.5x
+   the normal 14px field-to-field gap — Заявка's own CardContent
+   contributes none of its own any more, see the comment above); 24px
+   bottom matches the card's own top inner padding (also p-6), so the
+   panel's padding reads as symmetric top-to-bottom overall. */
 .portal-new-application-page form > .portal-newapp-submit-row {
   order: 2;
   display: flex;
-  padding: 0 24px;
+  padding: 21px 24px 24px;
+  background:
+    linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)),
+    var(--ov-surface-bg);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
+  border-top: none;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, calc(0.16 * var(--ov-shadow-scale)));
   /* Holds 3 children (see ensureNewAppFooterExtras): the missing-
      documents caption forces its own full-width line via flex-basis:
      100%, while Сохранить черновик / Отправить — equal-width, flex: 1
      each — share the line above it. wrap is what makes a basis:100%
      child actually start a new line instead of just stretching this
-     (already wide) row further. */
+     (already wide) row further. row-gap is the "small gap" down to the
+     hint line when it's visible; when it's hidden (.portal-newapp-
+     submit-missing:empty), row-gap contributes nothing since there's
+     only one wrapped line, so the panel's own bottom padding applies
+     right after the buttons either way. */
   flex-wrap: wrap;
   align-items: stretch;
   row-gap: 10px;
   column-gap: 12px;
-  margin: 0 0 24px;
+  margin: 0;
 }
 
 /* Both buttons equal width, filling the full (now edge-aligned) row
@@ -2348,13 +2398,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 @media (max-width: 1100px) {
-  /* Single column: no bottom margin needed below the submit row now that
-     Документы isn't sitting beside it any more (see the docs-card media
-     query above) — it's simply the last thing on the page. */
-  .portal-new-application-page form > .portal-newapp-submit-row {
-    margin: 0;
-  }
-
   /* Save Draft / Submit stack full-width too at this point — a narrow
      column has no room left for them to share a line. Stacked, Отправить
      goes on top (order: DOM order otherwise puts Сохранить черновик
@@ -2621,16 +2664,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-newapp-data-header {
   overflow-wrap: break-word;
   padding-bottom: 24px;
-}
-
-/* Reserves clearance at the bottom of the card's own content for
-   .portal-newapp-submit-row, which sits at the bottom of this now-stretched
-   card (see align-items:stretch above) as a separate overlapping sibling,
-   not as a DOM child — without this, the button (≈44px + its own 24px
-   bottom margin) can overlap the last field (Комментарий) whenever the
-   stretched height doesn't leave quite enough natural gap below it. */
-.portal-newapp-data-card > .p-6.pt-0 {
-  padding-bottom: 84px;
 }
 
 /* Валюта / Страна дебитора show a real selected value (AED / United Arab
