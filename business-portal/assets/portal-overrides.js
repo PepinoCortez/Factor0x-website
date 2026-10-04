@@ -1574,6 +1574,7 @@
       row.dataset.step = String(entry.step);
       row.classList.toggle('portal-doc-row-scaled', entry.step === activeStep && activeStep !== 3);
       row.classList.toggle('portal-doc-row-locked', stepStates[entry.step] === 'locked');
+      row.classList.toggle('portal-doc-row-in-spotlight', entry.step === activeStep);
       previousStep = entry.step;
 
       const labelEl = document.querySelector('[data-testid="text-doc-label-' + key + '"]');

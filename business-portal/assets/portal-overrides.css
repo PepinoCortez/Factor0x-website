@@ -1860,6 +1860,29 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   margin-top: 14px;
 }
 
+/* Half the normal heading->row gap, specifically for a scaled (Шаг 1/
+   Шаг 2) step's own first row — the hint sits noticeably bigger now
+   (see .portal-doc-step-scaled), so the same 14px that looks right at
+   the base size reads as an oversized gap once that hint has grown,
+   making the row look detached from its own step's heading. */
+.portal-doc-rows-grouped > .flex.flex-col.gap-3.portal-doc-row-first-in-group.portal-doc-row-scaled {
+  margin-top: 7px;
+}
+
+/* The native thin divider between a step's own rows (a compiled-in
+   border, confirmed from the screenshot this was built against — not
+   something this file ever added) reads as a leftover table-row line
+   once those rows sit inside the frame's own single bordered panel —
+   removed for whichever step is currently inside it (.portal-doc-row-
+   in-spotlight, set in restructureNewAppDocuments regardless of whether
+   that step also scales, since Step 3 — several rows, never scaled —
+   is the one case this is actually visible on). !important to beat
+   whatever specificity the native rule carries. */
+.portal-doc-rows-grouped > .flex.flex-col.gap-3.portal-doc-row-in-spotlight {
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
 /* Dims a locked step's own rows along with its heading (see
    .portal-doc-group-heading[data-step-state="locked"] below) — applied
    per row in restructureNewAppDocuments (portal-overrides.js), keyed off
@@ -1875,10 +1898,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    enough to clear the spotlight's own 16px halo (see HALO in
    updateNewAppStepSpotlight) without it ever overlapping the step
    above/below while it's parked there.
-   position:relative + the left padding make room for the numbered
-   circle (::before below) — 20px circle + 10px gap to the text, the
-   same 30px recipe as .portal-newapp-steps (the "Как подать заявку"
-   sidebar) so both use identical numbering chrome. */
+   padding-left 48px — not the circle's own 20px+gap, but matched to a
+   document row's own icon box + gap (36px icon, confirmed elsewhere in
+   this file, + gap-3's 12px = 48px) — so the title/hint's left edge
+   lines up with the row label's own left edge below it, in every step.
+   The circle itself now anchors off .portal-doc-group-title directly
+   (see ::before there) rather than this box, so it isn't positioned
+   relative to this padding at all. */
 .portal-doc-group-heading {
   position: relative;
   z-index: 1;
@@ -1886,7 +1912,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  padding: 4px 0 2px 30px;
+  padding: 4px 0 2px 48px;
   margin-top: 28px;
   transition: opacity 0.2s ease;
 }
@@ -1903,6 +1929,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    only the frame's own top/height (and the gap/min-height it drives)
    still animate smoothly on top of that already-settled layout. */
 .portal-doc-group-title {
+  position: relative;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--ov-text);
@@ -1914,10 +1941,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    part of the page. Steps 1/2 are required, so they're solid gold by
    default; Step 3 overrides to outline-only below (it's optional, same
    reasoning the spotlight frame skips scaling it — see
-   .portal-doc-row-scaled further down). */
-.portal-doc-group-heading::before {
+   .portal-doc-row-scaled further down).
+   Anchored off the TITLE specifically (not the whole heading) so it
+   centers against just the title's own first line, not the title+hint
+   block together — left:-48px pulls it back the heading's own
+   padding-left (48px, see .portal-doc-group-heading above) to land at
+   that box's left edge, same position as before. */
+.portal-doc-group-title::before {
   position: absolute;
-  left: 0;
+  left: -48px;
   top: 50%;
   transform: translateY(-50%);
   width: 20px;
@@ -1930,18 +1962,18 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   font-weight: 700;
 }
 
-.portal-doc-group-step1::before,
-.portal-doc-group-step2::before {
+.portal-doc-group-step1 .portal-doc-group-title::before,
+.portal-doc-group-step2 .portal-doc-group-title::before {
   color: #171008;
   background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124);
 }
 
-.portal-doc-group-step1::before { content: '1'; }
-.portal-doc-group-step2::before { content: '2'; }
+.portal-doc-group-step1 .portal-doc-group-title::before { content: '1'; }
+.portal-doc-group-step2 .portal-doc-group-title::before { content: '2'; }
 
 /* Optional step — contour only, no fill, so it reads as "nice to have"
    next to Step 1/2's solid-gold "required" circles. */
-.portal-doc-group-step3::before {
+.portal-doc-group-step3 .portal-doc-group-title::before {
   content: '3';
   color: #C79A36;
   background: transparent;
@@ -1952,7 +1984,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    step's fill (gold for 1/2; Step 3 never actually reaches this state in
    practice, see the stepStates comment in portal-overrides.js, but the
    rule stays generic rather than hardcoded to just two steps). */
-.portal-doc-group-heading[data-step-state="completed"]::before {
+.portal-doc-group-heading[data-step-state="completed"] .portal-doc-group-title::before {
   content: '✓';
 }
 
@@ -1964,25 +1996,27 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 /* The step the spotlight container currently surrounds (Шаг 1/Шаг 2
-   only — Шаг 3 never scales, see the spec this was built against) —
-   title and hint 1.5x their base size (explicitly asked for as a literal
-   multiplier here, unlike the rest of this card's +20%-via-scale-steps
-   convention). The circle keeps its own existing +20% (transform:
-   scale(1.2)) — only asked to change the text here — combined with
-   translateY(-50%) in one transform (not two separate declarations,
-   which would just overwrite each other) so it stays vertically
-   centered against the now much-taller two-line title+hint block
-   instead of drifting toward the top once that block grows. */
+   only — Шаг 3 never scales, see the spec this was built against).
+   Contrast (the frame itself, its border/background) carries most of
+   the "this one's active" signal — size increases only moderately and
+   evenly across every element in the block:
+   - title: ~1.18x (0.85rem -> 1rem)
+   - hint: ~1.05x (0.78rem -> 0.82rem) — deliberately *less* than the
+     title's own bump, so title:hint keeps roughly the same ~1.2-1.3:1
+     weight relationship an inactive step's title:hint already has,
+     rather than both growing at an identical rate and just looking like
+     a uniformly bigger version of the same ratio.
+   - circle: ~1.15x, see transform below. */
 .portal-doc-group-heading.portal-doc-step-scaled .portal-doc-group-title {
-  font-size: 1.275rem;
+  font-size: 1rem;
 }
 
 .portal-doc-group-heading.portal-doc-step-scaled .portal-doc-group-hint {
-  font-size: 1.17rem;
+  font-size: 0.82rem;
 }
 
-.portal-doc-group-heading.portal-doc-step-scaled::before {
-  transform: translateY(-50%) scale(1.2);
+.portal-doc-group-heading.portal-doc-step-scaled .portal-doc-group-title::before {
+  transform: translateY(-50%) scale(1.15);
 }
 
 /* The icon+label wrapper (confirmed from the compiled component: a plain
@@ -2329,28 +2363,40 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    z-index:1 on both is what actually guarantees they paint above it. */
 
 /* Row-level half of the "current step scales up" treatment (see
-   .portal-doc-step-scaled on the heading side, above) — icon box via
-   transform (its real pixel size is native/compiled, not this file's own
-   doing, so a relative scale avoids hardcoding a guessed base size);
-   name/description bumped the same one step as the scaled heading's own
-   title; Upload button both bigger (precise +20% — 132->158 / 38->46 are
-   this file's own existing sizes, see button[data-testid^="button-upload
-   -"] and .border-input, not native ones) and swapped from its default
-   muted/outlined look to the same filled gold as "Отправить", since a
-   scaled-up step reads as "do this now", not just "available". */
+   .portal-doc-step-scaled on the heading side, above) — moderate, even
+   bumps across the block (contrast — the frame itself — carries most of
+   the "active" signal, not size): icon box ~1.15x via transform (its
+   real pixel size is native/compiled, not this file's own doing, so a
+   relative scale avoids hardcoding a guessed base size); name/
+   description ~1.1x (0.875rem's own established "every field's text"
+   size here -> 0.96rem). */
 .portal-doc-row-scaled .rounded-lg.bg-muted {
-  transform: scale(1.2);
+  transform: scale(1.15);
 }
 
 .portal-doc-row-scaled [data-testid^="text-doc-label-"],
 .portal-doc-row-scaled .portal-doc-desc {
-  font-size: 0.95rem !important;
+  font-size: 0.96rem !important;
 }
 
+/* Upload button: height ~1.15x (.border-input's shared 38px -> 44px),
+   same filled gold as "Отправить" (still reads as "do this now"), but
+   width left auto rather than a fixed, wider px value — a plain
+   proportionate height bump without stretching the width to match read
+   as an oversized, out-of-proportion button; auto + the row's own
+   padding keeps the same width:height relationship as a normal
+   (unscaled) Upload button, just at the bigger size. Text bumped to the
+   same 0.96rem as the row's own label/description, so the button's
+   own label scales evenly with the rest of the row instead of sitting
+   at the old, now comparatively tiny, 0.875rem. Gradient's middle
+   highlight stop dimmed slightly (#FFE2A0 -> #E8D29A) — the same shine
+   read as sharper/harsher at this button's own size; everything else
+   about the fill is unchanged. */
 .portal-doc-row-scaled button[data-testid^="button-upload-"] {
-  width: 158px !important;
-  min-height: 46px !important;
-  background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124) !important;
+  width: auto !important;
+  min-height: 44px !important;
+  font-size: 0.96rem !important;
+  background: linear-gradient(135deg, #C79A36, #E8D29A 48%, #9E7124) !important;
   border-color: #F4D28494 !important;
   color: #171008 !important;
   font-weight: 600 !important;
