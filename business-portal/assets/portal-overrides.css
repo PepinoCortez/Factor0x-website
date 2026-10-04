@@ -1804,28 +1804,47 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    that used to sit in this rule's place — `order` breaks visual adjacency
    away from DOM adjacency, so a `+` combinator can no longer be trusted to
    mean "next on screen". */
+/* Three-tier vertical rhythm, smallest to largest: rows within the same
+   group (gap, below), a group's heading to its own first row
+   (.portal-doc-row-first-in-group's margin-top), and group to group (the
+   heading's own margin-top) — order reshuffles visual position away from
+   DOM position (see the comment above restructureNewAppDocuments), so
+   adjacent-sibling selectors can't tell these apart; both of the larger
+   tiers are set directly by class instead. */
 .portal-doc-rows-grouped {
   display: flex !important;
   flex-direction: column !important;
-  gap: 16px;
+  gap: 10px;
 }
 
 .portal-doc-group-heading {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 4px 0 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 4px 0 2px;
+  margin-top: 26px;
 }
 
-/* Only the "can add later" heading gets the divider treatment — the
-   "needed to start" one is always inserted first (see NEWAPP_DOC_ORDER's
-   own required-then-optional order in portal-overrides.js), so it never
-   needs separating from something above it. */
+/* Шаг 1 is always visually first (see NEWAPP_STEP_HEADING_ORDER) — nothing
+   above it to separate from. Headings are DOM-appended after every native
+   row (see rebuildDocGroupHeadings), so :first-child can't identify it;
+   it's tagged with this class directly in restructureNewAppDocuments
+   instead. */
+.portal-doc-group-step1 {
+  margin-top: 0;
+}
+
+/* Only "Дополнительно" gets the divider treatment — Шаг 1/Шаг 2 are
+   always visually first (see NEWAPP_STEP_HEADING_ORDER), so neither of
+   them needs separating from something above. */
 .portal-doc-group-heading.portal-doc-group-later {
-  padding-top: 28px;
-  margin-top: 10px;
+  padding-top: 20px;
   border-top: 1px solid rgba(var(--ov-tint-rgb), 0.16);
+}
+
+.portal-doc-row-first-in-group {
+  margin-top: 6px;
 }
 
 .portal-doc-group-title {
@@ -1872,62 +1891,29 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   display: none;
 }
 
-/* Invoice is the one document upload entry point now (the old top card is
-   gone) — a plain background tint. Flush (zero side padding) read as if it
-   ended right at the first letter of "Инвойс"; a 14px bleed (negative
-   margin + matching padding, so icon/text/button don't shift) overcorrected
-   the other way and poked out past the icon on the left. 6px keeps the same
-   trick at a size that stays inside the card's own left padding instead of
-   crossing past the icon. */
-.portal-doc-row-primary {
+/* Highlights whichever row restructureNewAppDocuments has decided is next
+   to upload (Tax Invoice, then the Step 2 document — never both, never
+   neither once both are done; see .portal-doc-row-next in
+   portal-overrides.js) — a plain background tint, same height as every
+   other row (no vertical padding added). Flush (zero side padding) read as
+   if it ended right at the first letter of the label; a 14px bleed
+   (negative margin + matching padding, so icon/text/button don't shift)
+   overcorrected the other way and poked out past the icon on the left.
+   6px keeps the same trick at a size that stays inside the card's own
+   left padding instead of crossing past the icon. */
+.portal-doc-row-next {
   background: rgba(var(--ov-tint-rgb), 0.045);
   border-radius: 10px;
   margin: 0 -6px;
   padding: 0 6px;
-  /* This row switches from a column (icon+label, then status+button
-     stacked) to a single horizontal line at wider widths (the native
-     sm:flex-row breakpoint) — flex-wrap:wrap is what lets the caption
-     below (a 3rd child, appended after both of those) force itself onto
-     its own new line at that width instead of sitting beside the Upload
-     button as a 3rd item on the same line. Harmless at the narrower,
-     column-direction width: nothing here ever overflows enough to need
-     wrapping onto a 2nd column. */
-  flex-wrap: wrap;
 }
 
-/* Brighter/more contrasty than the first pass — it blended into the
-   background before. Kept neutral (not gold: gold stays reserved for
-   "Отправить") but bright enough to read as "start here". */
-.portal-doc-row-primary-tag {
-  display: inline-flex;
-  align-items: center;
-  vertical-align: middle;
-  margin-left: 8px;
-  padding: 2px 9px;
-  border-radius: 999px;
-  background: rgba(var(--ov-tint-rgb), 0.16);
-  border: 1px solid rgba(var(--ov-tint-rgb), 0.22);
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--ov-text);
-}
-
-/* Tax Invoice's own second line ("Создаёт черновик и автоматически
-   заполняет данные заявки") — see ensureInvoiceRowCaption. Same tone/size
-   as the group hint captions, sits directly under the label it explains. */
-.portal-doc-row-caption {
-  /* flex-basis:100% is what actually forces the line break in the
-     horizontal (wide-viewport) version of the row above — width:100% is
-     the equivalent for the narrower, column-direction version (flex-basis
-     there sizes against height, not width, so it isn't what's doing the
-     work at that width; see .portal-doc-row-primary). */
-  flex: 1 0 100%;
-  width: 100%;
-  margin: 6px 0 0;
-  padding-left: 48px;
-  font-size: 0.78rem;
-  line-height: 1.4;
-  color: rgba(var(--ov-muted-rgb), 0.6);
+/* The native "Не загружено"/"Загружено" chip has no place in the new row
+   format ("[icon] Name   description .... [Upload]") — isDocUploaded()
+   still reads its text content for state, so it stays in the DOM, just
+   hidden. */
+.portal-newapp-docs-card [data-testid^="badge-doc-status-"] {
+  display: none !important;
 }
 
 /* Goods/Service — a plain two-way segmented control above the checklist
@@ -1966,19 +1952,92 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   font-weight: 600;
 }
 
-/* "Просмотреть" — cloned straight from the row's own "Заменить" button
-   (see ensureDocPreviewButton), so it inherits every one of that button's
-   classes already; this only pulls it back to a quieter, outlined tone so
-   two visually-identical buttons don't sit side by side. */
-.portal-doc-preview-btn {
-  background: transparent !important;
-  border: 1px solid rgba(var(--ov-tint-rgb), 0.2) !important;
-  color: rgba(var(--ov-muted-rgb), 0.85) !important;
-  box-shadow: none !important;
+/* Document row name + description, both set by setDocRowLabelContent —
+   name is the label's own original text (its color untouched, so it keeps
+   whatever the bundle's own default text color is), description is this
+   file's own appended span, deliberately dimmer and the same size (no new
+   font sizes — reuses the label's own font-size by inheriting it). */
+.portal-doc-desc {
+  margin-left: 8px;
+  color: rgba(var(--ov-muted-rgb), 0.6);
 }
 
-/* "Изменено вручную" — appended into a field's own <label>, same
-   placement trick as .portal-doc-row-primary-tag above. */
+/* Once uploaded (see ensureDocUploadedState), the description above holds
+   the file name instead — truncated so a long name can't blow out the
+   row's height or width. inline-block (rather than changing the label's
+   own display, which stays untouched) is what lets max-width/ellipsis
+   apply to an otherwise-inline span. */
+.portal-doc-desc[data-portal-shows-filename] {
+  display: inline-block;
+  max-width: 200px;
+  vertical-align: bottom;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Checkmark overlaid on a row's own icon box once uploaded (see
+   ensureDocRowCheckOverlay) — a new sibling positioned over the native
+   icon rather than ever touching the native icon's own content. */
+.portal-doc-icon-anchor {
+  position: relative;
+}
+
+.portal-doc-check-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  background: var(--ov-surface-bg);
+  color: var(--success, #3fb97f);
+}
+
+/* Replaces the Upload button once a row is uploaded (see
+   ensureDocUploadedState): two icon-only actions, View and Replace. Same
+   right-alignment/fixed-width treatment as the Upload button below, so the
+   row's right edge stays in the same place in both states. */
+.portal-doc-uploaded-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* Every row's Upload button at the same width, right-aligned — margin-
+   left:auto only takes effect inside a flex row (the native status/button
+   line is one), harmless otherwise. */
+.portal-newapp-docs-card button[data-testid^="button-upload-"] {
+  width: 132px;
+  justify-content: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.portal-doc-icon-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.18);
+  border-radius: 7px;
+  background: rgba(var(--ov-tint-rgb), 0.06);
+  color: rgba(var(--ov-muted-rgb), 0.8);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.portal-doc-icon-btn:hover {
+  background: rgba(var(--ov-tint-rgb), 0.12);
+  border-color: rgba(var(--ov-tint-rgb), 0.3);
+  color: var(--ov-text);
+}
+
+/* "изменено" — appended into a field's own <label>. */
 .portal-manual-tag {
   display: inline-flex;
   align-items: center;
@@ -2041,16 +2100,16 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: #fff;
 }
 
-/* Document icons: soften the identical 7-in-a-row look, then bring
-   invoice's back to full strength since it's the primary document. Both
-   classes (rounded-lg + bg-muted) together are unique to the icon's own
-   box in this row (confirmed against the compiled component); nothing
-   else in this card pairs them. */
+/* Document icons: soften the identical look across rows, then bring
+   whichever one is highlighted as next-to-upload (see .portal-doc-row-next)
+   back to full strength. Both classes (rounded-lg + bg-muted) together are
+   unique to the icon's own box in this row (confirmed against the compiled
+   component); nothing else in this card pairs them. */
 .portal-newapp-docs-card .rounded-lg.bg-muted {
   opacity: 0.55;
 }
 
-.portal-newapp-docs-card .portal-doc-row-primary .rounded-lg.bg-muted {
+.portal-newapp-docs-card .portal-doc-row-next .rounded-lg.bg-muted {
   opacity: 1;
   background: rgba(var(--ov-tint-rgb), 0.14) !important;
 }
@@ -2094,16 +2153,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
     min-height: 44px;
   }
 
-  /* Group heading: title + caption ("can't submit without these" / "attach
-     now, or add later...") were side by side (space-between) — enough
-     room for that on desktop, not on a 350px-wide phone card, where the
-     caption crowding the title made *both* wrap and collide. Stacked
-     instead: title on its own line, caption below it, both full width. */
-  .portal-doc-group-heading {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-  }
 }
 
 /* ---- Inside the form: "Данные по инвойсу" / "Документы" side by side.

@@ -449,27 +449,27 @@
   const NEWAPP_DOC_CONFIG = {
     goods: [
       { key: 'invoice', step: 1,
-        label: t('Tax Invoice — налоговый счёт', 'Tax Invoice') },
+        label: 'Tax Invoice', desc: t('Налоговый счёт', 'Tax invoice') },
       { key: 'delivery_note', step: 2,
-        label: t('Delivery Note — накладная, подтверждение отгрузки', 'Delivery Note — shipment confirmation') },
+        label: 'Delivery Note', desc: t('Накладная', 'Shipment note') },
       { key: 'contract', step: 3,
-        label: t('Contract / Agreement — договор с дебитором', 'Contract / Agreement — with the debtor') },
+        label: 'Contract', desc: t('Договор с дебитором', 'Agreement with the debtor') },
       { key: 'purchase_order', step: 3,
-        label: t('Purchase Order (PO) — заказ на закупку', 'Purchase Order (PO)') },
+        label: 'Purchase Order', desc: t('Заказ на закупку', 'Purchase order') },
       { key: 'delivery_order_do', step: 3, synthetic: true,
-        label: t('Delivery Order (DO) — распоряжение на выдачу', 'Delivery Order (DO)') },
+        label: 'Delivery Order', desc: t('Распоряжение на выдачу', 'Delivery order') },
       { key: 'acceptance_certificate', step: 3,
-        label: t('Goods Receipt Note (GRN) — акт приёмки, дебитор подтвердил получение', 'Goods Receipt Note (GRN) — debtor confirmed receipt') },
+        label: 'Goods Receipt Note', desc: t('Акт приёмки', 'Goods receipt note') },
     ],
     service: [
       { key: 'invoice', step: 1,
-        label: t('Tax Invoice — налоговый счёт', 'Tax Invoice') },
+        label: 'Tax Invoice', desc: t('Налоговый счёт', 'Tax invoice') },
       { key: 'delivery_note', step: 2,
-        label: t('Service Completion / Акт — подтверждение оказания услуг', 'Service Completion / Act — confirms the service was performed') },
+        label: 'Service Completion', desc: t('Акт об оказании услуг', 'Service completion act') },
       { key: 'contract', step: 3,
-        label: t('Contract / Agreement — договор с дебитором', 'Contract / Agreement — with the debtor') },
+        label: 'Contract', desc: t('Договор с дебитором', 'Agreement with the debtor') },
       { key: 'purchase_order', step: 3,
-        label: t('Purchase Order (PO) — заказ на закупку', 'Purchase Order (PO)') },
+        label: 'Purchase Order', desc: t('Заказ на закупку', 'Purchase order') },
     ],
   };
 
@@ -962,7 +962,7 @@
       key,
       required: step <= 2,
       uploaded: isDocUploaded(key),
-      label: label.split(' — ')[0],
+      label,
     }));
     const requiredTotal = rows.filter((r) => r.required).length;
     const missingRequired = rows.filter((r) => r.required && !r.uploaded).map((r) => r.label);
@@ -1072,56 +1072,126 @@
     });
   };
 
-  // "Создаёт черновик и автоматически заполняет данные заявки" — the one
-  // row-level caption the brief actually calls out by name; every other
-  // row's description is folded straight into its own label text instead
-  // (see NEWAPP_DOC_CONFIG), so this is the only row that needs its own
-  // second line.
-  const ensureInvoiceRowCaption = (row, labelEl) => {
-    if (!labelEl || row.querySelector('.portal-doc-row-caption')) return;
-    const caption = document.createElement('p');
-    caption.className = 'portal-doc-row-caption';
-    caption.textContent = t(
-      'Создаёт черновик и автоматически заполняет данные заявки',
-      'Creates a draft and fills in the application data automatically'
-    );
-    // Under the whole row (label line + status/Upload line), not wedged
-    // between them — a plain last child of `row` itself.
-    row.appendChild(caption);
+  // Builds "Name   description" inside a row's native label <p> — the
+  // *name* is written into labelEl's own original text node by mutating
+  // its nodeValue directly (never destroying/replacing it, regardless of
+  // what's already been appended since — see setTextIfChanged's own
+  // comment on why destroying a React-tracked text node crashes on
+  // unmount), and the *description* (or, once uploaded, the file name —
+  // see ensureDocUploadedState) lives in a separate span this file owns
+  // outright, appended once and freely rewritable after that.
+  const setDocRowLabelContent = (labelEl, name, desc) => {
+    if (!labelEl) return;
+    if (labelEl.firstChild && labelEl.firstChild.nodeType === Node.TEXT_NODE) {
+      if (labelEl.firstChild.nodeValue !== name) labelEl.firstChild.nodeValue = name;
+    } else if (labelEl.childNodes.length === 0) {
+      labelEl.appendChild(document.createTextNode(name));
+    }
+    let descSpan = labelEl.querySelector('.portal-doc-desc');
+    if (!descSpan) {
+      descSpan = document.createElement('span');
+      descSpan.className = 'portal-doc-desc';
+      labelEl.appendChild(descSpan);
+    }
+    setTextIfChanged(descSpan, desc);
+    return descSpan;
   };
 
-  // Adds "Просмотреть" next to "Заменить" once a row is uploaded — reads
-  // the row's own hidden file input directly (works for native rows too:
-  // the <input type="file"> is a real DOM node regardless of who rendered
-  // it, so its .files[0] is readable here even though the upload itself is
-  // handled entirely inside the compiled bundle). Opens the visitor's own
-  // file via a blob URL — a real preview of what they actually attached,
-  // not a mocked viewer.
-  const ensureDocPreviewButton = (key, row) => {
+  const NEWAPP_CHECK_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+  const NEWAPP_EYE_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+  const NEWAPP_REPLACE_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>';
+
+  // Row icon box (the "rounded-lg bg-muted" div a native row renders its
+  // own file-type icon into): overlays an accent-colored checkmark once
+  // uploaded instead of touching the native icon's own content — a new
+  // sibling appended *inside* the box, positioned over the native icon via
+  // CSS, toggled with display rather than ever replacing/removing the
+  // native icon itself (same reasoning as the lock icon elsewhere in this
+  // file: adding a new child is safe, destroying/replacing React's own is
+  // what crashes on unmount).
+  const ensureDocRowCheckOverlay = (row, uploaded) => {
+    const iconBox = row.querySelector('.rounded-lg.bg-muted');
+    if (!iconBox) return;
+    iconBox.classList.add('portal-doc-icon-anchor');
+    let overlay = iconBox.querySelector(':scope > .portal-doc-check-overlay');
+    if (!overlay) {
+      overlay = document.createElement('span');
+      overlay.className = 'portal-doc-check-overlay';
+      overlay.setAttribute('aria-hidden', 'true');
+      overlay.innerHTML = NEWAPP_CHECK_ICON_SVG;
+      iconBox.appendChild(overlay);
+    }
+    overlay.style.display = uploaded ? 'flex' : 'none';
+  };
+
+  // Once a row is uploaded: description text swaps for the uploaded
+  // file's own name (read straight from the bundle's own filename <p>,
+  // the label's second sibling — see the portal-overrides.css comment on
+  // .flex.items-start.gap-3 for that markup), the native Upload/Replace
+  // button is hidden, and two icon buttons take its place: View (reads
+  // the row's own hidden file input directly — a real DOM node regardless
+  // of who rendered it, so its .files[0] is readable here even though the
+  // upload itself is handled entirely inside the compiled bundle — and
+  // opens it via a blob URL, a real preview of what was actually
+  // attached) and Replace (proxies a click to the real, still-functional,
+  // merely hidden native button — same "click the real control" trick
+  // used throughout this file for nav links).
+  const ensureDocUploadedState = (key, row, labelEl, descSpan) => {
     const uploadBtn = document.querySelector('[data-testid="button-upload-' + key + '"]');
     if (!uploadBtn) return;
-    const existing = row.querySelector('.portal-doc-preview-btn');
-    if (!isDocUploaded(key)) {
-      if (existing) existing.remove();
+    const uploaded = isDocUploaded(key);
+    ensureDocRowCheckOverlay(row, uploaded);
+    uploadBtn.style.display = uploaded ? 'none' : '';
+
+    let iconRow = row.querySelector('.portal-doc-uploaded-icons');
+    if (!uploaded) {
+      if (iconRow) iconRow.style.display = 'none';
       return;
     }
-    if (existing) return;
-    const previewBtn = uploadBtn.cloneNode(true);
-    previewBtn.classList.add('portal-doc-preview-btn');
-    previewBtn.removeAttribute('data-testid');
-    previewBtn.type = 'button';
-    previewBtn.disabled = false;
-    setTextIfChanged(previewBtn, t('Просмотреть', 'View'));
-    previewBtn.addEventListener('click', (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const fileInput = row.querySelector('input[type="file"]');
-      const file = fileInput && fileInput.files && fileInput.files[0];
-      if (file) {
-        window.open(URL.createObjectURL(file), '_blank', 'noopener');
+
+    if (!iconRow) {
+      iconRow = document.createElement('div');
+      iconRow.className = 'portal-doc-uploaded-icons';
+
+      const viewBtn = document.createElement('button');
+      viewBtn.type = 'button';
+      viewBtn.className = 'portal-doc-icon-btn';
+      viewBtn.title = t('Просмотреть', 'View');
+      viewBtn.setAttribute('aria-label', t('Просмотреть', 'View'));
+      viewBtn.innerHTML = NEWAPP_EYE_ICON_SVG;
+      viewBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const fileInput = row.querySelector('input[type="file"]');
+        const file = fileInput && fileInput.files && fileInput.files[0];
+        if (file) window.open(URL.createObjectURL(file), '_blank', 'noopener');
+      });
+
+      const replaceBtn = document.createElement('button');
+      replaceBtn.type = 'button';
+      replaceBtn.className = 'portal-doc-icon-btn';
+      replaceBtn.title = t('Заменить', 'Replace');
+      replaceBtn.setAttribute('aria-label', t('Заменить', 'Replace'));
+      replaceBtn.innerHTML = NEWAPP_REPLACE_ICON_SVG;
+      replaceBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        uploadBtn.click();
+      });
+
+      iconRow.append(viewBtn, replaceBtn);
+      uploadBtn.insertAdjacentElement('afterend', iconRow);
+    }
+    iconRow.style.display = '';
+
+    if (descSpan && !descSpan.dataset.portalShowsFilename) {
+      const filenameEl = labelEl && labelEl.parentElement && labelEl.parentElement.querySelectorAll('p')[1];
+      const filename = filenameEl ? filenameEl.textContent.trim() : '';
+      if (filename) {
+        descSpan.dataset.portalShowsFilename = 'true';
+        setTextIfChanged(descSpan, filename);
       }
-    });
-    uploadBtn.insertAdjacentElement('afterend', previewBtn);
+    }
   };
 
   const ensureDealTypeToggle = (rowsContainer, form) => {
@@ -1162,39 +1232,56 @@
     rowsContainer.insertAdjacentElement('beforebegin', wrap);
   };
 
+  const buildDocGroupHeading = (title, hint, order, className) => {
+    const heading = document.createElement('div');
+    heading.className = 'portal-doc-group-heading ' + className;
+    heading.style.order = String(order);
+    const titleEl = document.createElement('span');
+    titleEl.className = 'portal-doc-group-title';
+    titleEl.textContent = title;
+    heading.appendChild(titleEl);
+    if (hint) {
+      const hintEl = document.createElement('span');
+      hintEl.className = 'portal-doc-group-hint';
+      hintEl.textContent = hint;
+      heading.appendChild(hintEl);
+    }
+    return heading;
+  };
+
   const rebuildDocGroupHeadings = (rowsContainer) => {
     if (rowsContainer.dataset.portalHeadingsBuilt) return;
     rowsContainer.dataset.portalHeadingsBuilt = 'true';
 
-    const buildHeading = (title, hint, order, className) => {
-      const heading = document.createElement('div');
-      heading.className = 'portal-doc-group-heading ' + className;
-      heading.style.order = String(order);
-      const titleEl = document.createElement('span');
-      titleEl.className = 'portal-doc-group-title';
-      titleEl.textContent = title;
-      const hintEl = document.createElement('span');
-      hintEl.className = 'portal-doc-group-hint';
-      hintEl.textContent = hint;
-      heading.append(titleEl, hintEl);
-      return heading;
-    };
-
-    rowsContainer.appendChild(buildHeading(
-      t('Шаг 1 — обязательно', 'Step 1 — required'),
-      t('создаёт заявку и запускает автозаполнение', 'creates the application and starts autofill'),
+    const step1Heading = buildDocGroupHeading(
+      t('Шаг 1 · Инвойс', 'Step 1 · Invoice'),
+      t('Создаёт заявку и заполняет её данные', 'Creates the application and fills in its data'),
       NEWAPP_STEP_HEADING_ORDER[1], 'portal-doc-group-required'
-    ));
-    rowsContainer.appendChild(buildHeading(
-      t('Шаг 2 — обязательно для отправки на анализ', 'Step 2 — required to submit for review'),
-      t("без этого заявку не отправить", "can't submit without this"),
-      NEWAPP_STEP_HEADING_ORDER[2], 'portal-doc-group-required'
-    ));
-    rowsContainer.appendChild(buildHeading(
-      t('Желательно — можно догрузить позже', 'Recommended — can add later'),
-      t('приложите сразу или добавьте потом в карточке сделки', 'attach now, or add later from the deal card'),
+    );
+    step1Heading.classList.add('portal-doc-group-step1');
+    rowsContainer.appendChild(step1Heading);
+    const step2Heading = buildDocGroupHeading('', t('Нужно для отправки заявки', 'Needed to submit the application'), NEWAPP_STEP_HEADING_ORDER[2], 'portal-doc-group-required');
+    step2Heading.classList.add('portal-doc-group-step2');
+    rowsContainer.appendChild(step2Heading);
+    rowsContainer.appendChild(buildDocGroupHeading(
+      t('Дополнительно', 'Additional'),
+      '',
       NEWAPP_STEP_HEADING_ORDER[3], 'portal-doc-group-later'
     ));
+  };
+
+  // Step 2's own title depends on deal type (Delivery Note for Goods,
+  // Service Completion for Service) — refreshed on every restructure pass
+  // instead of being baked in once like the other two, guarded against the
+  // current deal type so it's a no-op once it already matches.
+  const syncDocGroupStep2Heading = (rowsContainer, dealType) => {
+    const heading = rowsContainer.querySelector('.portal-doc-group-step2');
+    const titleEl = heading && heading.querySelector('.portal-doc-group-title');
+    if (!titleEl || titleEl.dataset.portalStep2For === dealType) return;
+    titleEl.dataset.portalStep2For = dealType;
+    setTextIfChanged(titleEl, dealType === 'service'
+      ? t('Шаг 2 · Подтверждение услуг', 'Step 2 · Proof of Service')
+      : t('Шаг 2 · Подтверждение отгрузки', 'Step 2 · Proof of Shipment'));
   };
 
   const restructureNewAppDocuments = (form) => {
@@ -1213,6 +1300,21 @@
     NEWAPP_DOC_CONFIG[dealType].forEach((entry) => { visibleByKey[entry.key] = entry; });
     const invoiceUploaded = isDocUploaded('invoice');
 
+    // The row highlight marks whichever of the two *required* documents
+    // (Tax Invoice, then the Step 2 document) still needs uploading —
+    // never more than one at a time, and none once both are done.
+    const step2Entry = NEWAPP_DOC_CONFIG[dealType].find((entry) => entry.step === 2);
+    const nextRequiredKey = !invoiceUploaded
+      ? 'invoice'
+      : (step2Entry && !isDocUploaded(step2Entry.key) ? step2Entry.key : null);
+
+    // Visual order (see NEWAPP_DOC_VISUAL_ORDER) is ascending in insertion
+    // order, so a running "previous step seen" is enough to tell the first
+    // row of each group apart for the medium heading->row gap (see
+    // .portal-doc-row-first-in-group) — rows are iterated in that same
+    // order below.
+    let previousStep = null;
+
     Object.keys(NEWAPP_DOC_VISUAL_ORDER).forEach((key) => {
       const badge = document.querySelector('[data-testid="badge-doc-status-' + key + '"]');
       const row = badge && badge.closest('.flex.flex-col.gap-3');
@@ -1224,17 +1326,14 @@
       }
       row.style.display = '';
       row.style.order = String(NEWAPP_DOC_VISUAL_ORDER[key]);
+      row.classList.toggle('portal-doc-row-next', key === nextRequiredKey);
+      row.classList.toggle('portal-doc-row-first-in-group', entry.step !== previousStep);
+      previousStep = entry.step;
 
       const labelEl = document.querySelector('[data-testid="text-doc-label-' + key + '"]');
-      const labelTag = dealType + ':' + key;
-      if (labelEl && labelEl.dataset.portalDocLabelFor !== labelTag) {
-        labelEl.dataset.portalDocLabelFor = labelTag;
-        setTextIfChanged(labelEl, entry.label);
-      }
+      const descSpan = setDocRowLabelContent(labelEl, entry.label, entry.desc);
 
-      if (key === 'invoice') {
-        ensureInvoiceRowCaption(row, labelEl);
-      } else {
+      if (key !== 'invoice') {
         // Every document but the invoice itself waits for the invoice —
         // it's the one that creates the draft in the first place.
         const btn = document.querySelector('[data-testid="button-upload-' + key + '"]');
@@ -1243,10 +1342,11 @@
           btn.title = invoiceUploaded ? '' : t('Сначала загрузите инвойс', 'Upload the invoice first');
         }
       }
-      ensureDocPreviewButton(key, row);
+      ensureDocUploadedState(key, row, labelEl, descSpan);
     });
 
     rebuildDocGroupHeadings(rowsContainer);
+    syncDocGroupStep2Heading(rowsContainer, dealType);
   };
 
   // Replaces the bare "Загружено 0 из 7 документов" deficit-framed counter
@@ -1393,23 +1493,10 @@
       submitSection.classList.add('portal-newapp-submit-row');
     }
 
-    // Invoice upload now lives in exactly one place — this row — so it's
-    // marked as the primary document: it's what autofill will eventually
-    // key off of, and the visitor should reach for it first.
-    const invoiceRow = invoiceBadge.closest('.flex.flex-col.gap-3');
-    if (invoiceRow) {
-      invoiceRow.classList.add('portal-doc-row-primary');
-      const invoiceLabel = form.querySelector('[data-testid="text-doc-label-invoice"]');
-      if (invoiceLabel) {
-        const tag = document.createElement('span');
-        tag.className = 'portal-doc-row-primary-tag';
-        tag.textContent = t('Главный документ', 'Primary document');
-        // Appended *inside* the label (not as a sibling after it) so the
-        // inline-flex tag sits on the same line as "Инвойс" instead of
-        // wrapping to its own line below.
-        invoiceLabel.appendChild(tag);
-      }
-    }
+    // No static "primary document" marker any more — restructureNewAppDocuments
+    // highlights whichever row actually needs uploading next instead (see
+    // .portal-doc-row-next), which moves from Tax Invoice to the Step 2
+    // document once the invoice itself is done.
 
     return dataCard;
   };
@@ -1844,31 +1931,22 @@
     if (!page || !form) return false;
 
     page.classList.add('portal-new-application-page');
-    // Header subtitle: page's first (and only non-form) child is the
-    // "mb-6" div holding just the h1 and this one <p> — reworded now that
-    // Документы sits on the left and is the actual point of entry.
+    // Header subtitle (page's first, non-form child's one <p>) — removed
+    // outright, not reworded. A plain style.display on a node React still
+    // owns is harmless and survives re-renders on its own, same as
+    // hideNewAppPackageProgress below.
     const subtitleEl = page.querySelector(':scope > div > p');
-    if (subtitleEl) {
-      setTextIfChanged(subtitleEl, t(
-        'Загрузите инвойс — данные заявки заполнятся автоматически.',
-        'Upload the invoice — the application data fills in automatically.'
-      ));
-    }
+    if (subtitleEl) subtitleEl.style.display = 'none';
 
     // "Документы" card's own native subtitle — found by its stable Russian
     // text (translatePage hasn't run yet at this point in run(), see the
     // language comment up top, so it's always still this exact string
-    // regardless of the active language).
+    // regardless of the active language). Removed outright, same as above.
     const docsSubtitleEl = Array.from(form.querySelectorAll('p')).find((el) => {
       if (el.children.length !== 0) return false;
       return el.textContent.trim() === 'Приложите пакет документов сразу при подаче — или догрузите позже, в карточке этой сделки.';
     });
-    if (docsSubtitleEl) {
-      setTextIfChanged(docsSubtitleEl, t(
-        'Загрузите инвойс и подтверждение отгрузки или оказания услуг. Остальные документы можно догрузить позже в карточке сделки.',
-        'Upload the invoice and proof of shipment or service delivery. The other documents can be added later from the deal card.'
-      ));
-    }
+    if (docsSubtitleEl) docsSubtitleEl.style.display = 'none';
 
     fixNonSubmitButtonTypes(form);
     hideNewAppPackageProgress(form);
