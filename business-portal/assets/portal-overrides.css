@@ -2367,6 +2367,40 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(var(--ov-muted-rgb), 0.4);
 }
 
+/* Swapped in once a field actually autofills (see applyNewAppAutofillState)
+   — the lock icon becomes a pencil and, unlike the lock, is meant to be
+   clicked, so it needs pointer-events back (the anchor rule above turns
+   them off for the inert lock state) and a hover cue. */
+.portal-lock-icon-editable {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.portal-lock-icon-editable:hover {
+  color: var(--ov-text);
+}
+
+/* Shimmer while the invoice is "processing" (see applyNewAppAutofillState)
+   — same muted tint as the rest of this card's locked-field language, just
+   animated instead of static, and with no placeholder text underneath it. */
+.portal-field-skeleton .border-input,
+.portal-field-skeleton [role="combobox"] {
+  color: transparent !important;
+  background-image: linear-gradient(
+    90deg,
+    rgba(var(--ov-tint-rgb), 0.05) 25%,
+    rgba(var(--ov-tint-rgb), 0.14) 50%,
+    rgba(var(--ov-tint-rgb), 0.05) 75%
+  ) !important;
+  background-size: 200% 100%;
+  animation: portal-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes portal-skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* Same size/color as "Приложите пакет документов..." (Документы card's
    own subtitle, native text-sm text-muted-foreground) — hsl(var(...))
    rather than a hand-picked rgba so this tracks --muted-foreground

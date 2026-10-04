@@ -633,65 +633,121 @@
     dueDate: isoDateOffset(45),
   };
 
+  // Lucide "pencil" — swapped into a field's lock icon once autofill
+  // actually lands a value, same visual family as NEWAPP_LOCK_ICON_SVG.
+  const NEWAPP_PENCIL_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>';
+
+  // One-way: once the visitor clicks the pencil, this field is theirs —
+  // every later tick of applyNewAppAutofillState leaves it alone (see the
+  // dataset.portalManuallyUnlocked guards below), the same "never fight a
+  // real user edit" rule wireNewAppManualEditTracking already follows for
+  // the "изменено" tag.
+  const unlockNewAppField = (field, wrapper) => {
+    field.dataset.portalManuallyUnlocked = 'true';
+    field.disabled = false;
+    wrapper.classList.remove('portal-field-locked');
+    const icon = wrapper.querySelector('.portal-lock-icon');
+    if (icon) icon.style.display = 'none';
+    field.focus();
+  };
+
   const applyNewAppAutofillState = (form, state) => {
     NEWAPP_AUTOFILL_INPUT_IDS.forEach((id) => {
       const field = form.querySelector('#' + id);
-      if (!field) return;
+      if (!field || field.dataset.portalManuallyUnlocked) return;
       const wrapper = newAppFieldWrapper(field);
-      if (state === 'filled') {
-        field.disabled = false;
-        wrapper.classList.remove('portal-field-locked');
-        field.placeholder = '';
-        if (!field.dataset.portalAutofilled) {
-          const mock = NEWAPP_MOCK_AUTOFILL[id];
-          if (mock !== undefined) {
-            field.value = mock;
-            field.dataset.portalAutoValue = mock;
-            // wireNewAppFieldMuting only brightens a field once the
-            // visitor actually touches it — a value autofill itself sets
-            // is real data from the first frame, not a placeholder still
-            // waiting for a first touch, so it gets the same "active"
-            // treatment immediately.
-            wrapper.classList.add('portal-field-active');
-          }
-          field.dataset.portalAutofilled = 'true';
-        }
-      } else {
+      wrapper.classList.toggle('portal-field-skeleton', state === 'processing');
+
+      if (state !== 'filled') {
         field.disabled = true;
         wrapper.classList.add('portal-field-locked');
-        field.placeholder = state === 'processing' ? NEWAPP_PROCESSING_PLACEHOLDER : NEWAPP_LOCKED_PLACEHOLDER;
-        delete field.dataset.portalAutofilled;
+        // No text during the shimmer — see .portal-field-skeleton.
+        field.placeholder = state === 'processing' ? '' : NEWAPP_LOCKED_PLACEHOLDER;
+        return;
+      }
+      if (field.dataset.portalAutofilled) return;
+      field.dataset.portalAutofilled = 'true';
+
+      const mock = NEWAPP_MOCK_AUTOFILL[id];
+      const icon = wrapper.querySelector('.portal-lock-icon');
+      if (mock !== undefined) {
+        field.placeholder = '';
+        field.value = mock;
+        field.dataset.portalAutoValue = mock;
+        field.disabled = true;
+        wrapper.classList.add('portal-field-locked', 'portal-field-active');
+        if (icon) {
+          icon.innerHTML = NEWAPP_PENCIL_ICON_SVG;
+          icon.classList.add('portal-lock-icon-editable');
+          icon.removeAttribute('aria-hidden');
+          icon.setAttribute('role', 'button');
+          icon.tabIndex = 0;
+          icon.title = t('Исправить вручную', 'Edit manually');
+          icon.setAttribute('aria-label', t('Исправить вручную', 'Edit manually'));
+          if (!icon.dataset.portalEditWired) {
+            icon.dataset.portalEditWired = 'true';
+            icon.addEventListener('click', () => unlockNewAppField(field, wrapper));
+          }
+        }
+      } else {
+        // Couldn't be read from the invoice — opens for input right away,
+        // flagged as needing attention, instead of pretending it autofilled.
+        field.placeholder = '';
+        field.disabled = false;
+        wrapper.classList.remove('portal-field-locked');
+        wrapper.classList.add('portal-field-invalid');
+        if (icon) icon.style.display = 'none';
       }
     });
 
     NEWAPP_AUTOFILL_SELECT_IDS.forEach((id) => {
       const trigger = form.querySelector('#' + id);
-      if (!trigger) return;
-      trigger.classList.toggle('portal-field-locked', state !== 'filled');
-      // Chevron stays hidden only while the trigger is actually inert —
-      // once unlocked it's a real dropdown again and needs its own
-      // affordance back.
+      if (!trigger || trigger.dataset.portalManuallyUnlocked) return;
+      const wrapper = newAppFieldWrapper(trigger);
       const chevron = trigger.querySelector('.lucide-chevron-down');
-      if (chevron) chevron.style.display = state === 'filled' ? '' : 'none';
+      wrapper.classList.toggle('portal-field-skeleton', state === 'processing');
       const valueSpan = trigger.querySelector('span');
-      if (state === 'filled') {
-        if (!trigger.dataset.portalAutofilled) {
-          const mock = NEWAPP_MOCK_AUTOFILL[id];
-          if (valueSpan && mock !== undefined) setTextIfChanged(valueSpan, mock);
-          trigger.dataset.portalAutoValue = mock;
-          trigger.dataset.portalAutofilled = 'true';
-          newAppFieldWrapper(trigger).classList.add('portal-field-active');
+
+      if (state !== 'filled') {
+        trigger.classList.add('portal-field-locked');
+        if (chevron) chevron.style.display = 'none';
+        if (valueSpan) setTextIfChanged(valueSpan, state === 'processing' ? '' : NEWAPP_LOCKED_PLACEHOLDER);
+        return;
+      }
+      if (trigger.dataset.portalAutofilled) return;
+      trigger.dataset.portalAutofilled = 'true';
+
+      const mock = NEWAPP_MOCK_AUTOFILL[id];
+      const icon = wrapper.querySelector('.portal-lock-icon');
+      if (mock !== undefined) {
+        if (valueSpan) setTextIfChanged(valueSpan, mock);
+        trigger.dataset.portalAutoValue = mock;
+        trigger.classList.add('portal-field-locked');
+        wrapper.classList.add('portal-field-active');
+        if (icon) {
+          icon.innerHTML = NEWAPP_PENCIL_ICON_SVG;
+          icon.classList.add('portal-lock-icon-editable');
+          icon.removeAttribute('aria-hidden');
+          icon.setAttribute('role', 'button');
+          icon.tabIndex = 0;
+          icon.title = t('Исправить вручную', 'Edit manually');
+          icon.setAttribute('aria-label', t('Исправить вручную', 'Edit manually'));
+          if (!icon.dataset.portalEditWired) {
+            icon.dataset.portalEditWired = 'true';
+            icon.addEventListener('click', () => {
+              trigger.dataset.portalManuallyUnlocked = 'true';
+              trigger.classList.remove('portal-field-locked');
+              if (chevron) chevron.style.display = '';
+              icon.style.display = 'none';
+            });
+          }
         }
       } else {
-        if (valueSpan) setTextIfChanged(valueSpan, state === 'processing' ? NEWAPP_PROCESSING_PLACEHOLDER : NEWAPP_LOCKED_PLACEHOLDER);
-        delete trigger.dataset.portalAutofilled;
+        trigger.classList.remove('portal-field-locked');
+        wrapper.classList.add('portal-field-invalid');
+        if (chevron) chevron.style.display = '';
+        if (icon) icon.style.display = 'none';
       }
-    });
-
-    // The lock icon only means something while the field is actually
-    // locked — once autofill unlocks it, the cue would read backwards.
-    document.querySelectorAll('.portal-lock-icon').forEach((icon) => {
-      icon.style.display = state === 'filled' ? 'none' : '';
     });
 
     syncNewAppDateOverlays(form);
@@ -823,6 +879,11 @@
     const label = form.querySelector('label[for="description"]');
     if (label) setTextIfChanged(label, t('Комментарий (необязательно)', 'Comment (optional)'));
     textarea.placeholder = t('Дополнительная информация по сделке', 'Additional information about the deal');
+  };
+
+  const relabelObligorCountryField = (form) => {
+    const label = form.querySelector('label[for="obligorCountry"]');
+    if (label) setTextIfChanged(label, t('Страна дебитора (необязательно)', "Debtor's Country (optional)"));
   };
 
   // Set by applyNewAppColumnsLayout below (which runs first — see the
@@ -1425,7 +1486,7 @@
       input.disabled = false;
       const hint = document.createElement('p');
       hint.className = 'portal-field-hint';
-      hint.textContent = t('Не больше суммы инвойса', 'Cannot exceed the invoice amount');
+      hint.hidden = true;
       requestedAmountField.appendChild(hint);
       input.addEventListener('input', () => validateRequestedAmount(form));
     }
@@ -1473,8 +1534,8 @@
     const invalid = field.value !== '' && !Number.isNaN(requested) && !Number.isNaN(invoiceAmt) && requested > invoiceAmt;
     setFieldHintState(
       wrapper,
-      t('Не больше суммы инвойса', 'Cannot exceed the invoice amount'),
-      t('Превышает сумму инвойса', 'Exceeds the invoice amount'),
+      '',
+      t('Больше суммы инвойса', 'Exceeds the invoice amount'),
       invalid
     );
     return !invalid;
@@ -1539,7 +1600,7 @@
   // longer matches what autofill itself last set (see
   // applyNewAppAutofillState, which stores that baseline in
   // dataset.portalAutoValue on each field/trigger).
-  const NEWAPP_MANUAL_TAG_TEXT = t('Изменено вручную', 'Manually edited');
+  const NEWAPP_MANUAL_TAG_TEXT = t('изменено', 'edited');
 
   const ensureManualEditTag = (wrapper) => {
     if (wrapper.querySelector('.portal-manual-tag')) return;
@@ -1827,6 +1888,7 @@
     wireNewAppDateDisplay(form);
     wireNewAppManualEditTracking(form);
     repurposeNewAppComment(form);
+    relabelObligorCountryField(form);
     ensureNewAppAutoFillNote(dataCard);
     ensureNewAppFooterExtras(form);
 
