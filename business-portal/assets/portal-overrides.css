@@ -1696,11 +1696,12 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   min-height: 38px;
 }
 
-/* ~20% shorter than the native 132px, and no user resize handle — that
-   handle sat in the textarea's own bottom-right corner, overlapping the
-   submit row below it at some widths. */
+/* 74px: 30% shorter than the previous 106px (itself ~20% shorter than
+   the native 132px) — no user resize handle either, that handle sat in
+   the textarea's own bottom-right corner, overlapping the submit row
+   below it at some widths. */
 .portal-new-application-page textarea.border-input {
-  min-height: 106px;
+  min-height: 74px;
   resize: none;
 }
 
