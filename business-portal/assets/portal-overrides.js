@@ -449,27 +449,27 @@
   const NEWAPP_DOC_CONFIG = {
     goods: [
       { key: 'invoice', step: 1,
-        label: 'Tax Invoice', hint: t('Налоговый счёт', 'Tax invoice') },
+        label: t('Tax Invoice — налоговый счёт', 'Tax Invoice') },
       { key: 'delivery_note', step: 2,
-        label: 'Delivery Note', hint: t('Накладная, подтверждение отгрузки', 'Delivery note, shipment confirmation') },
+        label: t('Delivery Note — накладная, подтверждение отгрузки', 'Delivery Note — shipment confirmation') },
       { key: 'contract', step: 3,
-        label: 'Contract', hint: t('Договор с дебитором', 'Agreement with the debtor') },
+        label: t('Contract / Agreement — договор с дебитором', 'Contract / Agreement — with the debtor') },
       { key: 'purchase_order', step: 3,
-        label: 'Purchase Order', hint: t('PO. Заказ на закупку', 'PO. Purchase order') },
+        label: t('Purchase Order (PO) — заказ на закупку', 'Purchase Order (PO)') },
       { key: 'delivery_order_do', step: 3, synthetic: true,
-        label: 'Delivery Order', hint: t('DO. Распоряжение на выдачу', 'DO. Delivery order') },
+        label: t('Delivery Order (DO) — распоряжение на выдачу', 'Delivery Order (DO)') },
       { key: 'acceptance_certificate', step: 3,
-        label: 'Goods Receipt Note', hint: t('GRN. Акт приёмки: дебитор подтвердил получение', 'GRN. Acceptance certificate: debtor confirmed receipt') },
+        label: t('Goods Receipt Note (GRN) — акт приёмки, дебитор подтвердил получение', 'Goods Receipt Note (GRN) — debtor confirmed receipt') },
     ],
     service: [
       { key: 'invoice', step: 1,
-        label: 'Tax Invoice', hint: t('Налоговый счёт', 'Tax invoice') },
+        label: t('Tax Invoice — налоговый счёт', 'Tax Invoice') },
       { key: 'delivery_note', step: 2,
-        label: 'Service Completion', hint: t('Акт об оказании услуг', 'Service completion act') },
+        label: t('Service Completion / Акт — подтверждение оказания услуг', 'Service Completion / Act — confirms the service was performed') },
       { key: 'contract', step: 3,
-        label: 'Contract', hint: t('Договор с дебитором', 'Agreement with the debtor') },
+        label: t('Contract / Agreement — договор с дебитором', 'Contract / Agreement — with the debtor') },
       { key: 'purchase_order', step: 3,
-        label: 'Purchase Order', hint: t('PO. Заказ на закупку', 'PO. Purchase order') },
+        label: t('Purchase Order (PO) — заказ на закупку', 'Purchase Order (PO)') },
     ],
   };
 
@@ -610,6 +610,9 @@
   const NEWAPP_AUTOFILL_INPUT_IDS = ['invoiceNumber', 'invoiceAmount', 'obligorName', 'obligorTrn', 'invoiceDate', 'dueDate'];
   const NEWAPP_AUTOFILL_SELECT_IDS = ['currency', 'obligorCountry'];
 
+  const NEWAPP_LOCKED_PLACEHOLDER = t('Определится автоматически', 'Determined automatically');
+  const NEWAPP_PROCESSING_PLACEHOLDER = t('Данные извлекаются…', 'Extracting data…');
+
   // Fabricated, but plausible, values an uploaded Tax Invoice would have
   // actually produced — same two demo debtors already seen elsewhere on
   // this portal (Обзор's own activity feed), so the mock data reads as
@@ -630,119 +633,65 @@
     dueDate: isoDateOffset(45),
   };
 
-  // Lucide "pencil" — swapped into a field's lock icon once autofill
-  // actually lands a value, same visual family as NEWAPP_LOCK_ICON_SVG.
-  const NEWAPP_PENCIL_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>';
-
-  // One-way: once the visitor clicks the pencil, this field is theirs —
-  // every later tick of applyNewAppAutofillState leaves it alone (see the
-  // dataset.portalManuallyUnlocked guards below), the same "never fight a
-  // real user edit" rule wireNewAppManualEditTracking already follows for
-  // the "изменено" tag.
-  const unlockNewAppField = (field, wrapper) => {
-    field.dataset.portalManuallyUnlocked = 'true';
-    field.disabled = false;
-    wrapper.classList.remove('portal-field-locked');
-    const icon = wrapper.querySelector('.portal-lock-icon');
-    if (icon) icon.style.display = 'none';
-    field.focus();
-  };
-
   const applyNewAppAutofillState = (form, state) => {
     NEWAPP_AUTOFILL_INPUT_IDS.forEach((id) => {
       const field = form.querySelector('#' + id);
-      if (!field || field.dataset.portalManuallyUnlocked) return;
+      if (!field) return;
       const wrapper = newAppFieldWrapper(field);
-      wrapper.classList.toggle('portal-field-skeleton', state === 'processing');
-      // No placeholder text in any state — locked fields read as genuinely
-      // empty (the skeleton above is what signals "processing", not text).
-      field.placeholder = '';
-
-      if (state !== 'filled') {
-        field.disabled = true;
-        wrapper.classList.add('portal-field-locked');
-        return;
-      }
-      if (field.dataset.portalAutofilled) return;
-      field.dataset.portalAutofilled = 'true';
-
-      const mock = NEWAPP_MOCK_AUTOFILL[id];
-      const icon = wrapper.querySelector('.portal-lock-icon');
-      if (mock !== undefined) {
-        field.value = mock;
-        field.dataset.portalAutoValue = mock;
-        field.disabled = true;
-        wrapper.classList.add('portal-field-locked', 'portal-field-active');
-        if (icon) {
-          icon.innerHTML = NEWAPP_PENCIL_ICON_SVG;
-          icon.classList.add('portal-lock-icon-editable');
-          icon.removeAttribute('aria-hidden');
-          icon.setAttribute('role', 'button');
-          icon.tabIndex = 0;
-          icon.title = t('Исправить вручную', 'Edit manually');
-          icon.setAttribute('aria-label', t('Исправить вручную', 'Edit manually'));
-          if (!icon.dataset.portalEditWired) {
-            icon.dataset.portalEditWired = 'true';
-            icon.addEventListener('click', () => unlockNewAppField(field, wrapper));
-          }
-        }
-      } else {
-        // Couldn't be read from the invoice — opens for input right away,
-        // flagged as needing attention, instead of pretending it autofilled.
+      if (state === 'filled') {
         field.disabled = false;
         wrapper.classList.remove('portal-field-locked');
-        wrapper.classList.add('portal-field-invalid');
-        if (icon) icon.style.display = 'none';
+        field.placeholder = '';
+        if (!field.dataset.portalAutofilled) {
+          const mock = NEWAPP_MOCK_AUTOFILL[id];
+          if (mock !== undefined) {
+            field.value = mock;
+            field.dataset.portalAutoValue = mock;
+            // wireNewAppFieldMuting only brightens a field once the
+            // visitor actually touches it — a value autofill itself sets
+            // is real data from the first frame, not a placeholder still
+            // waiting for a first touch, so it gets the same "active"
+            // treatment immediately.
+            wrapper.classList.add('portal-field-active');
+          }
+          field.dataset.portalAutofilled = 'true';
+        }
+      } else {
+        field.disabled = true;
+        wrapper.classList.add('portal-field-locked');
+        field.placeholder = state === 'processing' ? NEWAPP_PROCESSING_PLACEHOLDER : NEWAPP_LOCKED_PLACEHOLDER;
+        delete field.dataset.portalAutofilled;
       }
     });
 
     NEWAPP_AUTOFILL_SELECT_IDS.forEach((id) => {
       const trigger = form.querySelector('#' + id);
-      if (!trigger || trigger.dataset.portalManuallyUnlocked) return;
-      const wrapper = newAppFieldWrapper(trigger);
+      if (!trigger) return;
+      trigger.classList.toggle('portal-field-locked', state !== 'filled');
+      // Chevron stays hidden only while the trigger is actually inert —
+      // once unlocked it's a real dropdown again and needs its own
+      // affordance back.
       const chevron = trigger.querySelector('.lucide-chevron-down');
-      wrapper.classList.toggle('portal-field-skeleton', state === 'processing');
-
-      if (state !== 'filled') {
-        trigger.classList.add('portal-field-locked');
-        if (chevron) chevron.style.display = 'none';
-        return;
-      }
-      if (trigger.dataset.portalAutofilled) return;
-      trigger.dataset.portalAutofilled = 'true';
-
-      const mock = NEWAPP_MOCK_AUTOFILL[id];
+      if (chevron) chevron.style.display = state === 'filled' ? '' : 'none';
       const valueSpan = trigger.querySelector('span');
-      const icon = wrapper.querySelector('.portal-lock-icon');
-      if (mock !== undefined) {
-        if (valueSpan) setTextIfChanged(valueSpan, mock);
-        trigger.dataset.portalAutoValue = mock;
-        trigger.classList.add('portal-field-locked');
-        wrapper.classList.add('portal-field-active');
-        if (icon) {
-          icon.innerHTML = NEWAPP_PENCIL_ICON_SVG;
-          icon.classList.add('portal-lock-icon-editable');
-          icon.removeAttribute('aria-hidden');
-          icon.setAttribute('role', 'button');
-          icon.tabIndex = 0;
-          icon.title = t('Исправить вручную', 'Edit manually');
-          icon.setAttribute('aria-label', t('Исправить вручную', 'Edit manually'));
-          if (!icon.dataset.portalEditWired) {
-            icon.dataset.portalEditWired = 'true';
-            icon.addEventListener('click', () => {
-              trigger.dataset.portalManuallyUnlocked = 'true';
-              trigger.classList.remove('portal-field-locked');
-              if (chevron) chevron.style.display = '';
-              icon.style.display = 'none';
-            });
-          }
+      if (state === 'filled') {
+        if (!trigger.dataset.portalAutofilled) {
+          const mock = NEWAPP_MOCK_AUTOFILL[id];
+          if (valueSpan && mock !== undefined) setTextIfChanged(valueSpan, mock);
+          trigger.dataset.portalAutoValue = mock;
+          trigger.dataset.portalAutofilled = 'true';
+          newAppFieldWrapper(trigger).classList.add('portal-field-active');
         }
       } else {
-        trigger.classList.remove('portal-field-locked');
-        wrapper.classList.add('portal-field-invalid');
-        if (chevron) chevron.style.display = '';
-        if (icon) icon.style.display = 'none';
+        if (valueSpan) setTextIfChanged(valueSpan, state === 'processing' ? NEWAPP_PROCESSING_PLACEHOLDER : NEWAPP_LOCKED_PLACEHOLDER);
+        delete trigger.dataset.portalAutofilled;
       }
+    });
+
+    // The lock icon only means something while the field is actually
+    // locked — once autofill unlocks it, the cue would read backwards.
+    document.querySelectorAll('.portal-lock-icon').forEach((icon) => {
+      icon.style.display = state === 'filled' ? 'none' : '';
     });
 
     syncNewAppDateOverlays(form);
@@ -876,11 +825,6 @@
     textarea.placeholder = t('Дополнительная информация по сделке', 'Additional information about the deal');
   };
 
-  const relabelObligorCountryField = (form) => {
-    const label = form.querySelector('label[for="obligorCountry"]');
-    if (label) setTextIfChanged(label, t('Страна дебитора (необязательно)', "Debtor's Country (optional)"));
-  };
-
   // Set by applyNewAppColumnsLayout below (which runs first — see the
   // run() call order) — shared so the two stay in sync regardless of
   // language instead of each hardcoding the string separately.
@@ -901,13 +845,13 @@
     // function is only called from applyNewApplicationTheme via run(), at
     // the very end of the file).
     note.append(t(
-      'Проверьте данные и укажите запрашиваемую сумму',
-      'Check the details and enter the requested amount'
+      'Поля заполняются автоматически из инвойса. Проверьте их и при необходимости исправьте.',
+      'Fields fill in automatically from the invoice. Check them and correct anything if needed.'
     ));
     note.appendChild(buildDealInfoIcon(
       t(
-        'Поля заполняются из инвойса. Любое поле можно исправить.',
-        'Fields fill in from the invoice. Any field can be corrected.'
+        'Загрузите документы, и поля заполнятся автоматически из инвойса. Останется только проверить. Пока документы не загружены.',
+        "Upload the documents and the fields will fill in automatically from the invoice — you'll just need to check them. No documents uploaded yet."
       )
     ));
     heading.insertAdjacentElement('afterend', note);
@@ -962,7 +906,7 @@
       key,
       required: step <= 2,
       uploaded: isDocUploaded(key),
-      label,
+      label: label.split(' — ')[0],
     }));
     const requiredTotal = rows.filter((r) => r.required).length;
     const missingRequired = rows.filter((r) => r.required && !r.uploaded).map((r) => r.label);
@@ -1072,140 +1016,56 @@
     });
   };
 
-  // Small "i" next to a document's short name — the one-line description
-  // that used to be folded into the label text itself now lives here
-  // instead (see NEWAPP_DOC_CONFIG's `hint`), so the row stays one line.
-  // Reuses buildDealInfoIcon (same tooltip mechanism as the autofill note
-  // above); refreshing an already-attached icon's tooltip just means
-  // updating its dataset — showDealTooltip reads that fresh on every
-  // hover, no need to recreate the node when the hint text changes (e.g.
-  // Delivery Note -> Service Completion on a deal-type switch).
-  const ensureDocRowInfoIcon = (row, labelEl, hintText) => {
-    if (!labelEl) return;
-    let icon = row.querySelector('.portal-doc-row-info-icon');
-    if (!icon) {
-      icon = buildDealInfoIcon(hintText);
-      icon.classList.add('portal-doc-row-info-icon');
-      labelEl.insertAdjacentElement('afterend', icon);
-    } else if (icon.dataset.portalTip !== hintText) {
-      icon.dataset.portalTip = hintText;
-    }
+  // "Создаёт черновик и автоматически заполняет данные заявки" — the one
+  // row-level caption the brief actually calls out by name; every other
+  // row's description is folded straight into its own label text instead
+  // (see NEWAPP_DOC_CONFIG), so this is the only row that needs its own
+  // second line.
+  const ensureInvoiceRowCaption = (row, labelEl) => {
+    if (!labelEl || row.querySelector('.portal-doc-row-caption')) return;
+    const caption = document.createElement('p');
+    caption.className = 'portal-doc-row-caption';
+    caption.textContent = t(
+      'Создаёт черновик и автоматически заполняет данные заявки',
+      'Creates a draft and fills in the application data automatically'
+    );
+    // Under the whole row (label line + status/Upload line), not wedged
+    // between them — a plain last child of `row` itself.
+    row.appendChild(caption);
   };
 
-  const NEWAPP_CHECK_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="20 6 9 17 4 12"></polyline></svg>';
-  const NEWAPP_EYE_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
-  const NEWAPP_REPLACE_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>';
-
-  // Once a row is uploaded: native badge ("Не загружено"/"Загружено" chip)
-  // is hidden outright (see the CSS rule for [data-testid^="badge-doc-
-  // status-"]) and the native Upload/Replace button is hidden too — this
-  // row takes over, showing a checkmark, the uploaded file's own name
-  // (read straight from the bundle's own filename <p>, the label's second
-  // sibling — see the portal-overrides.css comment on .flex.items-start.
-  // gap-3 for that markup), and two icon buttons: View (reads the row's
-  // own hidden file input directly — a real DOM node regardless of who
-  // rendered it, so its .files[0] is readable here even though the upload
-  // itself is handled entirely inside the compiled bundle — and opens it
-  // via a blob URL, a real preview of what was actually attached) and
-  // Replace (just proxies a click to the real, still-functional, merely
-  // hidden native button — same "click the real control" trick used
-  // throughout this file for nav links).
-  const ensureDocUploadedUI = (key, row, labelEl) => {
+  // Adds "Просмотреть" next to "Заменить" once a row is uploaded — reads
+  // the row's own hidden file input directly (works for native rows too:
+  // the <input type="file"> is a real DOM node regardless of who rendered
+  // it, so its .files[0] is readable here even though the upload itself is
+  // handled entirely inside the compiled bundle). Opens the visitor's own
+  // file via a blob URL — a real preview of what they actually attached,
+  // not a mocked viewer.
+  const ensureDocPreviewButton = (key, row) => {
     const uploadBtn = document.querySelector('[data-testid="button-upload-' + key + '"]');
     if (!uploadBtn) return;
-    const uploaded = isDocUploaded(key);
-    uploadBtn.style.display = uploaded ? 'none' : '';
-
-    let uiRow = row.querySelector('.portal-doc-uploaded-ui');
-    if (!uploaded) {
-      if (uiRow) uiRow.style.display = 'none';
+    const existing = row.querySelector('.portal-doc-preview-btn');
+    if (!isDocUploaded(key)) {
+      if (existing) existing.remove();
       return;
     }
-
-    if (!uiRow) {
-      uiRow = document.createElement('div');
-      uiRow.className = 'portal-doc-uploaded-ui';
-
-      const check = document.createElement('span');
-      check.className = 'portal-doc-uploaded-check';
-      check.setAttribute('aria-hidden', 'true');
-      check.innerHTML = NEWAPP_CHECK_ICON_SVG;
-
-      const nameEl = document.createElement('span');
-      nameEl.className = 'portal-doc-uploaded-name';
-
-      const viewBtn = document.createElement('button');
-      viewBtn.type = 'button';
-      viewBtn.className = 'portal-doc-icon-btn';
-      viewBtn.title = t('Просмотреть', 'View');
-      viewBtn.setAttribute('aria-label', t('Просмотреть', 'View'));
-      viewBtn.innerHTML = NEWAPP_EYE_ICON_SVG;
-      viewBtn.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        const fileInput = row.querySelector('input[type="file"]');
-        const file = fileInput && fileInput.files && fileInput.files[0];
-        if (file) window.open(URL.createObjectURL(file), '_blank', 'noopener');
-      });
-
-      const replaceBtn = document.createElement('button');
-      replaceBtn.type = 'button';
-      replaceBtn.className = 'portal-doc-icon-btn';
-      replaceBtn.title = t('Заменить', 'Replace');
-      replaceBtn.setAttribute('aria-label', t('Заменить', 'Replace'));
-      replaceBtn.innerHTML = NEWAPP_REPLACE_ICON_SVG;
-      replaceBtn.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        uploadBtn.click();
-      });
-
-      uiRow.append(check, nameEl, viewBtn, replaceBtn);
-      uploadBtn.insertAdjacentElement('afterend', uiRow);
-    }
-    uiRow.style.display = '';
-
-    const nameEl = uiRow.querySelector('.portal-doc-uploaded-name');
-    const filenameEl = labelEl && labelEl.parentElement && labelEl.parentElement.querySelectorAll('p')[1];
-    const filename = filenameEl ? filenameEl.textContent.trim() : '';
-    setTextIfChanged(nameEl, filename || t('Файл загружен', 'File uploaded'));
-  };
-
-  // Drag & drop onto a document row — sets the row's own hidden file input
-  // to the dropped FileList (the only supported way to set a file input's
-  // value from script) and dispatches a real 'change' event so whatever's
-  // actually listening for it (the compiled bundle's own React handler for
-  // a native row, or wireSyntheticDocRow's plain listener for the
-  // synthetic one) reacts exactly as it would to a manual file pick.
-  const wireNewAppRowDragAndDrop = (row, key) => {
-    if (row.dataset.portalDndWired) return;
-    row.dataset.portalDndWired = 'true';
-    const isGated = () => {
-      const btn = document.querySelector('[data-testid="button-upload-' + key + '"]');
-      return !!btn && btn.disabled;
-    };
-    row.addEventListener('dragover', (event) => {
+    if (existing) return;
+    const previewBtn = uploadBtn.cloneNode(true);
+    previewBtn.classList.add('portal-doc-preview-btn');
+    previewBtn.removeAttribute('data-testid');
+    previewBtn.type = 'button';
+    previewBtn.disabled = false;
+    setTextIfChanged(previewBtn, t('Просмотреть', 'View'));
+    previewBtn.addEventListener('click', (event) => {
       event.preventDefault();
-      if (isGated()) return;
-      row.classList.add('portal-doc-row-dragover');
-    });
-    row.addEventListener('dragleave', () => {
-      row.classList.remove('portal-doc-row-dragover');
-    });
-    row.addEventListener('drop', (event) => {
-      event.preventDefault();
-      row.classList.remove('portal-doc-row-dragover');
-      if (isGated()) return;
+      event.stopPropagation();
       const fileInput = row.querySelector('input[type="file"]');
-      const files = event.dataTransfer && event.dataTransfer.files;
-      if (!fileInput || !files || !files.length) return;
-      try {
-        fileInput.files = files;
-      } catch (error) {
-        return;
+      const file = fileInput && fileInput.files && fileInput.files[0];
+      if (file) {
+        window.open(URL.createObjectURL(file), '_blank', 'noopener');
       }
-      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
     });
+    uploadBtn.insertAdjacentElement('afterend', previewBtn);
   };
 
   const ensureDealTypeToggle = (rowsContainer, form) => {
@@ -1246,46 +1106,39 @@
     rowsContainer.insertAdjacentElement('beforebegin', wrap);
   };
 
-  const buildDocGroupHeading = (title, order, className) => {
-    const heading = document.createElement('div');
-    heading.className = 'portal-doc-group-heading ' + className;
-    heading.style.order = String(order);
-    const titleEl = document.createElement('span');
-    titleEl.className = 'portal-doc-group-title';
-    titleEl.textContent = title;
-    heading.appendChild(titleEl);
-    return heading;
-  };
-
   const rebuildDocGroupHeadings = (rowsContainer) => {
     if (rowsContainer.dataset.portalHeadingsBuilt) return;
     rowsContainer.dataset.portalHeadingsBuilt = 'true';
 
-    rowsContainer.appendChild(buildDocGroupHeading(
-      t('Шаг 1 · Инвойс', 'Step 1 · Invoice'),
+    const buildHeading = (title, hint, order, className) => {
+      const heading = document.createElement('div');
+      heading.className = 'portal-doc-group-heading ' + className;
+      heading.style.order = String(order);
+      const titleEl = document.createElement('span');
+      titleEl.className = 'portal-doc-group-title';
+      titleEl.textContent = title;
+      const hintEl = document.createElement('span');
+      hintEl.className = 'portal-doc-group-hint';
+      hintEl.textContent = hint;
+      heading.append(titleEl, hintEl);
+      return heading;
+    };
+
+    rowsContainer.appendChild(buildHeading(
+      t('Шаг 1 — обязательно', 'Step 1 — required'),
+      t('создаёт заявку и запускает автозаполнение', 'creates the application and starts autofill'),
       NEWAPP_STEP_HEADING_ORDER[1], 'portal-doc-group-required'
     ));
-    const step2Heading = buildDocGroupHeading('', NEWAPP_STEP_HEADING_ORDER[2], 'portal-doc-group-required');
-    step2Heading.classList.add('portal-doc-group-step2');
-    rowsContainer.appendChild(step2Heading);
-    rowsContainer.appendChild(buildDocGroupHeading(
-      t('Дополнительно', 'Additional'),
+    rowsContainer.appendChild(buildHeading(
+      t('Шаг 2 — обязательно для отправки на анализ', 'Step 2 — required to submit for review'),
+      t("без этого заявку не отправить", "can't submit without this"),
+      NEWAPP_STEP_HEADING_ORDER[2], 'portal-doc-group-required'
+    ));
+    rowsContainer.appendChild(buildHeading(
+      t('Желательно — можно догрузить позже', 'Recommended — can add later'),
+      t('приложите сразу или добавьте потом в карточке сделки', 'attach now, or add later from the deal card'),
       NEWAPP_STEP_HEADING_ORDER[3], 'portal-doc-group-later'
     ));
-  };
-
-  // Step 2's own title depends on deal type (Delivery Note for Goods,
-  // Service Completion for Service) — refreshed on every restructure pass
-  // instead of being baked in once like the other two, guarded against the
-  // current deal type so it's a no-op once it already matches.
-  const syncDocGroupStep2Heading = (rowsContainer, dealType) => {
-    const heading = rowsContainer.querySelector('.portal-doc-group-step2');
-    const titleEl = heading && heading.querySelector('.portal-doc-group-title');
-    if (!titleEl || titleEl.dataset.portalStep2For === dealType) return;
-    titleEl.dataset.portalStep2For = dealType;
-    setTextIfChanged(titleEl, dealType === 'service'
-      ? t('Шаг 2 · Подтверждение услуг', 'Step 2 · Proof of Service')
-      : t('Шаг 2 · Подтверждение отгрузки', 'Step 2 · Proof of Shipment'));
   };
 
   const restructureNewAppDocuments = (form) => {
@@ -1322,9 +1175,10 @@
         labelEl.dataset.portalDocLabelFor = labelTag;
         setTextIfChanged(labelEl, entry.label);
       }
-      ensureDocRowInfoIcon(row, labelEl, entry.hint);
 
-      if (key !== 'invoice') {
+      if (key === 'invoice') {
+        ensureInvoiceRowCaption(row, labelEl);
+      } else {
         // Every document but the invoice itself waits for the invoice —
         // it's the one that creates the draft in the first place.
         const btn = document.querySelector('[data-testid="button-upload-' + key + '"]');
@@ -1333,12 +1187,10 @@
           btn.title = invoiceUploaded ? '' : t('Сначала загрузите инвойс', 'Upload the invoice first');
         }
       }
-      ensureDocUploadedUI(key, row, labelEl);
-      wireNewAppRowDragAndDrop(row, key);
+      ensureDocPreviewButton(key, row);
     });
 
     rebuildDocGroupHeadings(rowsContainer);
-    syncDocGroupStep2Heading(rowsContainer, dealType);
   };
 
   // Replaces the bare "Загружено 0 из 7 документов" deficit-framed counter
@@ -1396,7 +1248,7 @@
         const showMissing = docs.missingRequired.length > 0;
         missingEl.hidden = !showMissing;
         if (showMissing) {
-          setTextIfChanged(missingEl, t('Нужен ', 'Need: ') + docs.missingRequired.join(', '));
+          setTextIfChanged(missingEl, t('Не загружен ', 'Missing: ') + docs.missingRequired.join(', '));
         }
       }
     }
@@ -1486,11 +1338,22 @@
     }
 
     // Invoice upload now lives in exactly one place — this row — so it's
-    // marked as the primary document: a subtle background tint (no badge
-    // any more — removed per the latest brief) that keeps it visually
-    // first without adding text.
+    // marked as the primary document: it's what autofill will eventually
+    // key off of, and the visitor should reach for it first.
     const invoiceRow = invoiceBadge.closest('.flex.flex-col.gap-3');
-    if (invoiceRow) invoiceRow.classList.add('portal-doc-row-primary');
+    if (invoiceRow) {
+      invoiceRow.classList.add('portal-doc-row-primary');
+      const invoiceLabel = form.querySelector('[data-testid="text-doc-label-invoice"]');
+      if (invoiceLabel) {
+        const tag = document.createElement('span');
+        tag.className = 'portal-doc-row-primary-tag';
+        tag.textContent = t('Главный документ', 'Primary document');
+        // Appended *inside* the label (not as a sibling after it) so the
+        // inline-flex tag sits on the same line as "Инвойс" instead of
+        // wrapping to its own line below.
+        invoiceLabel.appendChild(tag);
+      }
+    }
 
     return dataCard;
   };
@@ -1546,7 +1409,7 @@
     const invoiceNumberField = cloneNewAppField(
       'invoiceAmount', 'invoiceNumber',
       t('Номер инвойса', 'Invoice Number'),
-      '', 'text'
+      NEWAPP_LOCKED_PLACEHOLDER, 'text'
     );
     if (invoiceNumberField) amountRow.insertAdjacentElement('beforebegin', invoiceNumberField);
 
@@ -1562,7 +1425,7 @@
       input.disabled = false;
       const hint = document.createElement('p');
       hint.className = 'portal-field-hint';
-      hint.hidden = true;
+      hint.textContent = t('Не больше суммы инвойса', 'Cannot exceed the invoice amount');
       requestedAmountField.appendChild(hint);
       input.addEventListener('input', () => validateRequestedAmount(form));
     }
@@ -1610,8 +1473,8 @@
     const invalid = field.value !== '' && !Number.isNaN(requested) && !Number.isNaN(invoiceAmt) && requested > invoiceAmt;
     setFieldHintState(
       wrapper,
-      '',
-      t('Больше суммы инвойса', 'Exceeds the invoice amount'),
+      t('Не больше суммы инвойса', 'Cannot exceed the invoice amount'),
+      t('Превышает сумму инвойса', 'Exceeds the invoice amount'),
       invalid
     );
     return !invalid;
@@ -1676,7 +1539,7 @@
   // longer matches what autofill itself last set (see
   // applyNewAppAutofillState, which stores that baseline in
   // dataset.portalAutoValue on each field/trigger).
-  const NEWAPP_MANUAL_TAG_TEXT = t('изменено', 'edited');
+  const NEWAPP_MANUAL_TAG_TEXT = t('Изменено вручную', 'Manually edited');
 
   const ensureManualEditTag = (wrapper) => {
     if (wrapper.querySelector('.portal-manual-tag')) return;
@@ -1749,15 +1612,17 @@
     const stepsList = document.createElement('ol');
     stepsList.className = 'portal-newapp-steps';
     [
-      t('Загрузите инвойс', 'Upload the invoice'),
-      t('Добавьте подтверждение отгрузки или услуг', 'Add proof of shipment or service'),
       t(
-        'Дополнительные документы: они помогают быстрее рассмотреть заявку и повышают шансы на одобрение',
-        'Additional documents help the application get reviewed faster and improve approval odds'
+        'Загрузите инвойс — создастся черновик, данные заявки заполнятся автоматически.',
+        'Upload the invoice — a draft is created and the application data fills in automatically.'
       ),
       t(
-        'Отправьте — решение примет финансирующий партнёр, статус будет в «Мои сделки»',
-        'Submit — the financing partner makes the decision, status appears under "My Deals"'
+        'Добавьте подтверждение отгрузки или оказания услуг и отправьте заявку на проверку.',
+        'Add proof of shipment or service delivery and submit the application for review.'
+      ),
+      t(
+        'Решение принимает финансирующий партнёр. Статус заявки отображается в разделе «Мои сделки», о результате мы также уведомим вас по email.',
+        'The financing partner makes the decision. The application status appears under "My Deals", and we’ll also notify you by email once there’s a result.'
       ),
     ].forEach((text) => {
       const li = document.createElement('li');
@@ -1925,24 +1790,31 @@
     if (!page || !form) return false;
 
     page.classList.add('portal-new-application-page');
-    // Header subtitle (page's first, non-form child's one <p>) — removed
-    // outright per the latest brief ("too much text"), not reworded this
-    // time. A plain style.display on a node React still owns is harmless
-    // and survives re-renders on its own, same as hideNewAppPackageProgress
-    // below.
+    // Header subtitle: page's first (and only non-form) child is the
+    // "mb-6" div holding just the h1 and this one <p> — reworded now that
+    // Документы sits on the left and is the actual point of entry.
     const subtitleEl = page.querySelector(':scope > div > p');
-    if (subtitleEl) subtitleEl.style.display = 'none';
+    if (subtitleEl) {
+      setTextIfChanged(subtitleEl, t(
+        'Загрузите инвойс — данные заявки заполнятся автоматически.',
+        'Upload the invoice — the application data fills in automatically.'
+      ));
+    }
 
     // "Документы" card's own native subtitle — found by its stable Russian
     // text (translatePage hasn't run yet at this point in run(), see the
     // language comment up top, so it's always still this exact string
-    // regardless of the active language). Removed outright, same as the
-    // page subtitle above.
+    // regardless of the active language).
     const docsSubtitleEl = Array.from(form.querySelectorAll('p')).find((el) => {
       if (el.children.length !== 0) return false;
       return el.textContent.trim() === 'Приложите пакет документов сразу при подаче — или догрузите позже, в карточке этой сделки.';
     });
-    if (docsSubtitleEl) docsSubtitleEl.style.display = 'none';
+    if (docsSubtitleEl) {
+      setTextIfChanged(docsSubtitleEl, t(
+        'Загрузите инвойс и подтверждение отгрузки или оказания услуг. Остальные документы можно догрузить позже в карточке сделки.',
+        'Upload the invoice and proof of shipment or service delivery. The other documents can be added later from the deal card.'
+      ));
+    }
 
     fixNonSubmitButtonTypes(form);
     hideNewAppPackageProgress(form);
@@ -1957,7 +1829,6 @@
     wireNewAppDateDisplay(form);
     wireNewAppManualEditTracking(form);
     repurposeNewAppComment(form);
-    relabelObligorCountryField(form);
     ensureNewAppAutoFillNote(dataCard);
     ensureNewAppFooterExtras(form);
 

@@ -1860,6 +1860,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   align-items: center;
 }
 
+.portal-doc-group-hint {
+  font-size: 0.78rem;
+  color: rgba(var(--ov-muted-rgb), 0.5);
+}
+
 /* "Комплектность пакета / Загружено N из M документов" + its progress bar
    (hideNewAppPackageProgress in portal-overrides.js) — the document list
    right below already shows this row by row. */
@@ -1888,6 +1893,41 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
      column-direction width: nothing here ever overflows enough to need
      wrapping onto a 2nd column. */
   flex-wrap: wrap;
+}
+
+/* Brighter/more contrasty than the first pass — it blended into the
+   background before. Kept neutral (not gold: gold stays reserved for
+   "Отправить") but bright enough to read as "start here". */
+.portal-doc-row-primary-tag {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(var(--ov-tint-rgb), 0.16);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.22);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ov-text);
+}
+
+/* Tax Invoice's own second line ("Создаёт черновик и автоматически
+   заполняет данные заявки") — see ensureInvoiceRowCaption. Same tone/size
+   as the group hint captions, sits directly under the label it explains. */
+.portal-doc-row-caption {
+  /* flex-basis:100% is what actually forces the line break in the
+     horizontal (wide-viewport) version of the row above — width:100% is
+     the equivalent for the narrower, column-direction version (flex-basis
+     there sizes against height, not width, so it isn't what's doing the
+     work at that width; see .portal-doc-row-primary). */
+  flex: 1 0 100%;
+  width: 100%;
+  margin: 6px 0 0;
+  padding-left: 48px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgba(var(--ov-muted-rgb), 0.6);
 }
 
 /* Goods/Service — a plain two-way segmented control above the checklist
@@ -1926,83 +1966,19 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   font-weight: 600;
 }
 
-/* The native "Не загружено"/"Загружено" chip is gone from view entirely
-   now (see ensureDocUploadedUI) — isDocUploaded() still reads its text
-   content for state, so it stays in the DOM, just hidden. */
-.portal-newapp-docs-card [data-testid^="badge-doc-status-"] {
-  display: none !important;
+/* "Просмотреть" — cloned straight from the row's own "Заменить" button
+   (see ensureDocPreviewButton), so it inherits every one of that button's
+   classes already; this only pulls it back to a quieter, outlined tone so
+   two visually-identical buttons don't sit side by side. */
+.portal-doc-preview-btn {
+  background: transparent !important;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.2) !important;
+  color: rgba(var(--ov-muted-rgb), 0.85) !important;
+  box-shadow: none !important;
 }
 
-/* Small "i" next to a document's short name (see ensureDocRowInfoIcon) —
-   same trigger buildDealInfoIcon already builds elsewhere, just placed
-   inline after the label instead of after a card heading. */
-.portal-doc-row-info-icon {
-  margin-left: 6px;
-  vertical-align: middle;
-}
-
-/* Replaces the Upload/Replace button once a row is uploaded (see
-   ensureDocUploadedUI): a checkmark, the file's own name (truncated), and
-   two icon-only actions. Sits in the same spot the button did, so no
-   change to the row's own height. */
-.portal-doc-uploaded-ui {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-
-.portal-doc-uploaded-check {
-  display: inline-flex;
-  flex-shrink: 0;
-  color: var(--success, #3fb97f);
-}
-
-.portal-doc-uploaded-name {
-  min-width: 0;
-  max-width: 180px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-size: 0.82rem;
-  color: rgba(var(--ov-muted-rgb), 0.85);
-}
-
-/* Shared icon-only button recipe for View/Replace — same bordered-box
-   language as the rest of this file's small controls
-   (.portal-theme-trigger, .portal-lang-trigger), just smaller. */
-.portal-doc-icon-btn {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid rgba(var(--ov-tint-rgb), 0.18);
-  border-radius: 7px;
-  background: rgba(var(--ov-tint-rgb), 0.06);
-  color: rgba(var(--ov-muted-rgb), 0.8);
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-
-.portal-doc-icon-btn:hover {
-  background: rgba(var(--ov-tint-rgb), 0.12);
-  border-color: rgba(var(--ov-tint-rgb), 0.3);
-  color: var(--ov-text);
-}
-
-/* Drag & drop highlight (see wireNewAppRowDragAndDrop) — same gold accent
-   as the rest of this file's "primary action" tone (e.g.
-   .portal-newapp-summary-confirm), not a new color. */
-.portal-doc-row-dragover {
-  outline: 2px solid rgba(199, 154, 54, 0.65);
-  outline-offset: 2px;
-  border-radius: 10px;
-}
-
-/* "изменено" — appended into a field's own <label> once its value diverges
-   from what autofill set (see wireNewAppManualEditTracking). */
+/* "Изменено вручную" — appended into a field's own <label>, same
+   placement trick as .portal-doc-row-primary-tag above. */
 .portal-manual-tag {
   display: inline-flex;
   align-items: center;
@@ -2389,40 +2365,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   display: inline-flex;
   flex-shrink: 0;
   color: rgba(var(--ov-muted-rgb), 0.4);
-}
-
-/* Swapped in once a field actually autofills (see applyNewAppAutofillState)
-   — the lock icon becomes a pencil and, unlike the lock, is meant to be
-   clicked, so it needs pointer-events back (the anchor rule above turns
-   them off for the inert lock state) and a hover cue. */
-.portal-lock-icon-editable {
-  pointer-events: auto !important;
-  cursor: pointer;
-}
-
-.portal-lock-icon-editable:hover {
-  color: var(--ov-text);
-}
-
-/* Shimmer while the invoice is "processing" (see applyNewAppAutofillState)
-   — same muted tint as the rest of this card's locked-field language, just
-   animated instead of static, and with no placeholder text underneath it. */
-.portal-field-skeleton .border-input,
-.portal-field-skeleton [role="combobox"] {
-  color: transparent !important;
-  background-image: linear-gradient(
-    90deg,
-    rgba(var(--ov-tint-rgb), 0.05) 25%,
-    rgba(var(--ov-tint-rgb), 0.14) 50%,
-    rgba(var(--ov-tint-rgb), 0.05) 75%
-  ) !important;
-  background-size: 200% 100%;
-  animation: portal-skeleton-shimmer 1.4s ease-in-out infinite;
-}
-
-@keyframes portal-skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
 }
 
 /* Same size/color as "Приложите пакет документов..." (Документы card's
