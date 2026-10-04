@@ -1841,7 +1841,17 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   gap: 0;
 }
 
+/* position:relative + z-index:1 — without this, these (non-positioned,
+   plain static) rows paint *before* any positioned element regardless of
+   DOM order, including .portal-doc-step-spotlight (position:absolute,
+   z-index:0, inserted as rowsContainer's first child): a positioned
+   z-index:0+ element always paints after in-flow static content per the
+   CSS stacking order, DOM position notwithstanding. That let the
+   spotlight's own border/background paint *over* row/heading text
+   instead of staying behind it. */
 .portal-doc-rows-grouped > .flex.flex-col.gap-3 {
+  position: relative;
+  z-index: 1;
   margin-top: 10px;
   transition: opacity 0.2s ease;
 }
@@ -1871,20 +1881,31 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    sidebar) so both use identical numbering chrome. */
 .portal-doc-group-heading {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
   padding: 4px 0 2px 30px;
   margin-top: 28px;
-  transition: opacity 0.2s ease, margin-top 0.35s ease-in-out;
+  transition: opacity 0.2s ease;
 }
 
+/* No font-size transition here (nor on .portal-doc-group-hint below, the
+   circle's own transform, or the heading's own margin-top) — on purpose.
+   updateNewAppStepSpotlight/updateNewAppCardHeights (portal-overrides
+   .js) measure offsetTop/offsetHeight synchronously, in the very same
+   tick a step's scaled state changes; if that size/position change were
+   still mid-transition at that instant, the next step down would measure
+   a stale, not-yet-settled layout and the spotlight/gaps would be
+   positioned against it — exactly what produced the frame cutting
+   through Шаг 3's heading. Content now snaps to its new size instantly;
+   only the frame's own top/height (and the gap/min-height it drives)
+   still animate smoothly on top of that already-settled layout. */
 .portal-doc-group-title {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--ov-text);
-  transition: font-size 0.2s ease;
 }
 
 /* The numbered circle itself — same gradient/dark-number recipe as
@@ -1907,7 +1928,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   justify-content: center;
   font-size: 0.72rem;
   font-weight: 700;
-  transition: transform 0.2s ease;
 }
 
 .portal-doc-group-step1::before,
@@ -1983,7 +2003,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-doc-group-hint {
   font-size: 0.78rem;
   color: rgba(var(--ov-muted-rgb), 0.5);
-  transition: font-size 0.2s ease;
 }
 
 /* "Комплектность пакета / Загружено N из M документов" + its progress bar
@@ -2294,18 +2313,20 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
     transition: opacity 0.2s ease;
   }
 
-  .portal-doc-group-heading,
   .portal-new-application-page form > .portal-newapp-docs-card,
   .portal-new-application-page form > .portal-newapp-submit-row {
     transition: opacity 0.2s ease;
   }
 }
 
-/* Headings/rows painting on top of the spotlight above: they're all
-   plain static-position flow children sharing the same default stacking
-   as each other, so DOM order alone (spotlight inserted first — see
-   updateNewAppStepSpotlight) already puts them above it; nothing extra
-   needed here. */
+/* Headings/rows painting on top of the spotlight above: a positioned
+   element (the spotlight — position:absolute, z-index:0) paints *after*
+   non-positioned in-flow content per the CSS stacking order, DOM order
+   notwithstanding — so headings/rows being plain position:static would
+   NOT have been enough on their own (confirmed the hard way — see the
+   z-index:1 on .portal-doc-group-heading and .portal-doc-rows-grouped >
+   .flex.flex-col.gap-3, both above). Explicit position:relative +
+   z-index:1 on both is what actually guarantees they paint above it. */
 
 /* Row-level half of the "current step scales up" treatment (see
    .portal-doc-step-scaled on the heading side, above) — icon box via
