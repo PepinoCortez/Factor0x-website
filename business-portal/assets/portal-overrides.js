@@ -899,20 +899,15 @@
     if (!heading) return;
     const note = document.createElement('p');
     note.className = 'portal-newapp-autofill-note';
-    // Short label on view; the full explanation (why fields are locked, what
-    // triggers the autofill) moves into the "i" tooltip instead of running
-    // on in the note itself — buildDealInfoIcon is defined further down this
-    // file but already initialized by the time this actually runs (this
-    // function is only called from applyNewApplicationTheme via run(), at
-    // the very end of the file).
-    note.append(t(
-      'Поля заполняются автоматически из инвойса. Проверьте их и при необходимости исправьте.',
-      'Fields fill in automatically from the invoice. Check them and correct anything if needed.'
-    ));
+    // Just the "i" now — its tooltip carries the full explanation;
+    // buildDealInfoIcon is defined further down this file but already
+    // initialized by the time this actually runs (this function is only
+    // called from applyNewApplicationTheme via run(), at the very end of
+    // the file).
     note.appendChild(buildDealInfoIcon(
       t(
-        'Загрузите документы, и поля заполнятся автоматически из инвойса. Останется только проверить. Пока документы не загружены.',
-        "Upload the documents and the fields will fill in automatically from the invoice — you'll just need to check them. No documents uploaded yet."
+        'Поля заполняются автоматически из инвойса. Проверьте их и при необходимости исправьте.',
+        'Fields fill in automatically from the invoice. Check them and correct anything if needed.'
       )
     ));
     heading.insertAdjacentElement('afterend', note);
