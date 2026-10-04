@@ -1843,35 +1843,41 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 .portal-doc-rows-grouped > .flex.flex-col.gap-3 {
   margin-top: 10px;
+  transition: opacity 0.2s ease;
 }
 
 .portal-doc-rows-grouped > .flex.flex-col.gap-3.portal-doc-row-first-in-group {
   margin-top: 14px;
 }
 
-/* 28px, up from the old 20px (and Шаг 1 now carries the same value
-   instead of a 0 override) — one shared number for subtitle->Шаг 1 and
-   every step->step gap, large enough to clear the spotlight's own 16px
-   halo (see HALO in updateNewAppStepSpotlight) without it ever
-   overlapping the step above/below while it's parked there. */
+/* Dims a locked step's own rows along with its heading (see
+   .portal-doc-group-heading[data-step-state="locked"] below) — applied
+   per row in restructureNewAppDocuments (portal-overrides.js), keyed off
+   that row's own entry.step rather than DOM/visual adjacency, since
+   Step 3 alone can hold several rows. */
+.portal-doc-rows-grouped > .flex.flex-col.gap-3.portal-doc-row-locked {
+  opacity: 0.4;
+}
+
+/* 28px — one shared number for subtitle->Шаг 1 and every step->step gap
+   (no more Шаг 1 margin-top:0 override — the divider that used to be
+   this section's only visual separator is gone too, see below), large
+   enough to clear the spotlight's own 16px halo (see HALO in
+   updateNewAppStepSpotlight) without it ever overlapping the step
+   above/below while it's parked there.
+   position:relative + the left padding make room for the numbered
+   circle (::before below) — 20px circle + 10px gap to the text, the
+   same 30px recipe as .portal-newapp-steps (the "Как подать заявку"
+   sidebar) so both use identical numbering chrome. */
 .portal-doc-group-heading {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
-  padding: 4px 0 2px;
+  padding: 4px 0 2px 30px;
   margin-top: 28px;
-}
-
-/* Only "Дополнительно" gets the divider treatment — Шаг 1/Шаг 2 are
-   always visually first (see NEWAPP_STEP_HEADING_ORDER), so neither of
-   them needs separating from something above. No padding-top override
-   here on purpose: an earlier version added one (to clear the border
-   visually), which made the gap *before* "Дополнительно" 8px bigger than
-   the identical gap before "Шаг 2" — the border sits right at the top of
-   the same margin-top every heading already carries instead. */
-.portal-doc-group-heading.portal-doc-group-later {
-  border-top: 1px solid rgba(var(--ov-tint-rgb), 0.16);
+  transition: opacity 0.2s ease;
 }
 
 .portal-doc-group-title {
@@ -1881,23 +1887,69 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   transition: font-size 0.2s ease;
 }
 
-.portal-doc-group-required .portal-doc-group-title::before {
-  content: '';
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 7px;
+/* The numbered circle itself — same gradient/dark-number recipe as
+   .portal-newapp-steps li::before (the sidebar's own step numbers),
+   copied rather than shared via class since these live in a different
+   part of the page. Steps 1/2 are required, so they're solid gold by
+   default; Step 3 overrides to outline-only below (it's optional, same
+   reasoning the spotlight frame skips scaling it — see
+   .portal-doc-row-scaled further down). */
+.portal-doc-group-heading::before {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--warning);
-  vertical-align: middle;
-  transition: width 0.2s ease, height 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  transition: transform 0.2s ease;
+}
+
+.portal-doc-group-step1::before,
+.portal-doc-group-step2::before {
+  color: #171008;
+  background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124);
+}
+
+.portal-doc-group-step1::before { content: '1'; }
+.portal-doc-group-step2::before { content: '2'; }
+
+/* Optional step — contour only, no fill, so it reads as "nice to have"
+   next to Step 1/2's solid-gold "required" circles. */
+.portal-doc-group-step3::before {
+  content: '3';
+  color: #C79A36;
+  background: transparent;
+  border: 1.5px solid rgba(199, 154, 54, 0.55);
+}
+
+/* Done: only the glyph swaps to a checkmark — the circle keeps its own
+   step's fill (gold for 1/2; Step 3 never actually reaches this state in
+   practice, see the stepStates comment in portal-overrides.js, but the
+   rule stays generic rather than hardcoded to just two steps). */
+.portal-doc-group-heading[data-step-state="completed"]::before {
+  content: '✓';
+}
+
+/* Locked (nothing uploaded yet to unlock Step 2/3): the whole heading —
+   circle included, via the shared opacity — dims along with its own rows
+   (.portal-doc-row-locked below); no separate circle override needed. */
+.portal-doc-group-heading[data-step-state="locked"] {
+  opacity: 0.4;
 }
 
 /* The step the spotlight container currently surrounds (Шаг 1/Шаг 2
    only — Шаг 3 never scales, see the spec this was built against) —
-   title, hint and dot each step up through the same scale increments
+   title, hint and circle each step up through the same scale increments
    used elsewhere on this page rather than a literal +20% multiply, per
-   the spec's own "через ступени существующей шкалы" wording. The
+   the spec's own "через ступени существующей шкалы" wording. The circle's
+   own true size isn't this file's doing in the sense of a type-scale
+   step, so it uses a relative +20% transform instead (same technique as
+   the row icon's own scale, .portal-doc-row-scaled further down). The
    matching row-level bump is .portal-doc-row-scaled below. */
 .portal-doc-group-heading.portal-doc-step-scaled .portal-doc-group-title {
   font-size: 0.95rem;
@@ -1907,10 +1959,8 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   font-size: 0.85rem;
 }
 
-.portal-doc-group-heading.portal-doc-step-scaled.portal-doc-group-required .portal-doc-group-title::before {
-  width: 7px;
-  height: 7px;
-  margin-right: 8px;
+.portal-doc-group-heading.portal-doc-step-scaled::before {
+  transform: scale(1.2);
 }
 
 /* The icon+label wrapper (confirmed from the compiled component: a plain
@@ -2196,29 +2246,35 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 /* The accent container itself — one persistent element positioned/sized
    by updateNewAppStepSpotlight (portal-overrides.js) to match whichever
-   step is current, left/right flush with .portal-doc-rows-grouped (which
-   already spans the same width as every document row, so this needs no
-   extra width math of its own to "match the rows' own edges"); top/
-   height come from that function as inline styles and transition here.
+   step is current; top/height come from that function as inline styles
+   and transition here. left/right bleed -16px past .portal-doc-rows-
+   grouped's own edges — the same HALO amount used for top/height in JS
+   — so the frame's padding reads as equal on all 4 sides around the
+   step's own tight content box instead of just top/bottom (the rows
+   themselves aren't moved to make room for real padding — nothing here
+   is reparented, see the no-reparenting note above — so this bleed is
+   what stands in for it; 16px still leaves 8px clear of the card's own
+   true outer edge, since .p-6 CardContent padding is 24px).
    Background one tint step up from the old next-row highlight it
    replaces (.portal-doc-row-next, above); border is the same gold used
-   on "Отправить" (#C79A36) at ~30% opacity, with only a soft matching
-   glow instead of a hard shadow. border-radius smaller than the card's
-   own 12px (never literally "radius minus padding" — that formula goes
-   negative this deep inside the card's own content, past its header) —
-   8px keeps the same smaller-nested-radius relationship used elsewhere
-   on this page (e.g. .portal-newapp-draft-btn) without going to 0.
+   on "Отправить" (#C79A36), ~60% opacity — a muted gold line, not a
+   bright yellow one — with only a soft matching glow instead of a hard
+   shadow. border-radius smaller than the card's own 12px (never
+   literally "radius minus padding" — that formula goes negative this
+   deep inside the card's own content, past its header) — 8px keeps the
+   same smaller-nested-radius relationship used elsewhere on this page
+   (e.g. .portal-newapp-draft-btn) without going to 0.
    z-index:0 (not just relying on first-child DOM order) belt-and-braces
    against ever painting over the heading/row text it surrounds. */
 .portal-doc-step-spotlight {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: -16px;
+  right: -16px;
   z-index: 0;
   border-radius: 8px;
   background: rgba(var(--ov-tint-rgb), 0.06);
-  border: 1px solid rgba(199, 154, 54, 0.3);
-  box-shadow: 0 0 16px rgba(199, 154, 54, 0.1);
+  border: 1.5px solid rgba(199, 154, 54, 0.6);
+  box-shadow: 0 0 16px rgba(199, 154, 54, 0.08);
   pointer-events: none;
   opacity: 0;
   transition: top 0.35s ease-in-out, height 0.35s ease-in-out, opacity 0.2s ease;

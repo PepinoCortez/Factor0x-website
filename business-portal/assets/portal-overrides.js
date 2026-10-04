@@ -1320,20 +1320,24 @@
     if (rowsContainer.dataset.portalHeadingsBuilt) return;
     rowsContainer.dataset.portalHeadingsBuilt = 'true';
 
-    const step1Heading = buildDocGroupHeading(
+    // Class alone now carries the numbering (::before in
+    // portal-overrides.css keys off .portal-doc-group-step1/2/3 directly)
+    // — a separate data-step-state attribute (set per call in
+    // restructureNewAppDocuments, since it depends on live upload state)
+    // layers the active/completed/locked/available look on top.
+    rowsContainer.appendChild(buildDocGroupHeading(
       t('Шаг 1 · Инвойс', 'Step 1 · Invoice'),
       t('Создаёт заявку и заполняет её данные', 'Creates the application and fills in its data'),
-      NEWAPP_STEP_HEADING_ORDER[1], 'portal-doc-group-required'
-    );
-    step1Heading.classList.add('portal-doc-group-step1');
-    rowsContainer.appendChild(step1Heading);
-    const step2Heading = buildDocGroupHeading('', t('Нужно для отправки заявки', 'Needed to submit the application'), NEWAPP_STEP_HEADING_ORDER[2], 'portal-doc-group-required');
-    step2Heading.classList.add('portal-doc-group-step2');
-    rowsContainer.appendChild(step2Heading);
+      NEWAPP_STEP_HEADING_ORDER[1], 'portal-doc-group-step1'
+    ));
     rowsContainer.appendChild(buildDocGroupHeading(
-      t('Дополнительно', 'Additional'),
-      '',
-      NEWAPP_STEP_HEADING_ORDER[3], 'portal-doc-group-later'
+      '', t('Нужно для отправки заявки', 'Needed to submit the application'),
+      NEWAPP_STEP_HEADING_ORDER[2], 'portal-doc-group-step2'
+    ));
+    rowsContainer.appendChild(buildDocGroupHeading(
+      t('Шаг 3 · Дополнительные документы', 'Step 3 · Additional documents'),
+      t('По желанию: повышают шансы на одобрение', 'Optional: improve your approval odds'),
+      NEWAPP_STEP_HEADING_ORDER[3], 'portal-doc-group-step3'
     ));
   };
 
@@ -1459,14 +1463,18 @@
       ? 'invoice'
       : (step2Entry && !step2Uploaded ? step2Entry.key : null);
 
-    // The one step the spotlight container (see updateNewAppStepSpotlight)
-    // currently sits around, and whose own heading/rows scale up (never
-    // Step 3 — it's optional, never the blocking thing to do "right now").
-    // Same progression nextRequiredKey already encodes, just carried as a
-    // step number instead of a document key so Step 3 (which has no
-    // single key of its own) can be reached too, once both required docs
-    // are in.
-    const activeStep = !invoiceUploaded ? 1 : (!step2Uploaded ? 2 : 3);
+    // Per-step state driving the numbered circle (digit vs ✓), the
+    // locked/dimmed look for a step whose prerequisite (the invoice)
+    // isn't uploaded yet, and — via 'active' — which single step the
+    // spotlight container (see updateNewAppStepSpotlight) currently sits
+    // around and scales up. Step 3 never blocks submission, so it only
+    // ever reaches 'active' as an invitation, never 'completed'.
+    const stepStates = {
+      1: invoiceUploaded ? 'completed' : 'active',
+      2: step2Uploaded ? 'completed' : (invoiceUploaded ? 'active' : 'locked'),
+      3: !invoiceUploaded ? 'locked' : (step2Uploaded ? 'active' : 'available'),
+    };
+    const activeStep = [1, 2, 3].find((step) => stepStates[step] === 'active');
 
     // Visual order (see NEWAPP_DOC_VISUAL_ORDER) is ascending in insertion
     // order, so a running "previous step seen" is enough to tell the first
@@ -1490,6 +1498,7 @@
       row.classList.toggle('portal-doc-row-first-in-group', entry.step !== previousStep);
       row.dataset.step = String(entry.step);
       row.classList.toggle('portal-doc-row-scaled', entry.step === activeStep && activeStep !== 3);
+      row.classList.toggle('portal-doc-row-locked', stepStates[entry.step] === 'locked');
       previousStep = entry.step;
 
       const labelEl = document.querySelector('[data-testid="text-doc-label-' + key + '"]');
@@ -1510,11 +1519,13 @@
     rebuildDocGroupHeadings(rowsContainer);
     syncDocGroupStep2Heading(rowsContainer, dealType);
 
-    // Step 3 never scales (see the spec this was built against) — only
-    // its own heading ever needed checking below.
-    [1, 2].forEach((step) => {
+    // Step 3 never scales (see the spec this was built against), but its
+    // heading still needs data-step-state (for the circle/locked look).
+    [1, 2, 3].forEach((step) => {
       const heading = rowsContainer.querySelector('.portal-doc-group-step' + step);
-      if (heading) heading.classList.toggle('portal-doc-step-scaled', step === activeStep);
+      if (!heading) return;
+      heading.dataset.stepState = stepStates[step];
+      heading.classList.toggle('portal-doc-step-scaled', step === activeStep && step !== 3);
     });
 
     updateNewAppStepSpotlight(rowsContainer, activeStep);
