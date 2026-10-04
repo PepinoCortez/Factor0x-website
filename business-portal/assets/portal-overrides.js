@@ -1463,16 +1463,29 @@
     if (!submitBtn) return;
     const submitSection = submitBtn.parentElement;
     const docs = newAppDocStatus();
+    const invoiceUploaded = isDocUploaded('invoice');
+
     submitBtn.disabled = docs.missingRequired.length > 0;
 
     if (submitSection) {
+      // Сохранить черновик needs at least the invoice — nothing to save a
+      // draft of otherwise.
+      const draftBtn = submitSection.querySelector('.portal-newapp-draft-btn');
+      if (draftBtn) draftBtn.disabled = !invoiceUploaded;
+
       const missingEl = submitSection.querySelector('.portal-newapp-submit-missing');
       if (missingEl) {
-        const showMissing = docs.missingRequired.length > 0;
-        missingEl.hidden = !showMissing;
-        if (showMissing) {
-          setTextIfChanged(missingEl, t('Не загружен ', 'Missing: ') + docs.missingRequired.join(', '));
+        let text = '';
+        if (!invoiceUploaded) {
+          text = t('Загрузите Tax Invoice, чтобы начать', 'Upload the Tax Invoice to get started');
+        } else if (docs.missingRequired.length > 0) {
+          text = t(
+            'Загрузите ' + docs.missingRequired[0] + ', чтобы отправить заявку',
+            'Upload ' + docs.missingRequired[0] + ' to submit the application'
+          );
         }
+        missingEl.hidden = !text;
+        if (text) setTextIfChanged(missingEl, text);
       }
     }
   };

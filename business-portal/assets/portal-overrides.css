@@ -2282,33 +2282,58 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    form's top-level sections got nested a level deeper (the old columns-
    wrapper attempt), React's reconciliation for form's direct children
    broke and duplicated content. Self-alignment inside the same grid cell
-   gets the same visual result without touching the DOM tree: pinned to the
-   bottom of the now-stretched cell, centered at 2/3 of the column's width. */
+   gets the same visual result without touching the DOM tree: pinned to
+   the bottom of the now-stretched cell. padding (left/right) matches
+   Заявка's own CardContent padding (p-6 = 24px) so the buttons' outer
+   edges line up with the fields' own edges above them, instead of the
+   row running flush to the column's outer boundary. */
 .portal-new-application-page form > .portal-newapp-submit-row {
   grid-column: 2;
   grid-row: 1;
   order: 3;
   justify-self: stretch;
   align-self: end;
-  /* Now holds 4 children, not 1 (see ensureNewAppFooterExtras): the
-     company-documents status line and the missing-documents caption each
-     force their own full-width line via flex-basis: 100% below, while
-     Сохранить черновик / Отправить — ordinary, non-basis children — share
-     whatever line is left between those two, right-aligned. wrap is what
-     makes a basis:100% child actually start a new line instead of just
-     stretching this (already wide) row further. */
+  padding: 21px 24px 0;
+  /* Holds 3 children (see ensureNewAppFooterExtras): the missing-
+     documents caption forces its own full-width line via flex-basis:
+     100%, while Сохранить черновик / Отправить — equal-width, flex: 1
+     each — share the line above it. wrap is what makes a basis:100%
+     child actually start a new line instead of just stretching this
+     (already wide) row further. */
   flex-wrap: wrap;
-  justify-content: flex-end;
-  align-items: center;
+  align-items: stretch;
   row-gap: 10px;
   column-gap: 12px;
   margin: 0 0 24px;
   z-index: 2;
 }
 
-.portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"] {
-  flex: 0 0 auto;
-  padding: 0 32px;
+/* Both buttons equal width, filling the full (now edge-aligned) row
+   between them — Отправить no longer a narrower, centered 2/3-width
+   button with Сохранить черновик off to its own side. */
+.portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"],
+.portal-new-application-page form > .portal-newapp-submit-row .portal-newapp-draft-btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Disabled: dimmed (not the active gold shine), inert, no hover — same
+   "clearly off" treatment for both buttons regardless of which one. */
+.portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"]:disabled,
+.portal-newapp-draft-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"]:disabled {
+  background: rgba(var(--ov-tint-rgb), 0.14) !important;
+  border-color: rgba(var(--ov-tint-rgb), 0.18) !important;
+  box-shadow: none !important;
+}
+
+.portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"]:disabled::after {
+  display: none;
 }
 
 @media (max-width: 1100px) {
@@ -2344,10 +2369,22 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   }
 
   /* Save Draft / Submit stack full-width too at this point — a narrow
-     column has no room left for them to share a line. */
+     column has no room left for them to share a line. Stacked, Отправить
+     goes on top (order: DOM order otherwise puts Сохранить черновик
+     first, which is correct for the side-by-side desktop row — left
+     button, left side — but wrong once they're stacked instead of
+     side-by-side). */
   .portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"],
   .portal-new-application-page form > .portal-newapp-submit-row .portal-newapp-draft-btn {
     flex: 1 1 100%;
+  }
+
+  .portal-new-application-page form > .portal-newapp-submit-row [data-testid="button-submit-application"] {
+    order: 1;
+  }
+
+  .portal-newapp-draft-btn {
+    order: 2;
   }
 }
 
@@ -2629,23 +2666,19 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: #fff !important;
 }
 
-/* Submit stays inert (not just visually muted) until every Step 1 + Step 2
-   document for the current deal type is attached, and the company's own
-   profile documents are current (see updateNewAppSubmitGate). */
-.portal-new-application-page [data-testid="button-submit-application"]:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  pointer-events: none;
-}
 
 /* "Сохранить черновик" — same outlined-pill recipe as
    .portal-newapp-summary-back (the review overlay's own secondary
    button), kept as its own class since the two live in different parts of
    the page. */
 .portal-newapp-draft-btn {
-  flex: 0 0 auto;
+  flex: 1 1 0;
+  min-width: 0;
   border: 1px solid rgba(var(--ov-tint-rgb), 0.18);
-  border-radius: 999px;
+  /* Same radius as the rest of the interface's buttons (Загрузить,
+     Отправить — both .border-input/8px) — was a full pill before, a
+     different shape from everything else. */
+  border-radius: 8px;
   background: transparent;
   color: rgba(var(--ov-muted-rgb), 0.85);
   /* Same size as "Отправить" (.border-input and the submit button both
@@ -2663,15 +2696,19 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-color: rgba(var(--ov-tint-rgb), 0.3);
 }
 
-/* "Не загружен ..." under the buttons once Submit is disabled by a missing
-   document (see updateNewAppSubmitGate) — empty (and collapsed via
-   :empty) once nothing's missing. */
+/* "Загрузите ..." under the buttons while Submit is disabled by a missing
+   document (see updateNewAppSubmitGate) — secondary/gray like any other
+   card subtitle, not red: this is routine guidance ("what's next"), not
+   an error. Red stays reserved for actual validation failures (e.g.
+   Запрашиваемая сумма exceeding the invoice amount). Hidden (via
+   .hidden, not :empty — see setTextIfChanged's own nodeValue-mutation
+   note elsewhere in this file) once nothing's missing. */
 .portal-newapp-submit-missing {
   flex: 1 1 100%;
   margin: 0;
-  text-align: right;
+  text-align: left;
   font-size: 0.78rem;
-  color: rgba(229, 72, 77, 0.85);
+  color: rgba(var(--ov-muted-rgb), 0.6);
 }
 
 .portal-newapp-submit-missing:empty {
