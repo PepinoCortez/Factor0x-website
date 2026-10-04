@@ -678,7 +678,13 @@
         wrapper.classList.add('portal-field-locked');
         // No text during the shimmer — see .portal-field-skeleton.
         field.placeholder = state === 'processing' ? '' : NEWAPP_LOCKED_PLACEHOLDER;
-        if (currencySelect) currencySelect.disabled = true;
+        // Currency isn't shown at all until there's an actual value for
+        // it — before that, showing "AED" would read as already-extracted
+        // data rather than an empty, locked field.
+        if (currencySelect) {
+          currencySelect.disabled = true;
+          currencySelect.style.display = 'none';
+        }
         return;
       }
       if (field.dataset.portalAutofilled) return;
@@ -694,6 +700,7 @@
         wrapper.classList.add('portal-field-locked', 'portal-field-active');
         if (currencySelect) {
           currencySelect.disabled = true;
+          currencySelect.style.display = '';
           currencySelect.value = NEWAPP_MOCK_AUTOFILL.currency || 'AED';
         }
         if (icon) {
@@ -718,6 +725,7 @@
         wrapper.classList.add('portal-field-invalid');
         if (currencySelect) {
           currencySelect.disabled = false;
+          currencySelect.style.display = '';
           currencySelect.value = NEWAPP_MOCK_AUTOFILL.currency || 'AED';
         }
         if (icon) icon.style.display = 'none';
@@ -1688,6 +1696,10 @@
         amountWrapper.classList.add('portal-lock-anchor');
         const select = buildInlineCurrencySelect('invoiceAmountCurrency');
         select.disabled = true;
+        // Hidden until the invoice actually resolves a value for it — see
+        // applyNewAppAutofillState, which owns display/value/disabled
+        // from here on.
+        select.style.display = 'none';
         select.value = 'AED';
         amountInput.insertAdjacentElement('afterend', select);
       }
