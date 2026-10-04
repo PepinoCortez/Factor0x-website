@@ -1877,7 +1877,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   gap: 2px;
   padding: 4px 0 2px 30px;
   margin-top: 28px;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, margin-top 0.35s ease-in-out;
 }
 
 .portal-doc-group-title {
@@ -2280,8 +2280,21 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   transition: top 0.35s ease-in-out, height 0.35s ease-in-out, opacity 0.2s ease;
 }
 
+/* Everything that moves in lockstep with the spotlight (see the spec
+   this was built against) loses its own movement/resize animation here
+   too, same as the spotlight itself — only opacity still transitions,
+   and only where it already did (the heading/row opacity transitions,
+   declared elsewhere, aren't listed again here since they don't need
+   zeroing — this only overrides the properties that *did* animate a
+   position/size change above). */
 @media (prefers-reduced-motion: reduce) {
   .portal-doc-step-spotlight {
+    transition: opacity 0.2s ease;
+  }
+
+  .portal-doc-group-heading,
+  .portal-new-application-page form > .portal-newapp-docs-card,
+  .portal-new-application-page form > .portal-newapp-submit-row {
     transition: opacity 0.2s ease;
   }
 }
@@ -2408,16 +2421,24 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 /* Документы is the action (upload happens there); Данные is its result
    (fields fill in from what got uploaded) — left-to-right reading order
    should match that, so Документы sits on the left now. Taken out of
-   flow entirely (not just visually first) — its own height no longer has
-   any effect on Заявка/the submit row's own stacking below, or vice
-   versa, which is what used to make the submit row overlap Комментарий:
-   both cards used to share one CSS Grid row, so a taller Документы (or a
-   taller Заявка) stretched the other to match. */
+   flow entirely (not just visually first) — its own height has no
+   effect on Заявка/the submit row's own stacking below, or vice versa,
+   which is what used to make the submit row overlap Комментарий: both
+   cards used to share one CSS Grid row, so a taller Документы (or a
+   taller Заявка) stretched the other to match via plain CSS. The two
+   cards' heights ARE matched again now (see updateNewAppCardHeights in
+   portal-overrides.js, and the spec this was built against) — just via
+   JS measuring already-rendered content and setting min-height/margin-
+   top/padding-bottom directly, never by coupling their *layout* (CSS
+   stretch across a shared row/flex line) again, the specific mechanism
+   that broke last time. transition here is what makes the min-height
+   change animate instead of jumping. */
 .portal-new-application-page form > .portal-newapp-docs-card {
   position: absolute;
   left: 0;
   top: 0;
   width: calc((100% - 24px) * 0.65);
+  transition: min-height 0.35s ease-in-out;
 }
 
 @media (max-width: 1100px) {
@@ -2488,11 +2509,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    the normal 14px field-to-field gap — Заявка's own CardContent
    contributes none of its own any more, see the comment above); 24px
    bottom matches the card's own top inner padding (also p-6), so the
-   panel's padding reads as symmetric top-to-bottom overall. */
+   panel's padding reads as symmetric top-to-bottom overall — unless
+   updateNewAppCardHeights (portal-overrides.js) grows it further, for
+   the rare case Документы is naturally taller than this whole column;
+   the transition below is what makes that animate instead of jump. */
 .portal-new-application-page form > .portal-newapp-submit-row {
   order: 2;
   display: flex;
   padding: 21px 24px 24px;
+  transition: padding-bottom 0.35s ease-in-out;
   background:
     linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)),
     var(--ov-surface-bg);

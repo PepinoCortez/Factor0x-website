@@ -1355,6 +1355,81 @@
       : t('Шаг 2 · Подтверждение отгрузки', 'Step 2 · Proof of Shipment'));
   };
 
+  // Keep in sync with .portal-doc-group-heading's own margin-top in
+  // portal-overrides.css — the "base" gap updateNewAppCardHeights grows
+  // from when Документы needs to stretch to match Заявка.
+  const NEWAPP_DOC_STEP_GAP_BASE = 28;
+
+  // Equal-height Документы/Заявка columns (see the spec this was built
+  // against) without reviving the CSS Grid that originally caused the
+  // submit-row/Комментарий overlap bug this file fixed earlier (a taller
+  // Документы or Заявка used to stretch the other via a shared grid row
+  // — see the comment above `form` in portal-overrides.css). Instead of
+  // coupling the two cards' layout via CSS stretch again, this measures
+  // them (already-rendered, real content) and applies the result as
+  // plain inline styles: min-height on docsCard, margin-top on its own
+  // Step 2/3 headings (the slack distributed as bigger gaps, not empty
+  // space pooling at the bottom), and padding-bottom on the submit row
+  // for the rarer reverse case (Документы naturally taller than Заявка
+  // + its own fused submit row). min-height, not height, so a measurement
+  // that's slightly off ends up a few px taller rather than clipping
+  // content. None of this touches childList/subtree (only style
+  // properties), so it can't retrigger run() itself — see the circuit
+  // breaker note elsewhere in this file for why that distinction matters.
+  const updateNewAppCardHeights = (form) => {
+    const dataCard = form.querySelector('.portal-newapp-data-card');
+    const docsCard = form.querySelector('.portal-newapp-docs-card');
+    const submitRow = form.querySelector('.portal-newapp-submit-row');
+    const rowsContainer = docsCard && docsCard.querySelector('.portal-doc-rows-grouped');
+    if (!dataCard || !docsCard || !submitRow || !rowsContainer) return;
+
+    const step2Heading = rowsContainer.querySelector('.portal-doc-group-step2');
+    const step3Heading = rowsContainer.querySelector('.portal-doc-group-step3');
+
+    // Disabled below the single-column breakpoint (docsCard is back in
+    // normal flow there, stacked above Заявка — see portal-overrides
+    // .css) — each card just takes its own natural height there.
+    if (getComputedStyle(docsCard).position !== 'absolute') {
+      docsCard.style.minHeight = '';
+      if (step2Heading) step2Heading.style.marginTop = '';
+      if (step3Heading) step3Heading.style.marginTop = '';
+      submitRow.style.paddingBottom = '';
+      return;
+    }
+
+    // Undo whatever the *previous* call applied before measuring —
+    // without this, an already-stretched docsCard/submitRow would make
+    // its own current (inflated) height look "natural" on this pass too.
+    const prevGapExtra = Number(rowsContainer.dataset.portalGapExtra) || 0;
+    const prevSubmitExtra = Number(submitRow.dataset.portalHeightExtra) || 0;
+
+    const docsNatural = docsCard.offsetHeight - prevGapExtra * 2;
+    const dataColumnNatural = dataCard.offsetHeight + submitRow.offsetHeight - prevSubmitExtra;
+    const target = Math.max(docsNatural, dataColumnNatural);
+
+    // Docs side: the slack splits evenly between the 2 between-step gaps
+    // (Step1->Step2, Step2->Step3 — Step 1's own leading gap, subtitle->
+    // Step 1, stays fixed at the base value), clamped to [1x, 2x] the
+    // base gap. Whatever's left past that clamp (an unusually tall Step
+    // 3 — e.g. Goods with every optional document shown) just stays
+    // blank at the card's own bottom instead of growing the gap forever.
+    const docsDeficit = Math.max(0, target - docsNatural);
+    const gapExtra = Math.min(NEWAPP_DOC_STEP_GAP_BASE, docsDeficit / 2);
+    const gapPx = NEWAPP_DOC_STEP_GAP_BASE + gapExtra;
+    if (step2Heading) step2Heading.style.marginTop = gapPx + 'px';
+    if (step3Heading) step3Heading.style.marginTop = gapPx + 'px';
+    rowsContainer.dataset.portalGapExtra = String(gapExtra);
+    docsCard.style.minHeight = target + 'px';
+
+    // Data column side (Документы naturally taller — e.g. Goods with
+    // every optional document shown): extra bottom padding on the submit
+    // row, the fused panel's own last section, extends its bottom edge
+    // to match, without moving the buttons/hint themselves.
+    const dataDeficit = Math.max(0, target - dataColumnNatural);
+    submitRow.style.paddingBottom = (24 + dataDeficit) + 'px';
+    submitRow.dataset.portalHeightExtra = String(dataDeficit);
+  };
+
   const prefersReducedMotion = () => {
     try {
       return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1528,6 +1603,11 @@
       heading.classList.toggle('portal-doc-step-scaled', step === activeStep && step !== 3);
     });
 
+    // Before the spotlight measures anything below — it reads
+    // heading/row offsets that this call's own gap changes affect, so it
+    // needs to run first to avoid the spotlight using a stale (pre-
+    // redistribution) layout for this same tick.
+    updateNewAppCardHeights(form);
     updateNewAppStepSpotlight(rowsContainer, activeStep);
   };
 
@@ -3450,6 +3530,22 @@
     window.setTimeout(() => {
       if (window.matchMedia('(orientation: landscape)').matches) closeMobileSidebar();
     }, 300);
+  });
+
+  // 3) Документы/Заявка's own equal-height sync (updateNewAppCardHeights)
+  // reads real rendered content height — a viewport resize can change
+  // that (field wrapping, the 1100px single-column breakpoint) with no
+  // DOM mutation at all, so it's the one update in this file the
+  // MutationObserver-driven run() loop can't catch on its own. Debounced
+  // — resize fires continuously while dragging a window edge.
+  let newAppResizeTimer = null;
+  window.addEventListener('resize', () => {
+    window.clearTimeout(newAppResizeTimer);
+    newAppResizeTimer = window.setTimeout(() => {
+      const amountInput = document.querySelector('[data-testid="input-invoice-amount"]');
+      const form = amountInput && amountInput.closest('form');
+      if (form) restructureNewAppDocuments(form);
+    }, 150);
   });
 
   const run = () => {
