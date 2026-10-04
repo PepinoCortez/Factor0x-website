@@ -897,20 +897,20 @@
       (el) => el.children.length === 0 && el.textContent.trim() === NEWAPP_DATA_HEADING
     );
     if (!heading) return;
-    const note = document.createElement('p');
-    note.className = 'portal-newapp-autofill-note';
-    // Just the "i" now — its tooltip carries the full explanation;
+    // Appended *inside* the heading itself (not as a sibling after it) so
+    // the icon sits beside "Заявка на финансирование" on the same line —
     // buildDealInfoIcon is defined further down this file but already
     // initialized by the time this actually runs (this function is only
     // called from applyNewApplicationTheme via run(), at the very end of
     // the file).
-    note.appendChild(buildDealInfoIcon(
+    const icon = buildDealInfoIcon(
       t(
         'Поля заполняются автоматически из инвойса. Проверьте их и при необходимости исправьте.',
         'Fields fill in automatically from the invoice. Check them and correct anything if needed.'
       )
-    ));
-    heading.insertAdjacentElement('afterend', note);
+    );
+    icon.classList.add('portal-newapp-autofill-note');
+    heading.appendChild(icon);
     // Submit overlaps this same header area (position: sticky, top-right —
     // see .portal-newapp-submit-row) instead of sitting in flow; without a
     // reserved gutter, this text runs straight under the button on every
@@ -1229,7 +1229,20 @@
     serviceBtn.setAttribute('aria-selected', String(current === 'service'));
     wrap.append(goodsBtn, serviceBtn);
 
-    rowsContainer.insertAdjacentElement('beforebegin', wrap);
+    // On the same line as the "Документы" heading, flush right — found by
+    // its stable Russian text (translatePage hasn't run yet at this point
+    // in run(), see the language comment up top, so it's always still
+    // this exact string regardless of the active language), same as the
+    // "Документы" subtitle lookup elsewhere in this file.
+    const docsHeading = Array.from(document.querySelectorAll('*')).find(
+      (el) => el.children.length === 0 && el.textContent.trim() === 'Документы'
+    );
+    if (docsHeading && docsHeading.parentElement) {
+      docsHeading.parentElement.classList.add('portal-docs-header-row');
+      docsHeading.insertAdjacentElement('afterend', wrap);
+    } else {
+      rowsContainer.insertAdjacentElement('beforebegin', wrap);
+    }
   };
 
   const buildDocGroupHeading = (title, hint, order, className) => {

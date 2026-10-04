@@ -1916,15 +1916,30 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   display: none !important;
 }
 
-/* Goods/Service — a plain two-way segmented control above the checklist
-   (see ensureDealTypeToggle). Same bordered-pill recipe as the rest of
-   this file's own controls (.portal-theme-trigger, .portal-newapp-summary-
-   back), not a new visual language. */
+/* "Документы" heading's own row — made a flex row so the Goods/Service
+   toggle (appended right after the heading itself — see
+   ensureDealTypeToggle) lands on the same line, pushed flush right by
+   justify-content (the heading's own (now hidden) subtitle, if it's a
+   sibling here too, doesn't affect this: display:none elements don't
+   participate in flex layout). */
+.portal-docs-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* Goods/Service — a plain two-way segmented control, same line as the
+   "Документы" heading (see .portal-docs-header-row above). Same
+   bordered-pill recipe as the rest of this file's own controls
+   (.portal-theme-trigger, .portal-newapp-summary-back), not a new visual
+   language. */
 .portal-dealtype-toggle {
   display: inline-flex;
+  flex-shrink: 0;
   gap: 4px;
   padding: 3px;
-  margin-bottom: 14px;
   border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
   border-radius: 10px;
   background: rgba(var(--ov-tint-rgb), 0.04);
@@ -2454,14 +2469,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    own subtitle, native text-sm text-muted-foreground) — hsl(var(...))
    rather than a hand-picked rgba so this tracks --muted-foreground
    exactly, including if that token ever changes. */
+/* Sits beside the "Заявка на финансирование" heading itself now (appended
+   as its own last child — see ensureNewAppAutoFillNote), not below it as a
+   separate line. buildDealInfoIcon already sets its own inline-flex
+   display; this just adds the gap from the heading text. */
 .portal-newapp-autofill-note {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 2px 0 6px;
-  font-size: 0.875rem;
-  line-height: 1.4;
-  color: hsl(var(--muted-foreground));
+  margin-left: 8px;
+  vertical-align: middle;
 }
 
 /* Used to reserve room for "Отправить" when it sat top-right, overlapping
