@@ -2086,34 +2086,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(229, 72, 77, 0.92);
 }
 
-/* "27 Sep 2026" overlay for the two native <input type="date"> fields (see
-   wireNewAppDateDisplay) — the native control's own dd/mm/yyyy text is
-   made transparent so only this sits visibly on top; pointer-events:none
-   means clicks still fall through to the real input and open its date
-   picker. Anchored the same way as .portal-lock-icon (new sibling, never a
-   wrapping div — see the comment above NEWAPP_LOCKED_SIBLING_ICON_IDS in
-   portal-overrides.js for why). */
-.portal-date-anchor {
-  position: relative;
-}
-
-.portal-date-anchor input[type="date"] {
-  color: transparent !important;
-}
-
-.portal-date-overlay {
-  position: absolute;
-  left: 13px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 0.875rem;
-  color: rgba(var(--ov-muted-rgb), 0.78);
-}
-
-.portal-newapp-data-card .flex.flex-col.gap-2.portal-field-active .portal-date-overlay {
-  color: #fff;
-}
 
 /* Document icons: soften the identical look across rows, then bring
    whichever one is highlighted as next-to-upload (see .portal-doc-row-next)

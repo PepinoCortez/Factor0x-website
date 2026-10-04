@@ -749,8 +749,6 @@
         if (icon) icon.style.display = 'none';
       }
     });
-
-    syncNewAppDateOverlays(form);
   };
 
   // Advances/re-applies the empty → processing → filled state machine
@@ -1532,8 +1530,8 @@
     const sourceWrapper = newAppFieldWrapper(sourceField);
     if (!sourceWrapper) return null;
     const clone = sourceWrapper.cloneNode(true);
-    clone.querySelectorAll('.portal-lock-icon, .portal-date-overlay, .portal-manual-tag').forEach((el) => el.remove());
-    clone.classList.remove('portal-field-locked', 'portal-field-active', 'portal-field-invalid', 'portal-lock-anchor', 'portal-date-anchor');
+    clone.querySelectorAll('.portal-lock-icon, .portal-manual-tag').forEach((el) => el.remove());
+    clone.classList.remove('portal-field-locked', 'portal-field-active', 'portal-field-invalid', 'portal-lock-anchor');
     const input = clone.querySelector('#' + sourceId);
     if (!input) return null;
     input.id = newId;
@@ -1645,51 +1643,12 @@
     return !invalid;
   };
 
-  // ---- "27 Sep 2026" everywhere, for native <input type="date"> fields
-  // whose own browser-native display is a locale-dependent dd/mm/yyyy
-  // control this file can't reformat directly. Overlays a plain span with
-  // the requested format on top (new sibling — same anchor technique as
-  // the lock icon above, never a wrapping div around the field itself) and
-  // makes the native text transparent so only the overlay's own text
-  // shows; the native input underneath is untouched and still opens the
-  // real date picker on click (the overlay has pointer-events:none).
-  const NEWAPP_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const formatNewAppSpecDate = (iso) => {
-    if (!iso) return '';
-    const parts = iso.split('-');
-    if (parts.length !== 3) return '';
-    const [y, m, d] = parts.map(Number);
-    if (!y || !m || !d) return '';
-    return d + ' ' + NEWAPP_MONTHS[m - 1] + ' ' + y;
-  };
-
-  const NEWAPP_DATE_FIELD_IDS = ['invoiceDate', 'dueDate'];
-
-  const wireNewAppDateDisplay = (form) => {
-    NEWAPP_DATE_FIELD_IDS.forEach((id) => {
-      const field = form.querySelector('#' + id);
-      if (!field || field.dataset.portalDateOverlayAdded) return;
-      field.dataset.portalDateOverlayAdded = 'true';
-      const anchor = field.parentElement;
-      if (!anchor) return;
-      anchor.classList.add('portal-date-anchor');
-      const overlay = document.createElement('span');
-      overlay.className = 'portal-date-overlay';
-      field.insertAdjacentElement('afterend', overlay);
-      const sync = () => { overlay.textContent = formatNewAppSpecDate(field.value); };
-      field.addEventListener('input', sync);
-      field.addEventListener('change', sync);
-      sync();
-    });
-  };
-
-  const syncNewAppDateOverlays = (form) => {
-    NEWAPP_DATE_FIELD_IDS.forEach((id) => {
-      const field = form.querySelector('#' + id);
-      const overlay = field && field.parentElement && field.parentElement.querySelector('.portal-date-overlay');
-      if (field && overlay) overlay.textContent = formatNewAppSpecDate(field.value);
-    });
-  };
+  // Dates show only the native <input type="date">'s own dd.mm.yyyy —
+  // an earlier version overlaid a reformatted "27 Sep 2026" span on top
+  // (making the native text transparent underneath), but that overlay
+  // wasn't actually hiding the native value in every browser — the two
+  // rendered stacked on top of each other. Simplest fix: no overlay, just
+  // the one native format.
 
   // "Изменено вручную" — follows any autofillable field once its value no
   // longer matches what autofill itself last set (see
@@ -1971,7 +1930,6 @@
     wireNewAppFieldMuting(dataCard);
     addNewAppLockIcons(form);
     addNewAppSelectLockIcons(form);
-    wireNewAppDateDisplay(form);
     wireNewAppManualEditTracking(form);
     repurposeNewAppComment(form);
     relabelObligorCountryField(form);
