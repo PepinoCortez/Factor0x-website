@@ -1884,6 +1884,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   border-radius: 10px;
   margin: 0 -6px;
   padding: 0 6px;
+  /* This row switches from a column (icon+label, then status+button
+     stacked) to a single horizontal line at wider widths (the native
+     sm:flex-row breakpoint) — flex-wrap:wrap is what lets the caption
+     below (a 3rd child, appended after both of those) force itself onto
+     its own new line at that width instead of sitting beside the Upload
+     button as a 3rd item on the same line. Harmless at the narrower,
+     column-direction width: nothing here ever overflows enough to need
+     wrapping onto a 2nd column. */
+  flex-wrap: wrap;
 }
 
 /* Brighter/more contrasty than the first pass — it blended into the
@@ -1907,6 +1916,13 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    заполняет данные заявки") — see ensureInvoiceRowCaption. Same tone/size
    as the group hint captions, sits directly under the label it explains. */
 .portal-doc-row-caption {
+  /* flex-basis:100% is what actually forces the line break in the
+     horizontal (wide-viewport) version of the row above — width:100% is
+     the equivalent for the narrower, column-direction version (flex-basis
+     there sizes against height, not width, so it isn't what's doing the
+     work at that width; see .portal-doc-row-primary). */
+  flex: 1 0 100%;
+  width: 100%;
   margin: 6px 0 0;
   padding-left: 48px;
   font-size: 0.78rem;
