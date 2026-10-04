@@ -460,8 +460,6 @@
         label: t('Delivery Order (DO) — распоряжение на выдачу', 'Delivery Order (DO)') },
       { key: 'acceptance_certificate', step: 3,
         label: t('Goods Receipt Note (GRN) — акт приёмки, дебитор подтвердил получение', 'Goods Receipt Note (GRN) — debtor confirmed receipt') },
-      { key: 'bill_of_lading', step: 3,
-        label: t('Транспортные документы — waybill / Bill of Lading', 'Transport documents — waybill / Bill of Lading') },
     ],
     service: [
       { key: 'invoice', step: 1,
