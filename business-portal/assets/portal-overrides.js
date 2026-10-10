@@ -3224,24 +3224,15 @@
     { label: t('Адрес', 'Address'), value: fields.address },
   ];
 
-  // One shared collapsible-section builder for both Профиль and
-  // Документы — both expanded by default (no collapsed class added up
-  // front), toggled independently since each gets its own section/header
-  // pair rather than sharing state.
+  // Shared section builder for both Профиль and Документы — a static
+  // heading, always expanded, not collapsible (by request).
   const buildCpSection = (title, bodyEl) => {
     const section = document.createElement('div');
     section.className = 'portal-cp-section';
 
-    const header = document.createElement('button');
-    header.type = 'button';
+    const header = document.createElement('div');
     header.className = 'portal-cp-section-header';
-    const titleSpan = document.createElement('span');
-    titleSpan.textContent = title;
-    const chevron = document.createElement('span');
-    chevron.className = 'portal-cp-section-chevron';
-    chevron.innerHTML = NEWAPP_CHEVRON_DOWN_SVG;
-    header.append(titleSpan, chevron);
-    header.addEventListener('click', () => section.classList.toggle('portal-cp-section-collapsed'));
+    header.textContent = title;
 
     bodyEl.classList.add('portal-cp-section-body');
     section.append(header, bodyEl);

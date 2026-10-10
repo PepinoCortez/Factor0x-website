@@ -3495,7 +3495,9 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 
 .portal-cp-modal {
@@ -3564,38 +3566,16 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 }
 
 .portal-cp-section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  border: none;
-  background: transparent;
   padding: 2px 0;
   color: var(--ov-text);
   font-size: 0.88rem;
   font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.portal-cp-section-chevron {
-  display: inline-flex;
-  color: rgba(var(--ov-muted-rgb), 0.6);
-  transition: transform 0.2s ease;
-}
-
-.portal-cp-section-collapsed .portal-cp-section-chevron {
-  transform: rotate(-90deg);
 }
 
 .portal-cp-section-body {
   display: flex;
   flex-direction: column;
   margin-top: 10px;
-}
-
-.portal-cp-section-collapsed .portal-cp-section-body {
-  display: none;
 }
 
 /* "Название слева — значение справа" rows with dividers (see
