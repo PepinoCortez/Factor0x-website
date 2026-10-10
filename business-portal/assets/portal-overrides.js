@@ -452,23 +452,28 @@
   // ensureSyntheticDeliveryOrderRow). Both are optional (step 3) for both
   // deal types; accept/file-type widening for these two specifically is
   // handled in restructureNewAppDocuments (search NEWAPP_DOC_ACCEPT).
+  // collapsible: true (Step 3 only) — hidden by default behind the
+  // "Показать ещё" toggle (see ensureNewAppStep3Toggle); always shown
+  // once that toggle is open, or the moment any collapsible document of
+  // the current deal type already has a file attached (a draft opened
+  // with one of these pre-filled, say) — see updateNewAppStep3Expanded.
   const NEWAPP_DOC_CONFIG = {
     goods: [
       { key: 'invoice', step: 1,
         label: 'Tax Invoice', desc: t('Налоговый счёт', 'Tax invoice') },
       { key: 'delivery_note', step: 2,
         label: 'Delivery Note', desc: t('Накладная', 'Shipment note') },
-      { key: 'contract', step: 3,
-        label: 'Contract', desc: t('Договор с дебитором', 'Agreement with the debtor') },
-      { key: 'purchase_order', step: 3,
-        label: 'Purchase Order', desc: t('Заказ на закупку', 'Purchase order') },
-      { key: 'delivery_order_do', step: 3, synthetic: true,
-        label: 'Delivery Order', desc: t('Распоряжение на выдачу', 'Delivery order') },
       { key: 'acceptance_certificate', step: 3,
         label: 'Goods Receipt Note', desc: t('Акт приёмки', 'Goods receipt note') },
+      { key: 'contract', step: 3,
+        label: 'Contract', desc: t('Договор с дебитором', 'Agreement with the debtor') },
       { key: 'bill_of_lading', step: 3,
         label: 'Statement of Account', desc: t('Последняя выписка по дебитору', 'Recent statement with the debtor') },
-      { key: 'debt_confirmation', step: 3,
+      { key: 'purchase_order', step: 3, collapsible: true,
+        label: 'Purchase Order', desc: t('Заказ на закупку', 'Purchase order') },
+      { key: 'delivery_order_do', step: 3, synthetic: true, collapsible: true,
+        label: 'Delivery Order', desc: t('Распоряжение на выдачу', 'Delivery order') },
+      { key: 'debt_confirmation', step: 3, collapsible: true,
         label: 'Debtor Company Profile', desc: t('Информация о компании покупателя', "Overview of the buyer's business") },
     ],
     service: [
@@ -478,11 +483,11 @@
         label: 'Service Completion', desc: t('Акт об оказании услуг', 'Service completion act') },
       { key: 'contract', step: 3,
         label: 'Contract', desc: t('Договор с дебитором', 'Agreement with the debtor') },
-      { key: 'purchase_order', step: 3,
-        label: 'Purchase Order', desc: t('Заказ на закупку', 'Purchase order') },
       { key: 'bill_of_lading', step: 3,
         label: 'Statement of Account', desc: t('Последняя выписка по дебитору', 'Recent statement with the debtor') },
-      { key: 'debt_confirmation', step: 3,
+      { key: 'purchase_order', step: 3, collapsible: true,
+        label: 'Purchase Order', desc: t('Заказ на закупку', 'Purchase order') },
+      { key: 'debt_confirmation', step: 3, collapsible: true,
         label: 'Debtor Company Profile', desc: t('Информация о компании покупателя', "Overview of the buyer's business") },
     ],
   };
@@ -490,16 +495,21 @@
   // Fixed visual order (CSS `order`, not DOM position — see
   // restructureNewAppDocuments for why) for every key across both types, so
   // switching type never has to recompute positions, just show/hide.
+  // Order within Step 3 now follows "always-visible 3, then collapsible
+  // 3" (see NEWAPP_DOC_CONFIG) rather than native/alphabetical — 13 is
+  // reserved for the "Показать ещё" toggle itself, sitting right between
+  // the two groups (see ensureNewAppStep3Toggle).
   const NEWAPP_DOC_VISUAL_ORDER = {
     invoice: 0,
     delivery_note: 2,
-    contract: 10,
-    purchase_order: 11,
-    delivery_order_do: 12,
-    acceptance_certificate: 13,
-    bill_of_lading: 14,
-    debt_confirmation: 15,
+    acceptance_certificate: 10,
+    contract: 11,
+    bill_of_lading: 12,
+    purchase_order: 14,
+    delivery_order_do: 15,
+    debt_confirmation: 16,
   };
+  const NEWAPP_STEP3_TOGGLE_ORDER = 13;
 
   // Accept-attribute widening for the two repurposed slots (see the
   // comment above NEWAPP_DOC_CONFIG) — the native input for every
@@ -1383,6 +1393,72 @@
       : t('Шаг 2 · Подтверждение отгрузки', 'Step 2 · Proof of Shipment'));
   };
 
+  const NEWAPP_CHEVRON_DOWN_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+
+  // One-time build of the "Показать ещё (N)"/"Свернуть" link that
+  // reveals Step 3's own collapsible documents (see NEWAPP_DOC_CONFIG) —
+  // positioned via CSS order (NEWAPP_STEP3_TOGGLE_ORDER), same flat-
+  // sibling approach as the group headings, not nested inside anything.
+  // Content/state refreshed every call by updateNewAppStep3Expanded
+  // below; this only ever constructs the node itself.
+  const ensureNewAppStep3Toggle = (rowsContainer) => {
+    let toggle = rowsContainer.querySelector('.portal-doc-show-more');
+    if (toggle) return toggle;
+    toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'portal-doc-show-more';
+    toggle.style.order = String(NEWAPP_STEP3_TOGGLE_ORDER);
+    toggle.dataset.step = '3';
+    const label = document.createElement('span');
+    label.className = 'portal-doc-show-more-label';
+    const icon = document.createElement('span');
+    icon.className = 'portal-doc-show-more-icon';
+    icon.innerHTML = NEWAPP_CHEVRON_DOWN_SVG;
+    toggle.append(label, icon);
+    toggle.addEventListener('click', () => {
+      rowsContainer.dataset.portalStep3Expanded =
+        rowsContainer.dataset.portalStep3Expanded === 'true' ? 'false' : 'true';
+      const form = rowsContainer.closest('form');
+      if (form) restructureNewAppDocuments(form);
+    });
+    rowsContainer.appendChild(toggle);
+    return toggle;
+  };
+
+  // Step 3's collapsible documents (Purchase Order, Delivery Order,
+  // Debtor Company Profile — see NEWAPP_DOC_CONFIG) stay hidden behind
+  // the toggle above until the visitor opens it manually, OR the moment
+  // any one of them already has a file attached regardless (a draft
+  // opened with one pre-filled, say) — expanded is never "sticky" once
+  // auto-triggered: it's recomputed fresh every call from exactly these
+  // two inputs, so removing that one file later re-collapses the group
+  // again unless the visitor had also opened it manually in the
+  // meantime. Returns the resolved expanded boolean so the row loop in
+  // restructureNewAppDocuments can hide/show each collapsible row with
+  // it in the same pass, instead of this function touching rows itself.
+  const updateNewAppStep3Expanded = (rowsContainer, dealType) => {
+    const collapsibleEntries = NEWAPP_DOC_CONFIG[dealType].filter((e) => e.collapsible);
+    const toggle = ensureNewAppStep3Toggle(rowsContainer);
+    if (!collapsibleEntries.length) {
+      toggle.style.display = 'none';
+      return true;
+    }
+    toggle.style.display = '';
+
+    const manuallyExpanded = rowsContainer.dataset.portalStep3Expanded === 'true';
+    const anyUploaded = collapsibleEntries.some((e) => isDocUploaded(e.key));
+    const expanded = manuallyExpanded || anyUploaded;
+
+    toggle.classList.toggle('portal-doc-show-more-expanded', expanded);
+    const label = toggle.querySelector('.portal-doc-show-more-label');
+    if (label) {
+      setTextIfChanged(label, expanded
+        ? t('Свернуть', 'Show less')
+        : t('Показать ещё (' + collapsibleEntries.length + ')', 'Show more (' + collapsibleEntries.length + ')'));
+    }
+    return expanded;
+  };
+
   // Keep in sync with .portal-doc-group-heading's own margin-top in
   // portal-overrides.css — the "base" gap updateNewAppCardHeights grows
   // from when Документы needs to stretch to match Заявка.
@@ -1578,6 +1654,7 @@
       3: !invoiceUploaded ? 'locked' : (step2Uploaded ? 'active' : 'available'),
     };
     const activeStep = [1, 2, 3].find((step) => stepStates[step] === 'active');
+    const step3Expanded = updateNewAppStep3Expanded(rowsContainer, dealType);
 
     // Visual order (see NEWAPP_DOC_VISUAL_ORDER) is ascending in insertion
     // order, so a running "previous step seen" is enough to tell the first
@@ -1591,7 +1668,7 @@
       const row = badge && badge.closest('.flex.flex-col.gap-3');
       if (!row) return;
       const entry = visibleByKey[key];
-      if (!entry) {
+      if (!entry || (entry.collapsible && !step3Expanded)) {
         row.style.display = 'none';
         return;
       }
@@ -1655,6 +1732,9 @@
       heading.dataset.stepState = stepStates[step];
       heading.classList.toggle('portal-doc-step-scaled', step === activeStep && step !== 3);
     });
+
+    const step3Toggle = rowsContainer.querySelector('.portal-doc-show-more');
+    if (step3Toggle) step3Toggle.classList.toggle('portal-doc-row-locked', stepStates[3] === 'locked');
 
     // Before the spotlight measures anything below — it reads
     // heading/row offsets that this call's own gap changes affect, so it

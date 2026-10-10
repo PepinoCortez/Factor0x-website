@@ -1892,6 +1892,56 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   opacity: 0.4;
 }
 
+/* "Показать ещё (N)"/"Свернуть" — reveals Step 3's own collapsible
+   documents (see NEWAPP_DOC_CONFIG/updateNewAppStep3Expanded in
+   portal-overrides.js). Unobtrusive on purpose, per the spec this was
+   built against: same muted color/size as a group's own subtitle
+   (.portal-doc-group-hint) rather than reading as a primary action.
+   margin-top matches the normal row-to-row gap (10px) — it sits right
+   where a 4th row would, under the 3rd always-visible one.
+   position:relative + z-index:1 for the same reason as every other
+   heading/row here — see the stacking-order note on .portal-doc-group-
+   heading above. */
+.portal-doc-show-more {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 4px;
+  margin: 10px 0 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 0.78rem;
+  color: rgba(var(--ov-muted-rgb), 0.5);
+  cursor: pointer;
+  transition: color 0.15s ease, opacity 0.2s ease;
+}
+
+.portal-doc-show-more:hover {
+  color: rgba(var(--ov-muted-rgb), 0.8);
+}
+
+/* Same dimmed, inert treatment as a locked step's own rows (see
+   .portal-doc-row-locked above) — this class is reused here (toggled in
+   restructureNewAppDocuments) rather than duplicated, but needs its own
+   rule since the shared one above is scoped to native rows
+   specifically, which this button isn't. */
+.portal-doc-show-more.portal-doc-row-locked {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.portal-doc-show-more-icon {
+  display: inline-flex;
+  transition: transform 0.2s ease;
+}
+
+.portal-doc-show-more-expanded .portal-doc-show-more-icon {
+  transform: rotate(180deg);
+}
+
 /* 28px — one shared number for subtitle->Шаг 1 and every step->step gap
    (no more Шаг 1 margin-top:0 override — the divider that used to be
    this section's only visual separator is gone too, see below), large
