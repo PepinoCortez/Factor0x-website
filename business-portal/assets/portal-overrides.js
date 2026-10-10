@@ -3134,33 +3134,49 @@
   // DOM node every time the menu opens — wiring happens fresh on every
   // run() tick via the usual MutationObserver loop, guarded by its own
   // "wired" flag so a still-open menu isn't rewired every tick.
+  //
+  // buildCompanyProfileContent() below returns the entire Компания/
+  // Управляющий body as one self-contained element, built from nothing
+  // but `fields` and the module-level companyDocState — openCompanyProfileModal
+  // only wraps it in a modal's overlay/header/close chrome. Moving this to
+  // a standalone page later is just mounting that same element into a page
+  // container instead of a modal body; nothing about the content itself
+  // assumes a modal.
   const CP_FILE_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>';
   const CP_UPLOAD_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>';
   const CP_CLOSE_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>';
 
   // No real backend exists for any of this (same situation as the
-  // notification feed just below) — first/middle/last name, username and
-  // address have no source anywhere in the app's own mock data (the only
-  // profile object that exists, queryKey "borrower-profile", is just
-  // {companyName, contactName, contactEmail}), so those fields are this
-  // file's own static mock. Name/email/company are instead read live off
-  // the DOM at open time (see readLiveProfileBasics) rather than
+  // notification feed just below) — legal/trade-license/TRN/address/
+  // middle-name/phone have no source anywhere in the app's own mock data
+  // (the only profile object that exists, queryKey "borrower-profile", is
+  // just {companyName, contactName, contactEmail}), so those fields are
+  // this file's own static mock. Name/email/company are instead read live
+  // off the DOM at open time (see readLiveProfileBasics) rather than
   // duplicated here, so they can never drift from what the header/
-  // dropdown are already showing.
+  // dropdown are already showing. middleName defaults to '' on purpose —
+  // demonstrates the "hide the row when empty" rule below.
   const COMPANY_PROFILE_MOCK = {
-    username: 'yusuf.alfahad',
-    middleName: '',
+    tradeLicenseNo: 'CN-1894562',
+    trn: '100123456700003',
     address: t(
       'Офис 1402, башня Al Moosa Tower 2, Sheikh Zayed Road, Дубай, ОАЭ',
       'Office 1402, Al Moosa Tower 2, Sheikh Zayed Road, Dubai, UAE'
     ),
+    middleName: '',
+    phone: '+971 50 123 4567',
   };
 
+  // group drives which section (Компания/Управляющий) a document's row
+  // renders under; hasExpiry drives whether uploading it prompts for an
+  // expiry date (see openCpExpiryDialog) and whether its row ever shows
+  // the Истекает/Истёк badge (see renderCpDocRow) — MOA is a signed
+  // partners page, not something that itself expires, so it gets neither.
   const COMPANY_DOC_CONFIG = [
-    { key: 'emiratesId', label: 'Emirates ID' },
-    { key: 'passport', label: t('Паспорт', 'Passport') },
-    { key: 'tradeLicense', label: t('Торговая лицензия', 'Trade License') },
-    { key: 'moaPartners', label: t('MOA / страница с партнёрами', 'MOA / Partners page') },
+    { key: 'tradeLicense', label: t('Торговая лицензия', 'Trade License'), group: 'company', hasExpiry: true },
+    { key: 'moaPartners', label: t('MOA / страница с партнёрами', 'MOA / Partners page'), group: 'company', hasExpiry: false },
+    { key: 'emiratesId', label: 'Emirates ID', group: 'manager', hasExpiry: true },
+    { key: 'passport', label: t('Паспорт', 'Passport'), group: 'manager', hasExpiry: true },
   ];
 
   // Same accept list as the New Application form's own widened slots (see
@@ -3170,16 +3186,52 @@
   // reasonable default.
   const CP_DOC_ACCEPT = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';
   const CP_DOC_MAX_SIZE_MB = 10;
+  const CP_EXPIRY_WARNING_DAYS = 30;
+
+  const formatCpDate = (isoDate) => {
+    const d = new Date(isoDate + 'T00:00:00');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return dd + '.' + mm + '.' + d.getFullYear();
+  };
+
+  const getCpExpiryStatus = (isoDate) => {
+    if (!isoDate) return 'none';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((new Date(isoDate + 'T00:00:00') - today) / 86400000);
+    if (diffDays < 0) return 'expired';
+    if (diffDays <= CP_EXPIRY_WARNING_DAYS) return 'expiring';
+    return 'valid';
+  };
 
   // Lives for the whole session (module scope, not rebuilt per modal open)
   // so a document uploaded once stays uploaded if the panel is closed and
-  // reopened — these are meant to be company-level, reused across every
-  // application, not re-collected per modal open. There's just no backend
-  // here to actually persist it past a reload.
+  // reopened — these are company-level, reused across every application,
+  // not re-collected per modal open. There's just no backend here to
+  // actually persist it past a reload.
+  //
+  // status/rejection_reason are a deliberate forward stub for the future
+  // admin panel (snake_case to match that future API shape, not this
+  // file's own camelCase) — only 'uploaded' is ever produced here today;
+  // in_review/approved/rejected have no UI yet, they just already exist on
+  // the shape so the admin panel can set them without a reshape later.
   const companyDocState = {};
   COMPANY_DOC_CONFIG.forEach((doc) => {
-    companyDocState[doc.key] = { file: null, status: 'idle', error: '' };
+    companyDocState[doc.key] = {
+      file: null,
+      uploadState: 'idle', // 'idle' | 'uploading' | 'uploaded' | 'error'
+      error: '',
+      expiryDate: null, // 'YYYY-MM-DD', only meaningful when doc.hasExpiry
+      status: null, // 'uploaded' | 'in_review' | 'approved' | 'rejected'
+      rejection_reason: null,
+    };
   });
+
+  // Set while the modal is open (see buildCompanyProfileContent), so every
+  // doc row's render can refresh the shared completeness bar without each
+  // row needing its own reference to it.
+  let cpProgressRefresh = null;
 
   // The dropdown's own header (see the bw/ww Radix markup in the compiled
   // bundle) renders contactName/contactEmail as plain siblings of the menu
@@ -3204,27 +3256,43 @@
     const live = readLiveProfileBasics(menuItem);
     const nameParts = live.fullName.split(/\s+/).filter(Boolean);
     return {
-      username: COMPANY_PROFILE_MOCK.username,
+      legalName: live.company,
+      tradeLicenseNo: COMPANY_PROFILE_MOCK.tradeLicenseNo,
+      trn: COMPANY_PROFILE_MOCK.trn,
+      address: COMPANY_PROFILE_MOCK.address,
       firstName: nameParts[0] || '',
       middleName: COMPANY_PROFILE_MOCK.middleName,
       lastName: nameParts.length > 1 ? nameParts.slice(1).join(' ') : '',
       email: live.email,
-      company: live.company,
-      address: COMPANY_PROFILE_MOCK.address,
+      phone: COMPANY_PROFILE_MOCK.phone,
     };
   };
 
-  const buildCompanyProfileFieldRows = (fields) => [
-    { label: t('Имя пользователя', 'Username'), value: fields.username },
-    { label: t('Имя', 'First name'), value: fields.firstName },
-    { label: t('Отчество', 'Middle name'), value: fields.middleName || '—' },
-    { label: t('Фамилия', 'Last name'), value: fields.lastName },
-    { label: 'Email', value: fields.email },
-    { label: t('Компания', 'Company'), value: fields.company },
+  const buildCompanyFieldRows = (fields) => [
+    { label: t('Юридическое название', 'Legal name'), value: fields.legalName },
+    { label: t('Номер торговой лицензии', 'Trade License No.'), value: fields.tradeLicenseNo },
+    { label: 'TRN', value: fields.trn },
     { label: t('Адрес', 'Address'), value: fields.address },
   ];
 
-  // Shared section builder for both Профиль and Документы — a static
+  // Middle name row only appears when there's a value to show — unlike a
+  // plain optional field with a "—" placeholder (that's still how Адрес/
+  // TRN/etc. behave if ever empty), this one is dropped from the list
+  // entirely per spec ("Показывать, только если заполнено").
+  const buildManagerFieldRows = (fields) => {
+    const rows = [{ label: t('Имя', 'First name'), value: fields.firstName }];
+    if (fields.middleName) {
+      rows.push({ label: t('Отчество', 'Middle name'), value: fields.middleName });
+    }
+    rows.push(
+      { label: t('Фамилия', 'Last name'), value: fields.lastName },
+      { label: 'Email', value: fields.email },
+      { label: t('Телефон', 'Phone'), value: fields.phone }
+    );
+    return rows;
+  };
+
+  // Shared section builder for both Компания and Управляющий — a static
   // heading, always expanded, not collapsible (by request).
   const buildCpSection = (title, bodyEl) => {
     const section = document.createElement('div');
@@ -3239,9 +3307,9 @@
     return section;
   };
 
-  const buildCpProfileSection = (fields) => {
+  const buildCpFieldsBlock = (rows) => {
     const body = document.createElement('div');
-    buildCompanyProfileFieldRows(fields).forEach((row) => {
+    rows.forEach((row) => {
       const rowEl = document.createElement('div');
       rowEl.className = 'portal-cp-field-row';
       const label = document.createElement('span');
@@ -3253,7 +3321,47 @@
       rowEl.append(label, value);
       body.appendChild(rowEl);
     });
-    return buildCpSection(t('Профиль', 'Profile'), body);
+    return body;
+  };
+
+  // "Документы для проверки компании: загружено X из 4" + progress bar +
+  // hint, sitting right under the modal header, above both sections.
+  // refresh() is called by renderCpDocRow (via cpProgressRefresh) every
+  // time any document's state changes.
+  const buildCpProgressBlock = () => {
+    const wrap = document.createElement('div');
+    wrap.className = 'portal-cp-progress';
+
+    const label = document.createElement('p');
+    label.className = 'portal-cp-progress-label';
+
+    const track = document.createElement('div');
+    track.className = 'portal-cp-progress-track';
+    const fill = document.createElement('div');
+    fill.className = 'portal-cp-progress-fill';
+    track.appendChild(fill);
+
+    const hint = document.createElement('p');
+    hint.className = 'portal-cp-progress-hint';
+    hint.textContent = t(
+      'Загружаются один раз и используются для всех заявок',
+      'Uploaded once and used for every application'
+    );
+
+    wrap.append(label, track, hint);
+
+    const refresh = () => {
+      const total = COMPANY_DOC_CONFIG.length;
+      const uploaded = COMPANY_DOC_CONFIG.filter((doc) => companyDocState[doc.key].uploadState === 'uploaded').length;
+      label.textContent = t(
+        'Документы для проверки компании: загружено ' + uploaded + ' из ' + total,
+        'Documents for company verification: ' + uploaded + ' of ' + total + ' uploaded'
+      );
+      fill.style.width = Math.round((uploaded / total) * 100) + '%';
+    };
+    refresh();
+
+    return { el: wrap, refresh };
   };
 
   const validateCpDocFile = (file) => {
@@ -3271,6 +3379,94 @@
     return '';
   };
 
+  let cpExpiryDialogEl = null;
+
+  const closeCpExpiryDialog = () => {
+    if (cpExpiryDialogEl) cpExpiryDialogEl.remove();
+    cpExpiryDialogEl = null;
+  };
+
+  // Small dialog stacked on top of the Company Profile modal itself (see
+  // its z-index in portal-overrides.css) — asks for the document's expiry
+  // date before the "upload" actually proceeds, since Emirates ID/
+  // Passport/Trade License all need one and there's nowhere else in this
+  // flow to collect it. onConfirm receives the chosen 'YYYY-MM-DD' string;
+  // onCancel fires on Cancel, Escape-equivalent backdrop click, or the ×
+  // — the caller hasn't touched its own state yet at that point, so
+  // there's nothing to roll back.
+  const openCpExpiryDialog = (doc, onConfirm, onCancel) => {
+    closeCpExpiryDialog();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'portal-cp-subdialog-overlay';
+    overlay.addEventListener('mousedown', (event) => {
+      if (event.target === overlay) {
+        closeCpExpiryDialog();
+        onCancel();
+      }
+    });
+
+    const card = document.createElement('div');
+    card.className = 'portal-cp-subdialog';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+
+    const title = document.createElement('h3');
+    title.className = 'portal-cp-subdialog-title';
+    title.textContent = t('Срок действия документа', 'Document expiry date');
+
+    const subtitle = document.createElement('p');
+    subtitle.className = 'portal-cp-subdialog-subtitle';
+    subtitle.textContent = doc.label;
+
+    const fieldLabel = document.createElement('label');
+    fieldLabel.className = 'portal-cp-subdialog-label';
+    fieldLabel.textContent = t('Действует до', 'Valid until');
+
+    const input = document.createElement('input');
+    input.type = 'date';
+    input.className = 'portal-cp-subdialog-date';
+    input.required = true;
+    fieldLabel.appendChild(input);
+
+    const errorEl = document.createElement('p');
+    errorEl.className = 'portal-field-hint portal-field-hint-error';
+    errorEl.style.display = 'none';
+
+    const actions = document.createElement('div');
+    actions.className = 'portal-cp-subdialog-actions';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.className = 'portal-cp-subdialog-btn portal-cp-subdialog-btn-ghost';
+    cancelBtn.textContent = t('Отмена', 'Cancel');
+    cancelBtn.addEventListener('click', () => {
+      closeCpExpiryDialog();
+      onCancel();
+    });
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.type = 'button';
+    confirmBtn.className = 'portal-cp-subdialog-btn portal-cp-subdialog-btn-primary';
+    confirmBtn.textContent = t('Подтвердить', 'Confirm');
+    confirmBtn.addEventListener('click', () => {
+      if (!input.value) {
+        errorEl.textContent = t('Укажите срок действия документа.', 'Please specify the document expiry date.');
+        errorEl.style.display = '';
+        return;
+      }
+      closeCpExpiryDialog();
+      onConfirm(input.value);
+    });
+
+    actions.append(cancelBtn, confirmBtn);
+    card.append(title, subtitle, fieldLabel, errorEl, actions);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+    cpExpiryDialogEl = overlay;
+    input.focus();
+  };
+
   // Re-renders one document row from its current companyDocState entry —
   // same "check overlay replaces icon, two icon buttons replace Upload"
   // language as ensureDocUploadedState above, reused directly
@@ -3278,35 +3474,59 @@
   // state (a spinner swapped in for the button) that the New Application
   // rows don't need since the native bundle has no async upload there
   // either.
+  //
+  // Badge vs. meta line, once uploaded: the badge (Загружен/Истекает.../
+  // Истёк) is the at-a-glance status; the meta line underneath always
+  // spells out the actual expiry date for hasExpiry docs ("Действует до
+  // ..."), even when the badge already says Истёк — the badge alone drops
+  // the date, so this is the one place it's still visible.
   const renderCpDocRow = (doc, row) => {
     const state = companyDocState[doc.key];
     const check = row.querySelector('.portal-cp-doc-check');
+    const badgeSlot = row.querySelector('.portal-cp-doc-badge-slot');
     const meta = row.querySelector('.portal-cp-doc-meta');
     const actions = row.querySelector('.portal-cp-doc-actions');
 
-    check.classList.toggle('portal-cp-doc-check-visible', state.status === 'uploaded');
+    check.classList.toggle('portal-cp-doc-check-visible', state.uploadState === 'uploaded');
+    badgeSlot.innerHTML = '';
+    meta.classList.remove('portal-cp-doc-meta-error');
+    meta.textContent = '';
 
-    meta.classList.toggle('portal-cp-doc-meta-error', state.status === 'error');
-    if (state.status === 'error') {
+    if (state.uploadState === 'error') {
       meta.textContent = state.error;
-    } else if (state.status === 'uploading') {
+      meta.classList.add('portal-cp-doc-meta-error');
+    } else if (state.uploadState === 'uploading') {
       meta.textContent = t('Загрузка…', 'Uploading…');
-    } else if (state.status === 'uploaded' && state.file) {
-      meta.textContent = state.file.name;
-    } else {
-      meta.textContent = '';
+    } else if (state.uploadState === 'uploaded') {
+      const expiryStatus = doc.hasExpiry ? getCpExpiryStatus(state.expiryDate) : 'none';
+      const badge = document.createElement('span');
+      badge.className = 'portal-cp-doc-badge';
+      if (expiryStatus === 'expired') {
+        badge.classList.add('portal-cp-doc-badge-danger');
+        badge.textContent = t('Срок действия истёк', 'Expired');
+      } else if (expiryStatus === 'expiring') {
+        badge.classList.add('portal-cp-doc-badge-warning');
+        badge.textContent = t('Истекает ', 'Expires ') + formatCpDate(state.expiryDate);
+      } else {
+        badge.classList.add('portal-cp-doc-badge-neutral');
+        badge.textContent = t('Загружен', 'Uploaded');
+      }
+      badgeSlot.appendChild(badge);
+
+      if (doc.hasExpiry && state.expiryDate) {
+        meta.textContent = t('Действует до ', 'Valid until ') + formatCpDate(state.expiryDate);
+      } else if (state.file) {
+        meta.textContent = state.file.name;
+      }
     }
 
     actions.innerHTML = '';
-    if (state.status === 'uploading') {
+    if (state.uploadState === 'uploading') {
       const spinner = document.createElement('span');
       spinner.className = 'portal-cp-spinner';
       spinner.setAttribute('aria-hidden', 'true');
       actions.appendChild(spinner);
-      return;
-    }
-
-    if (state.status === 'uploaded') {
+    } else if (state.uploadState === 'uploaded') {
       const viewBtn = document.createElement('button');
       viewBtn.type = 'button';
       viewBtn.className = 'portal-doc-icon-btn';
@@ -3326,39 +3546,52 @@
       replaceBtn.addEventListener('click', () => row.querySelector('input[type="file"]').click());
 
       actions.append(viewBtn, replaceBtn);
-      return;
+    } else {
+      const uploadBtn = document.createElement('button');
+      uploadBtn.type = 'button';
+      uploadBtn.className = 'portal-cp-upload-btn';
+      uploadBtn.innerHTML = CP_UPLOAD_ICON_SVG + '<span>' + t('Загрузить', 'Upload') + '</span>';
+      uploadBtn.addEventListener('click', () => row.querySelector('input[type="file"]').click());
+      actions.appendChild(uploadBtn);
     }
 
-    const uploadBtn = document.createElement('button');
-    uploadBtn.type = 'button';
-    uploadBtn.className = 'portal-cp-upload-btn';
-    uploadBtn.innerHTML = CP_UPLOAD_ICON_SVG + '<span>' + t('Загрузить', 'Upload') + '</span>';
-    uploadBtn.addEventListener('click', () => row.querySelector('input[type="file"]').click());
-    actions.appendChild(uploadBtn);
+    if (cpProgressRefresh) cpProgressRefresh();
   };
 
   const handleCpDocFileChosen = (doc, row, file) => {
     const state = companyDocState[doc.key];
     const error = validateCpDocFile(file);
     if (error) {
-      state.status = 'error';
+      state.uploadState = 'error';
       state.error = error;
       state.file = null;
       renderCpDocRow(doc, row);
       return;
     }
-    state.status = 'uploading';
-    state.file = file;
-    state.error = '';
-    renderCpDocRow(doc, row);
-    // No real backend exists for this app (see the companyDocState note
-    // above) — a brief fixed delay stands in for an actual upload
-    // request, just long enough for the spinner to be visibly shown.
-    window.setTimeout(() => {
-      if (companyDocState[doc.key] !== state) return;
-      state.status = 'uploaded';
+
+    const proceedUpload = (expiryDate) => {
+      state.uploadState = 'uploading';
+      state.file = file;
+      state.error = '';
+      state.expiryDate = expiryDate || null;
       renderCpDocRow(doc, row);
-    }, 700);
+      // No real backend exists for this app (see the companyDocState note
+      // above) — a brief fixed delay stands in for an actual upload
+      // request, just long enough for the spinner to be visibly shown.
+      window.setTimeout(() => {
+        if (companyDocState[doc.key] !== state) return;
+        state.uploadState = 'uploaded';
+        state.status = 'uploaded';
+        state.rejection_reason = null;
+        renderCpDocRow(doc, row);
+      }, 700);
+    };
+
+    if (doc.hasExpiry) {
+      openCpExpiryDialog(doc, proceedUpload, () => {});
+    } else {
+      proceedUpload(null);
+    }
   };
 
   const buildCpDocRow = (doc) => {
@@ -3375,12 +3608,17 @@
 
     const info = document.createElement('div');
     info.className = 'portal-cp-doc-info';
+    const nameRow = document.createElement('div');
+    nameRow.className = 'portal-cp-doc-name-row';
     const name = document.createElement('span');
     name.className = 'portal-cp-doc-name';
     name.textContent = doc.label;
+    const badgeSlot = document.createElement('span');
+    badgeSlot.className = 'portal-cp-doc-badge-slot';
+    nameRow.append(name, badgeSlot);
     const meta = document.createElement('span');
     meta.className = 'portal-cp-doc-meta';
-    info.append(name, meta);
+    info.append(nameRow, meta);
 
     const actions = document.createElement('div');
     actions.className = 'portal-cp-doc-actions';
@@ -3400,10 +3638,46 @@
     return row;
   };
 
-  const buildCpDocumentsSection = () => {
+  const buildCpDocsBlock = (docs, heading) => {
+    const wrap = document.createElement('div');
+    const headingEl = document.createElement('p');
+    headingEl.className = 'portal-cp-subheading';
+    headingEl.textContent = heading;
+    wrap.appendChild(headingEl);
+    docs.forEach((doc) => wrap.appendChild(buildCpDocRow(doc)));
+    return wrap;
+  };
+
+  const buildCpCompanySection = (fields) => {
     const body = document.createElement('div');
-    COMPANY_DOC_CONFIG.forEach((doc) => body.appendChild(buildCpDocRow(doc)));
-    return buildCpSection(t('Документы', 'Documents'), body);
+    body.appendChild(buildCpFieldsBlock(buildCompanyFieldRows(fields)));
+    body.appendChild(buildCpDocsBlock(
+      COMPANY_DOC_CONFIG.filter((doc) => doc.group === 'company'),
+      t('Документы компании', 'Company documents')
+    ));
+    return buildCpSection(t('Компания', 'Company'), body);
+  };
+
+  const buildCpManagerSection = (fields) => {
+    const body = document.createElement('div');
+    body.appendChild(buildCpFieldsBlock(buildManagerFieldRows(fields)));
+    body.appendChild(buildCpDocsBlock(
+      COMPANY_DOC_CONFIG.filter((doc) => doc.group === 'manager'),
+      t('Документы управляющего', 'Manager documents')
+    ));
+    return buildCpSection(t('Управляющий', 'Manager'), body);
+  };
+
+  // The modal-agnostic unit referenced in the big comment at the top of
+  // this feature — everything the Company Profile screen shows, with no
+  // assumption anywhere in here that it's sitting inside a modal.
+  const buildCompanyProfileContent = (fields) => {
+    const container = document.createElement('div');
+    container.className = 'portal-cp-content';
+    const progress = buildCpProgressBlock();
+    cpProgressRefresh = progress.refresh;
+    container.append(progress.el, buildCpCompanySection(fields), buildCpManagerSection(fields));
+    return container;
   };
 
   let companyProfileOverlayEl = null;
@@ -3413,9 +3687,11 @@
   }
 
   const closeCompanyProfileModal = () => {
+    closeCpExpiryDialog();
     if (!companyProfileOverlayEl) return;
     companyProfileOverlayEl.remove();
     companyProfileOverlayEl = null;
+    cpProgressRefresh = null;
     document.removeEventListener('keydown', handleCpEscape);
   };
 
@@ -3450,7 +3726,7 @@
 
     const body = document.createElement('div');
     body.className = 'portal-cp-body';
-    body.append(buildCpProfileSection(fields), buildCpDocumentsSection());
+    body.appendChild(buildCompanyProfileContent(fields));
 
     modal.append(header, body);
     overlay.appendChild(modal);

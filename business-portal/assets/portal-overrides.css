@@ -120,6 +120,7 @@
 .portal-light-theme .portal-notif-group,
 .portal-light-theme .portal-notif-panel,
 .portal-light-theme .portal-cp-overlay,
+.portal-light-theme .portal-cp-subdialog-overlay,
 .portal-light-theme [data-slot='sidebar'] {
   --ov-tint-rgb: 255, 255, 255;
   --ov-muted-rgb: 245, 242, 233;
@@ -3660,10 +3661,50 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   gap: 2px;
 }
 
+.portal-cp-doc-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .portal-cp-doc-name {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--ov-text);
+}
+
+/* Status pill next to the document name once uploaded (see
+   renderCpDocRow) — neutral "Загружен" by default, re-colored to the
+   warning/danger tokens already defined at the top of this file when the
+   document is within CP_EXPIRY_WARNING_DAYS of its expiry date or past
+   it. */
+.portal-cp-doc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.portal-cp-doc-badge-neutral {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success);
+}
+
+.portal-cp-doc-badge-warning {
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  color: var(--warning);
+}
+
+.portal-cp-doc-badge-danger {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  color: var(--danger);
 }
 
 .portal-cp-doc-meta {
@@ -3720,4 +3761,155 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ---- Completeness indicator (see buildCpProgressBlock) — sits right
+   under the modal header, above both Компания/Управляющий sections. */
+.portal-cp-progress {
+  padding: 2px 0 18px;
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.08);
+}
+
+.portal-cp-progress-label {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ov-text);
+}
+
+.portal-cp-progress-track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(var(--ov-tint-rgb), 0.1);
+  overflow: hidden;
+}
+
+.portal-cp-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #C79A36, #F0B94A);
+  transition: width 0.3s ease;
+}
+
+.portal-cp-progress-hint {
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  color: rgba(var(--ov-muted-rgb), 0.55);
+}
+
+/* Sub-heading inside each section, above its own document rows (e.g.
+   "Документы компании") — a level down from that section's own title
+   (.portal-cp-section-header), so quieter/smaller. */
+.portal-cp-subheading {
+  margin: 18px 0 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(var(--ov-muted-rgb), 0.55);
+}
+
+/* ---- Document expiry-date prompt (see openCpExpiryDialog) — stacked on
+   top of the Company Profile modal itself when uploading a document that
+   requires one (Emirates ID, Passport, Trade License). Same card recipe
+   as .portal-cp-modal, just smaller, and a higher z-index so it layers
+   above it rather than being clipped by it. */
+.portal-cp-subdialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10010;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.portal-cp-subdialog {
+  width: 100%;
+  max-width: 340px;
+  padding: 20px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
+    0 24px 64px rgba(0, 0, 0, 0.45);
+}
+
+.portal-cp-subdialog-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ov-text);
+}
+
+.portal-cp-subdialog-subtitle {
+  margin: 4px 0 14px;
+  font-size: 0.8rem;
+  color: rgba(var(--ov-muted-rgb), 0.6);
+}
+
+.portal-cp-subdialog-label {
+  display: block;
+  font-size: 0.78rem;
+  color: rgba(var(--ov-muted-rgb), 0.7);
+}
+
+/* color-scheme: dark gives the native date-picker affordance (calendar
+   icon, OS popover) a dark-appropriate rendering — this dialog is forced
+   into the dark chrome palette regardless of page theme (see the
+   .portal-light-theme re-pin near the top of this file), so the input
+   needs to say so explicitly rather than inherit the page's own
+   light-mode color-scheme. */
+.portal-cp-subdialog-date {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.18);
+  background: rgba(var(--ov-tint-rgb), 0.06);
+  color: var(--ov-text);
+  font-size: 0.85rem;
+  font-family: inherit;
+  color-scheme: dark;
+}
+
+.portal-cp-subdialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.portal-cp-subdialog-btn {
+  padding: 7px 14px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.portal-cp-subdialog-btn-ghost {
+  background: transparent;
+  border-color: rgba(var(--ov-tint-rgb), 0.18);
+  color: var(--ov-text);
+}
+
+.portal-cp-subdialog-btn-ghost:hover {
+  background: rgba(var(--ov-tint-rgb), 0.08);
+}
+
+/* Same gold-CTA recipe as .portal-new-application-page
+   [data-testid="button-submit-application"] above. */
+.portal-cp-subdialog-btn-primary {
+  background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124);
+  border-color: #F4D28494;
+  color: #171008;
+}
+
+.portal-cp-subdialog-btn-primary:hover {
+  filter: brightness(1.05);
 }
