@@ -3763,40 +3763,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   }
 }
 
-/* ---- Completeness indicator (see buildCpProgressBlock) — sits right
-   under the modal header, above both Компания/Управляющий sections. */
-.portal-cp-progress {
-  padding: 2px 0 18px;
-  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.08);
-}
-
-.portal-cp-progress-label {
-  margin: 0 0 8px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--ov-text);
-}
-
-.portal-cp-progress-track {
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(var(--ov-tint-rgb), 0.1);
-  overflow: hidden;
-}
-
-.portal-cp-progress-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #C79A36, #F0B94A);
-  transition: width 0.3s ease;
-}
-
-.portal-cp-progress-hint {
-  margin: 8px 0 0;
-  font-size: 0.75rem;
-  color: rgba(var(--ov-muted-rgb), 0.55);
-}
-
 /* Sub-heading inside each section, above its own document rows (e.g.
    "Документы компании") — a level down from that section's own title
    (.portal-cp-section-header), so quieter/smaller. */

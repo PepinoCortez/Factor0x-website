@@ -3228,11 +3228,6 @@
     };
   });
 
-  // Set while the modal is open (see buildCompanyProfileContent), so every
-  // doc row's render can refresh the shared completeness bar without each
-  // row needing its own reference to it.
-  let cpProgressRefresh = null;
-
   // The dropdown's own header (see the bw/ww Radix markup in the compiled
   // bundle) renders contactName/contactEmail as plain siblings of the menu
   // items inside the same [role="menu"] content — read straight from
@@ -3322,46 +3317,6 @@
       body.appendChild(rowEl);
     });
     return body;
-  };
-
-  // "Документы для проверки компании: загружено X из 4" + progress bar +
-  // hint, sitting right under the modal header, above both sections.
-  // refresh() is called by renderCpDocRow (via cpProgressRefresh) every
-  // time any document's state changes.
-  const buildCpProgressBlock = () => {
-    const wrap = document.createElement('div');
-    wrap.className = 'portal-cp-progress';
-
-    const label = document.createElement('p');
-    label.className = 'portal-cp-progress-label';
-
-    const track = document.createElement('div');
-    track.className = 'portal-cp-progress-track';
-    const fill = document.createElement('div');
-    fill.className = 'portal-cp-progress-fill';
-    track.appendChild(fill);
-
-    const hint = document.createElement('p');
-    hint.className = 'portal-cp-progress-hint';
-    hint.textContent = t(
-      'Загружаются один раз и используются для всех заявок',
-      'Uploaded once and used for every application'
-    );
-
-    wrap.append(label, track, hint);
-
-    const refresh = () => {
-      const total = COMPANY_DOC_CONFIG.length;
-      const uploaded = COMPANY_DOC_CONFIG.filter((doc) => companyDocState[doc.key].uploadState === 'uploaded').length;
-      label.textContent = t(
-        'Документы для проверки компании: загружено ' + uploaded + ' из ' + total,
-        'Documents for company verification: ' + uploaded + ' of ' + total + ' uploaded'
-      );
-      fill.style.width = Math.round((uploaded / total) * 100) + '%';
-    };
-    refresh();
-
-    return { el: wrap, refresh };
   };
 
   const validateCpDocFile = (file) => {
@@ -3554,8 +3509,6 @@
       uploadBtn.addEventListener('click', () => row.querySelector('input[type="file"]').click());
       actions.appendChild(uploadBtn);
     }
-
-    if (cpProgressRefresh) cpProgressRefresh();
   };
 
   const handleCpDocFileChosen = (doc, row, file) => {
@@ -3674,9 +3627,7 @@
   const buildCompanyProfileContent = (fields) => {
     const container = document.createElement('div');
     container.className = 'portal-cp-content';
-    const progress = buildCpProgressBlock();
-    cpProgressRefresh = progress.refresh;
-    container.append(progress.el, buildCpCompanySection(fields), buildCpManagerSection(fields));
+    container.append(buildCpCompanySection(fields), buildCpManagerSection(fields));
     return container;
   };
 
@@ -3691,7 +3642,6 @@
     if (!companyProfileOverlayEl) return;
     companyProfileOverlayEl.remove();
     companyProfileOverlayEl = null;
-    cpProgressRefresh = null;
     document.removeEventListener('keydown', handleCpEscape);
   };
 
