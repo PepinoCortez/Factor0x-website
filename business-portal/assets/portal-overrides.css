@@ -65,6 +65,14 @@
      what it's sitting on — so unlike the neutral tokens above, this one
      needs an actual multiplier, not just a color swap. */
   --ov-shadow-scale: 1;
+
+  /* Scrollbar thumb alpha (see the global scrollbar rules below) — not
+     folded into --ov-tint-rgb's own shared alpha convention because the
+     two themes don't want the same number: a black thumb needs a touch
+     more opacity than a white one to read at the same visual weight on
+     its own (inverted) background. */
+  --ov-scrollbar-thumb-alpha: 0.15;
+  --ov-scrollbar-thumb-hover-alpha: 0.3;
 }
 
 /* ---- Light theme. Toggled by adding/removing this class on <html> (see
@@ -105,6 +113,8 @@
   --ov-tooltip-bg: #FFFFFF;
   --ov-page-bg: #F4F4F5;
   --ov-shadow-scale: 0.35;
+  --ov-scrollbar-thumb-alpha: 0.2;
+  --ov-scrollbar-thumb-hover-alpha: 0.35;
 }
 
 /* The globe/theme-toggle/bell buttons in the header, the two dropdown
@@ -128,6 +138,8 @@
   --ov-surface-bg: #111113;
   --ov-surface-bg-alt: #111113;
   --ov-tooltip-bg: #111113;
+  --ov-scrollbar-thumb-alpha: 0.15;
+  --ov-scrollbar-thumb-hover-alpha: 0.3;
 }
 
 /* Smooth color-scheme switch on theme toggle. Scoped to the properties the
@@ -176,6 +188,57 @@ body {
   background: var(--ov-page-bg);
   color: var(--ov-text);
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ---- Global scrollbar theming, every scrollable area in the portal (the
+   page itself, the Company Profile modal body, any card with its own
+   overflow) — the platform default is a light track + white thumb that
+   reads as a bug sitting on top of this dark UI. Built on --ov-tint-rgb
+   (the same neutral token everything else in this file resolves through)
+   and --ov-scrollbar-thumb-alpha/-hover-alpha (redefined in the light
+   theme further up — a black thumb needs a touch more opacity than a
+   white one to read at the same weight), so the light theme's inverted,
+   slightly-stronger thumb falls out for free instead of needing its own
+   rule. Firefox gets the thin/color shorthand; Chrome/Safari/Edge get the
+   ::-webkit-scrollbar-* pseudo-elements below (no shared syntax between
+   the two exists). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--ov-tint-rgb), var(--ov-scrollbar-thumb-alpha)) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* The transparent border + background-clip:padding-box pair is what
+   insets the visible thumb from the track's own edges (~6px thumb inside
+   a 10px track) — a straight background-color with no border would paint
+   edge-to-edge and butt right up against the modal's rounded corners. */
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--ov-tint-rgb), var(--ov-scrollbar-thumb-alpha));
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(var(--ov-tint-rgb), var(--ov-scrollbar-thumb-hover-alpha));
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 body::before {
@@ -561,31 +624,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 
 /* Grows with .portal-repayments-card (see above) and scrolls internally
    once its content is taller than the space that stretch gives it —
-   .portal-attention-list keeps its own natural, un-scrolled height. */
+   .portal-attention-list keeps its own natural, un-scrolled height. The
+   scrollbar itself is unstyled here on purpose — the global rules further
+   down this file cover every scrollable area in the portal, this one
+   included, so it matches instead of having its own one-off recipe. */
 .portal-repayments-list {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   padding-right: 10px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(var(--ov-tint-rgb), 0.22) rgba(var(--ov-tint-rgb), 0.06);
-}
-
-/* Same thin, rounded scrollbar recipe as the landing page's apply-form
-   file list (.apply-form .file-list-items), for a consistent look
-   wherever a scroll appears in this app. */
-.portal-repayments-list::-webkit-scrollbar {
-  width: 5px;
-}
-
-.portal-repayments-list::-webkit-scrollbar-track {
-  background: rgba(var(--ov-tint-rgb), 0.06);
-  border-radius: 999px;
-}
-
-.portal-repayments-list::-webkit-scrollbar-thumb {
-  background: rgba(var(--ov-tint-rgb), 0.22);
-  border-radius: 999px;
 }
 
 .portal-attention-item {
