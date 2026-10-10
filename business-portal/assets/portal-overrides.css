@@ -119,6 +119,7 @@
    rule covered [data-slot='sidebar'] too. */
 .portal-light-theme .portal-notif-group,
 .portal-light-theme .portal-notif-panel,
+.portal-light-theme .portal-cp-overlay,
 .portal-light-theme [data-slot='sidebar'] {
   --ov-tint-rgb: 255, 255, 255;
   --ov-muted-rgb: 245, 242, 233;
@@ -3475,5 +3476,268 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 @media (max-width: 640px) {
   [data-testid="stage-stepper"] > div {
     padding: 0 3px;
+  }
+}
+
+/* ---- Company Profile modal, opened from the avatar dropdown's own
+   "Профиль компании" item (see ensureCompanyProfileMenuHandler in
+   portal-overrides.js) — no native modal exists anywhere in the compiled
+   app to reuse, so this is a new centered dialog, forced into the same
+   permanently-dark chrome palette as the header/notif panel/lang menu
+   (see the .portal-light-theme re-pin near the top of this file) rather
+   than following the page's own light/dark toggle, since the task calls
+   for the portal's dark/gold chrome look specifically. */
+.portal-cp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.portal-cp-modal {
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)), var(--ov-surface-bg);
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(var(--ov-tint-rgb), 0.14),
+    0 24px 64px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.portal-cp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.1);
+  flex-shrink: 0;
+}
+
+.portal-cp-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ov-text);
+}
+
+.portal-cp-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: rgba(var(--ov-muted-rgb), 0.7);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.portal-cp-close:hover {
+  background: rgba(var(--ov-tint-rgb), 0.08);
+  color: var(--ov-text);
+}
+
+.portal-cp-body {
+  overflow-y: auto;
+  padding: 4px 20px 20px;
+}
+
+.portal-cp-section {
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.08);
+  padding: 16px 0;
+}
+
+.portal-cp-section:last-child {
+  border-bottom: none;
+}
+
+.portal-cp-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 2px 0;
+  color: var(--ov-text);
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.portal-cp-section-chevron {
+  display: inline-flex;
+  color: rgba(var(--ov-muted-rgb), 0.6);
+  transition: transform 0.2s ease;
+}
+
+.portal-cp-section-collapsed .portal-cp-section-chevron {
+  transform: rotate(-90deg);
+}
+
+.portal-cp-section-body {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.portal-cp-section-collapsed .portal-cp-section-body {
+  display: none;
+}
+
+/* "Название слева — значение справа" rows with dividers (see
+   buildCpProfileSection) — value right-aligned, wraps onto multiple
+   lines for a long address rather than truncating. */
+.portal-cp-field-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.06);
+}
+
+.portal-cp-field-row:last-child {
+  border-bottom: none;
+}
+
+.portal-cp-field-label {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: rgba(var(--ov-muted-rgb), 0.6);
+}
+
+.portal-cp-field-value {
+  max-width: 62%;
+  font-size: 0.85rem;
+  color: var(--ov-text);
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Document rows (see buildCpDocRow) — same icon-box/check-overlay/
+   uploaded-icon-pair language as the New Application Step 3 rows
+   (.portal-doc-icon-anchor, .portal-doc-check-overlay, .portal-doc-icon-btn
+   further up this file), reused directly rather than duplicated. */
+.portal-cp-doc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(var(--ov-tint-rgb), 0.06);
+}
+
+.portal-cp-doc-row:last-child {
+  border-bottom: none;
+}
+
+.portal-cp-doc-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: rgba(var(--ov-tint-rgb), 0.08);
+  color: rgba(var(--ov-muted-rgb), 0.7);
+}
+
+.portal-cp-doc-check {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: inherit;
+  background: var(--ov-surface-bg);
+  color: var(--success, #3fb97f);
+}
+
+.portal-cp-doc-check-visible {
+  display: flex;
+}
+
+.portal-cp-doc-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.portal-cp-doc-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ov-text);
+}
+
+.portal-cp-doc-meta {
+  overflow: hidden;
+  font-size: 0.75rem;
+  color: rgba(var(--ov-muted-rgb), 0.55);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portal-cp-doc-meta-error {
+  color: rgba(229, 72, 77, 0.92);
+}
+
+.portal-cp-doc-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.portal-cp-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid rgba(var(--ov-tint-rgb), 0.18);
+  border-radius: 7px;
+  background: rgba(var(--ov-tint-rgb), 0.06);
+  color: var(--ov-text);
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.portal-cp-upload-btn:hover {
+  background: rgba(var(--ov-tint-rgb), 0.12);
+  border-color: rgba(var(--ov-tint-rgb), 0.3);
+}
+
+.portal-cp-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(var(--ov-tint-rgb), 0.25);
+  border-top-color: var(--ov-text);
+  border-radius: 50%;
+  animation: portal-cp-spin 0.7s linear infinite;
+}
+
+@keyframes portal-cp-spin {
+  to {
+    transform: rotate(360deg);
   }
 }

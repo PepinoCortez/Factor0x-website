@@ -3123,6 +3123,360 @@
     return true;
   };
 
+  // Company Profile modal, opened from the avatar dropdown's own
+  // "Профиль компании" item (data-testid="menu-item-profile"). That item
+  // (and its siblings "Настройки"/"Выйти") render with no onSelect handler
+  // anywhere in the compiled bundle, and no backing route exists either —
+  // only /, /new-application, /deals, /deals/:id and /archive are
+  // registered — so this wires the click itself instead of overriding
+  // something that already works. Radix unmounts DropdownMenuContent
+  // whenever the menu closes, so the item (and its data-testid) is a *new*
+  // DOM node every time the menu opens — wiring happens fresh on every
+  // run() tick via the usual MutationObserver loop, guarded by its own
+  // "wired" flag so a still-open menu isn't rewired every tick.
+  const CP_FILE_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>';
+  const CP_UPLOAD_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>';
+  const CP_CLOSE_ICON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>';
+
+  // No real backend exists for any of this (same situation as the
+  // notification feed just below) — first/middle/last name, username and
+  // address have no source anywhere in the app's own mock data (the only
+  // profile object that exists, queryKey "borrower-profile", is just
+  // {companyName, contactName, contactEmail}), so those fields are this
+  // file's own static mock. Name/email/company are instead read live off
+  // the DOM at open time (see readLiveProfileBasics) rather than
+  // duplicated here, so they can never drift from what the header/
+  // dropdown are already showing.
+  const COMPANY_PROFILE_MOCK = {
+    username: 'yusuf.alfahad',
+    middleName: '',
+    address: t(
+      'Офис 1402, башня Al Moosa Tower 2, Sheikh Zayed Road, Дубай, ОАЭ',
+      'Office 1402, Al Moosa Tower 2, Sheikh Zayed Road, Dubai, UAE'
+    ),
+  };
+
+  const COMPANY_DOC_CONFIG = [
+    { key: 'emiratesId', label: 'Emirates ID' },
+    { key: 'passport', label: t('Паспорт', 'Passport') },
+    { key: 'tradeLicense', label: t('Торговая лицензия', 'Trade License') },
+    { key: 'moaPartners', label: t('MOA / страница с партнёрами', 'MOA / Partners page') },
+  ];
+
+  // Same accept list as the New Application form's own widened slots (see
+  // NEWAPP_DOC_ACCEPT above) — PDF/JPG/PNG. No file-size limit exists
+  // anywhere else in this app to match (grepped both this file and the
+  // compiled bundle — there isn't one), so 10MB is this file's own
+  // reasonable default.
+  const CP_DOC_ACCEPT = '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';
+  const CP_DOC_MAX_SIZE_MB = 10;
+
+  // Lives for the whole session (module scope, not rebuilt per modal open)
+  // so a document uploaded once stays uploaded if the panel is closed and
+  // reopened — these are meant to be company-level, reused across every
+  // application, not re-collected per modal open. There's just no backend
+  // here to actually persist it past a reload.
+  const companyDocState = {};
+  COMPANY_DOC_CONFIG.forEach((doc) => {
+    companyDocState[doc.key] = { file: null, status: 'idle', error: '' };
+  });
+
+  // The dropdown's own header (see the bw/ww Radix markup in the compiled
+  // bundle) renders contactName/contactEmail as plain siblings of the menu
+  // items inside the same [role="menu"] content — read straight from
+  // there rather than re-querying the "borrower-profile" mock directly,
+  // since this file has no access to the compiled bundle's own React
+  // query cache. Company name comes from the persistent header instead
+  // (text-borrower-name), since it isn't repeated inside the dropdown.
+  const readLiveProfileBasics = (menuItem) => {
+    const content = menuItem.closest('[role="menu"]') || menuItem.parentElement;
+    const nameEl = content && content.querySelector('.text-sm.font-medium');
+    const emailEl = content && content.querySelector('.text-xs.text-muted-foreground');
+    const companyEl = document.querySelector('[data-testid="text-borrower-name"]');
+    return {
+      fullName: (nameEl && nameEl.textContent.trim()) || '',
+      email: (emailEl && emailEl.textContent.trim()) || '',
+      company: (companyEl && companyEl.textContent.trim()) || '',
+    };
+  };
+
+  const buildCompanyProfileFields = (menuItem) => {
+    const live = readLiveProfileBasics(menuItem);
+    const nameParts = live.fullName.split(/\s+/).filter(Boolean);
+    return {
+      username: COMPANY_PROFILE_MOCK.username,
+      firstName: nameParts[0] || '',
+      middleName: COMPANY_PROFILE_MOCK.middleName,
+      lastName: nameParts.length > 1 ? nameParts.slice(1).join(' ') : '',
+      email: live.email,
+      company: live.company,
+      address: COMPANY_PROFILE_MOCK.address,
+    };
+  };
+
+  const buildCompanyProfileFieldRows = (fields) => [
+    { label: t('Имя пользователя', 'Username'), value: fields.username },
+    { label: t('Имя', 'First name'), value: fields.firstName },
+    { label: t('Отчество', 'Middle name'), value: fields.middleName || '—' },
+    { label: t('Фамилия', 'Last name'), value: fields.lastName },
+    { label: 'Email', value: fields.email },
+    { label: t('Компания', 'Company'), value: fields.company },
+    { label: t('Адрес', 'Address'), value: fields.address },
+  ];
+
+  // One shared collapsible-section builder for both Профиль and
+  // Документы — both expanded by default (no collapsed class added up
+  // front), toggled independently since each gets its own section/header
+  // pair rather than sharing state.
+  const buildCpSection = (title, bodyEl) => {
+    const section = document.createElement('div');
+    section.className = 'portal-cp-section';
+
+    const header = document.createElement('button');
+    header.type = 'button';
+    header.className = 'portal-cp-section-header';
+    const titleSpan = document.createElement('span');
+    titleSpan.textContent = title;
+    const chevron = document.createElement('span');
+    chevron.className = 'portal-cp-section-chevron';
+    chevron.innerHTML = NEWAPP_CHEVRON_DOWN_SVG;
+    header.append(titleSpan, chevron);
+    header.addEventListener('click', () => section.classList.toggle('portal-cp-section-collapsed'));
+
+    bodyEl.classList.add('portal-cp-section-body');
+    section.append(header, bodyEl);
+    return section;
+  };
+
+  const buildCpProfileSection = (fields) => {
+    const body = document.createElement('div');
+    buildCompanyProfileFieldRows(fields).forEach((row) => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'portal-cp-field-row';
+      const label = document.createElement('span');
+      label.className = 'portal-cp-field-label';
+      label.textContent = row.label;
+      const value = document.createElement('span');
+      value.className = 'portal-cp-field-value';
+      value.textContent = row.value || '—';
+      rowEl.append(label, value);
+      body.appendChild(rowEl);
+    });
+    return buildCpSection(t('Профиль', 'Profile'), body);
+  };
+
+  const validateCpDocFile = (file) => {
+    const okExt = /\.(pdf|jpe?g|png)$/i.test(file.name);
+    const okType = !file.type || ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type);
+    if (!okExt || !okType) {
+      return t('Неверный формат файла. Разрешены PDF, JPG, PNG.', 'Invalid file format. PDF, JPG, and PNG are allowed.');
+    }
+    if (file.size > CP_DOC_MAX_SIZE_MB * 1024 * 1024) {
+      return t(
+        'Файл слишком большой. Максимальный размер — ' + CP_DOC_MAX_SIZE_MB + ' МБ.',
+        'File is too large. Maximum size is ' + CP_DOC_MAX_SIZE_MB + ' MB.'
+      );
+    }
+    return '';
+  };
+
+  // Re-renders one document row from its current companyDocState entry —
+  // same "check overlay replaces icon, two icon buttons replace Upload"
+  // language as ensureDocUploadedState above, reused directly
+  // (.portal-doc-icon-btn) rather than duplicated, plus an 'uploading'
+  // state (a spinner swapped in for the button) that the New Application
+  // rows don't need since the native bundle has no async upload there
+  // either.
+  const renderCpDocRow = (doc, row) => {
+    const state = companyDocState[doc.key];
+    const check = row.querySelector('.portal-cp-doc-check');
+    const meta = row.querySelector('.portal-cp-doc-meta');
+    const actions = row.querySelector('.portal-cp-doc-actions');
+
+    check.classList.toggle('portal-cp-doc-check-visible', state.status === 'uploaded');
+
+    meta.classList.toggle('portal-cp-doc-meta-error', state.status === 'error');
+    if (state.status === 'error') {
+      meta.textContent = state.error;
+    } else if (state.status === 'uploading') {
+      meta.textContent = t('Загрузка…', 'Uploading…');
+    } else if (state.status === 'uploaded' && state.file) {
+      meta.textContent = state.file.name;
+    } else {
+      meta.textContent = '';
+    }
+
+    actions.innerHTML = '';
+    if (state.status === 'uploading') {
+      const spinner = document.createElement('span');
+      spinner.className = 'portal-cp-spinner';
+      spinner.setAttribute('aria-hidden', 'true');
+      actions.appendChild(spinner);
+      return;
+    }
+
+    if (state.status === 'uploaded') {
+      const viewBtn = document.createElement('button');
+      viewBtn.type = 'button';
+      viewBtn.className = 'portal-doc-icon-btn';
+      viewBtn.title = t('Просмотреть', 'View');
+      viewBtn.setAttribute('aria-label', t('Просмотреть', 'View'));
+      viewBtn.innerHTML = NEWAPP_EYE_ICON_SVG;
+      viewBtn.addEventListener('click', () => {
+        if (state.file) window.open(URL.createObjectURL(state.file), '_blank', 'noopener');
+      });
+
+      const replaceBtn = document.createElement('button');
+      replaceBtn.type = 'button';
+      replaceBtn.className = 'portal-doc-icon-btn';
+      replaceBtn.title = t('Заменить', 'Replace');
+      replaceBtn.setAttribute('aria-label', t('Заменить', 'Replace'));
+      replaceBtn.innerHTML = NEWAPP_REPLACE_ICON_SVG;
+      replaceBtn.addEventListener('click', () => row.querySelector('input[type="file"]').click());
+
+      actions.append(viewBtn, replaceBtn);
+      return;
+    }
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.type = 'button';
+    uploadBtn.className = 'portal-cp-upload-btn';
+    uploadBtn.innerHTML = CP_UPLOAD_ICON_SVG + '<span>' + t('Загрузить', 'Upload') + '</span>';
+    uploadBtn.addEventListener('click', () => row.querySelector('input[type="file"]').click());
+    actions.appendChild(uploadBtn);
+  };
+
+  const handleCpDocFileChosen = (doc, row, file) => {
+    const state = companyDocState[doc.key];
+    const error = validateCpDocFile(file);
+    if (error) {
+      state.status = 'error';
+      state.error = error;
+      state.file = null;
+      renderCpDocRow(doc, row);
+      return;
+    }
+    state.status = 'uploading';
+    state.file = file;
+    state.error = '';
+    renderCpDocRow(doc, row);
+    // No real backend exists for this app (see the companyDocState note
+    // above) — a brief fixed delay stands in for an actual upload
+    // request, just long enough for the spinner to be visibly shown.
+    window.setTimeout(() => {
+      if (companyDocState[doc.key] !== state) return;
+      state.status = 'uploaded';
+      renderCpDocRow(doc, row);
+    }, 700);
+  };
+
+  const buildCpDocRow = (doc) => {
+    const row = document.createElement('div');
+    row.className = 'portal-cp-doc-row';
+
+    const icon = document.createElement('div');
+    icon.className = 'portal-cp-doc-icon';
+    icon.innerHTML = CP_FILE_ICON_SVG;
+    const check = document.createElement('span');
+    check.className = 'portal-cp-doc-check';
+    check.innerHTML = NEWAPP_CHECK_ICON_SVG;
+    icon.appendChild(check);
+
+    const info = document.createElement('div');
+    info.className = 'portal-cp-doc-info';
+    const name = document.createElement('span');
+    name.className = 'portal-cp-doc-name';
+    name.textContent = doc.label;
+    const meta = document.createElement('span');
+    meta.className = 'portal-cp-doc-meta';
+    info.append(name, meta);
+
+    const actions = document.createElement('div');
+    actions.className = 'portal-cp-doc-actions';
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = CP_DOC_ACCEPT;
+    input.className = 'hidden';
+    input.addEventListener('change', (event) => {
+      const file = event.target.files && event.target.files[0];
+      event.target.value = '';
+      if (file) handleCpDocFileChosen(doc, row, file);
+    });
+
+    row.append(icon, info, actions, input);
+    renderCpDocRow(doc, row);
+    return row;
+  };
+
+  const buildCpDocumentsSection = () => {
+    const body = document.createElement('div');
+    COMPANY_DOC_CONFIG.forEach((doc) => body.appendChild(buildCpDocRow(doc)));
+    return buildCpSection(t('Документы', 'Documents'), body);
+  };
+
+  let companyProfileOverlayEl = null;
+
+  function handleCpEscape(event) {
+    if (event.key === 'Escape') closeCompanyProfileModal();
+  }
+
+  const closeCompanyProfileModal = () => {
+    if (!companyProfileOverlayEl) return;
+    companyProfileOverlayEl.remove();
+    companyProfileOverlayEl = null;
+    document.removeEventListener('keydown', handleCpEscape);
+  };
+
+  const openCompanyProfileModal = (menuItem) => {
+    closeCompanyProfileModal();
+    const fields = buildCompanyProfileFields(menuItem);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'portal-cp-overlay';
+    overlay.addEventListener('mousedown', (event) => {
+      if (event.target === overlay) closeCompanyProfileModal();
+    });
+
+    const modal = document.createElement('div');
+    modal.className = 'portal-cp-modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', t('Профиль компании', 'Company Profile'));
+
+    const header = document.createElement('div');
+    header.className = 'portal-cp-header';
+    const title = document.createElement('h2');
+    title.className = 'portal-cp-title';
+    title.textContent = t('Профиль компании', 'Company Profile');
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'portal-cp-close';
+    closeBtn.setAttribute('aria-label', t('Закрыть', 'Close'));
+    closeBtn.innerHTML = CP_CLOSE_ICON_SVG;
+    closeBtn.addEventListener('click', closeCompanyProfileModal);
+    header.append(title, closeBtn);
+
+    const body = document.createElement('div');
+    body.className = 'portal-cp-body';
+    body.append(buildCpProfileSection(fields), buildCpDocumentsSection());
+
+    modal.append(header, body);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    companyProfileOverlayEl = overlay;
+    document.addEventListener('keydown', handleCpEscape);
+  };
+
+  // Radix's own onSelect already closes the dropdown menu on click before
+  // this ever fires, satisfying "меню при этом закрывается" for free.
+  const ensureCompanyProfileMenuHandler = () => {
+    const item = document.querySelector('[data-testid="menu-item-profile"]');
+    if (!item || item.dataset.portalCpWired) return;
+    item.dataset.portalCpWired = 'true';
+    item.addEventListener('click', () => openCompanyProfileModal(item));
+  };
+
   // Notification bell, added to the persistent header next to the user
   // menu — no such feature exists anywhere in the compiled app (no
   // backend for it either), so this is a self-contained, purely front-end
@@ -3711,6 +4065,7 @@
     // counted towards the "nothing matched, keep polling" check below,
     // it just quietly no-ops on every later tick via its own guard.
     ensureNotificationBell();
+    ensureCompanyProfileMenuHandler();
     // Last, on purpose — see translatePage's own comment for why.
     translatePage();
     if (!overviewDone && !newApplicationDone && !dealsDone && !archiveDone && !dealDetailDone) {
