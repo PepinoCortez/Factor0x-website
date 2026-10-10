@@ -3509,6 +3509,8 @@
       uploadBtn.addEventListener('click', () => row.querySelector('input[type="file"]').click());
       actions.appendChild(uploadBtn);
     }
+
+    refreshCpDocsSummary();
   };
 
   const handleCpDocFileChosen = (doc, row, file) => {
@@ -3591,43 +3593,230 @@
     return row;
   };
 
-  const buildCpDocsBlock = (docs, heading) => {
+  const buildCpDocsBlock = (docs) => {
     const wrap = document.createElement('div');
-    const headingEl = document.createElement('p');
-    headingEl.className = 'portal-cp-subheading';
-    headingEl.textContent = heading;
-    wrap.appendChild(headingEl);
     docs.forEach((doc) => wrap.appendChild(buildCpDocRow(doc)));
     return wrap;
   };
 
-  const buildCpCompanySection = (fields) => {
-    const body = document.createElement('div');
-    body.appendChild(buildCpFieldsBlock(buildCompanyFieldRows(fields)));
-    body.appendChild(buildCpDocsBlock(
-      COMPANY_DOC_CONFIG.filter((doc) => doc.group === 'company'),
-      t('Документы компании', 'Company documents')
-    ));
-    return buildCpSection(t('Компания', 'Company'), body);
+  // "Документы для проверки компании: загружено X из 4" + progress bar +
+  // hint — sits at the top of the Документы tab. refresh() is called by
+  // refreshCpDocsSummary (in turn called by renderCpDocRow) every time any
+  // document's state changes.
+  const buildCpProgressBlock = () => {
+    const wrap = document.createElement('div');
+    wrap.className = 'portal-cp-progress';
+
+    const label = document.createElement('p');
+    label.className = 'portal-cp-progress-label';
+
+    const track = document.createElement('div');
+    track.className = 'portal-cp-progress-track';
+    const fill = document.createElement('div');
+    fill.className = 'portal-cp-progress-fill';
+    track.appendChild(fill);
+
+    const hint = document.createElement('p');
+    hint.className = 'portal-cp-progress-hint';
+    hint.textContent = t(
+      'Загружаются один раз и используются для всех заявок',
+      'Uploaded once and used for every application'
+    );
+
+    wrap.append(label, track, hint);
+
+    const refresh = () => {
+      const { uploaded, total } = getCpDocsSummary();
+      label.textContent = t(
+        'Документы для проверки компании: загружено ' + uploaded + ' из ' + total,
+        'Documents for company verification: ' + uploaded + ' of ' + total + ' uploaded'
+      );
+      fill.style.width = Math.round((uploaded / total) * 100) + '%';
+    };
+    refresh();
+
+    return { el: wrap, refresh };
   };
 
-  const buildCpManagerSection = (fields) => {
-    const body = document.createElement('div');
-    body.appendChild(buildCpFieldsBlock(buildManagerFieldRows(fields)));
-    body.appendChild(buildCpDocsBlock(
-      COMPANY_DOC_CONFIG.filter((doc) => doc.group === 'manager'),
-      t('Документы управляющего', 'Manager documents')
+  // Counts/flags behind both the progress bar above and the Документы
+  // tab's own badge (see updateCpTabBadge) — one summary, two renderings.
+  const getCpDocsSummary = () => {
+    const total = COMPANY_DOC_CONFIG.length;
+    let uploaded = 0;
+    let hasExpired = false;
+    let hasExpiring = false;
+    COMPANY_DOC_CONFIG.forEach((doc) => {
+      const state = companyDocState[doc.key];
+      if (state.uploadState !== 'uploaded') return;
+      uploaded += 1;
+      if (!doc.hasExpiry) return;
+      const expiryStatus = getCpExpiryStatus(state.expiryDate);
+      if (expiryStatus === 'expired') hasExpired = true;
+      else if (expiryStatus === 'expiring') hasExpiring = true;
+    });
+    const missing = uploaded < total;
+    const dot = missing || hasExpired ? 'danger' : hasExpiring ? 'warning' : null;
+    return { uploaded, total, missing, dot };
+  };
+
+  let cpTabBadgeEl = null;
+  let cpProgressRefreshFn = null;
+
+  // "2/4" counter (only while something's still missing) + a status dot —
+  // red when a document is missing or expired, yellow when one is within
+  // CP_EXPIRY_WARNING_DAYS of expiring, absent once everything is uploaded
+  // and valid.
+  const updateCpTabBadge = () => {
+    if (!cpTabBadgeEl) return;
+    const summary = getCpDocsSummary();
+    cpTabBadgeEl.innerHTML = '';
+    if (summary.missing) {
+      const count = document.createElement('span');
+      count.className = 'portal-cp-tab-count';
+      count.textContent = summary.uploaded + '/' + summary.total;
+      cpTabBadgeEl.appendChild(count);
+    }
+    if (summary.dot) {
+      const dotEl = document.createElement('span');
+      dotEl.className = 'portal-cp-tab-dot portal-cp-tab-dot-' + summary.dot;
+      cpTabBadgeEl.appendChild(dotEl);
+    }
+  };
+
+  const refreshCpDocsSummary = () => {
+    if (cpProgressRefreshFn) cpProgressRefreshFn();
+    updateCpTabBadge();
+  };
+
+  // "Изменить данные" at the bottom of the Основная tab — these fields
+  // come from registration/onboarding and aren't user-editable here (no
+  // backend to write them back to anyway); clicking just reveals why,
+  // with a mailto straight to the same address the landing page itself
+  // uses for contact (see index.html), rather than a fabricated support
+  // address.
+  const buildCpEditDataLink = () => {
+    const wrap = document.createElement('div');
+    wrap.className = 'portal-cp-edit-data';
+
+    const link = document.createElement('button');
+    link.type = 'button';
+    link.className = 'portal-cp-edit-data-link';
+    link.textContent = t('Изменить данные', 'Edit details');
+
+    const notice = document.createElement('div');
+    notice.className = 'portal-cp-edit-data-notice';
+    notice.hidden = true;
+
+    const noticeText = document.createElement('p');
+    noticeText.textContent = t(
+      'Данные компании проходят проверку, поэтому изменить их можно через поддержку.',
+      'Company details are under verification, so changes can only be made through support.'
+    );
+
+    const supportLink = document.createElement('a');
+    supportLink.className = 'portal-cp-subdialog-btn portal-cp-subdialog-btn-primary';
+    supportLink.href = 'mailto:hello@factor0x.com?subject=' +
+      encodeURIComponent(t('Изменение данных компании', 'Company details change request'));
+    supportLink.textContent = t('Написать в поддержку', 'Contact support');
+
+    notice.append(noticeText, supportLink);
+
+    link.addEventListener('click', () => {
+      notice.hidden = !notice.hidden;
+    });
+
+    wrap.append(link, notice);
+    return wrap;
+  };
+
+  const buildCpGeneralTab = (fields) => {
+    const panel = document.createElement('div');
+    panel.className = 'portal-cp-tab-panel';
+    panel.append(
+      buildCpSection(t('Компания', 'Company'), buildCpFieldsBlock(buildCompanyFieldRows(fields))),
+      buildCpSection(t('Управляющий', 'Manager'), buildCpFieldsBlock(buildManagerFieldRows(fields))),
+      buildCpEditDataLink()
+    );
+    return panel;
+  };
+
+  const buildCpDocumentsTab = () => {
+    const panel = document.createElement('div');
+    panel.className = 'portal-cp-tab-panel';
+
+    const progress = buildCpProgressBlock();
+    panel.appendChild(progress.el);
+    panel.appendChild(buildCpSection(
+      t('Документы компании', 'Company documents'),
+      buildCpDocsBlock(COMPANY_DOC_CONFIG.filter((doc) => doc.group === 'company'))
     ));
-    return buildCpSection(t('Управляющий', 'Manager'), body);
+    panel.appendChild(buildCpSection(
+      t('Документы управляющего', 'Manager documents'),
+      buildCpDocsBlock(COMPANY_DOC_CONFIG.filter((doc) => doc.group === 'manager'))
+    ));
+
+    cpProgressRefreshFn = progress.refresh;
+    return panel;
   };
 
   // The modal-agnostic unit referenced in the big comment at the top of
-  // this feature — everything the Company Profile screen shows, with no
-  // assumption anywhere in here that it's sitting inside a modal.
+  // this feature — everything the Company Profile screen shows (tabs
+  // included), with no assumption anywhere in here that it's sitting
+  // inside a modal. Tab style/markup matches the New Application page's
+  // own Товары/Услуги switch (.portal-dealtype-toggle/-btn, see
+  // ensureDealTypeToggle above) — reused directly rather than a second
+  // visual language for the same "pick one of two" control.
   const buildCompanyProfileContent = (fields) => {
     const container = document.createElement('div');
     container.className = 'portal-cp-content';
-    container.append(buildCpCompanySection(fields), buildCpManagerSection(fields));
+
+    const tabsBar = document.createElement('div');
+    tabsBar.className = 'portal-cp-tabs-bar';
+    const toggle = document.createElement('div');
+    toggle.className = 'portal-dealtype-toggle';
+    toggle.setAttribute('role', 'tablist');
+
+    const generalBtn = document.createElement('button');
+    generalBtn.type = 'button';
+    generalBtn.className = 'portal-dealtype-btn portal-dealtype-btn-active';
+    generalBtn.setAttribute('role', 'tab');
+    generalBtn.setAttribute('aria-selected', 'true');
+    generalBtn.textContent = t('Основная', 'General');
+
+    const docsBtn = document.createElement('button');
+    docsBtn.type = 'button';
+    docsBtn.className = 'portal-dealtype-btn portal-cp-tab-btn';
+    docsBtn.setAttribute('role', 'tab');
+    docsBtn.setAttribute('aria-selected', 'false');
+    const docsLabel = document.createElement('span');
+    docsLabel.textContent = t('Документы', 'Documents');
+    const docsBadge = document.createElement('span');
+    docsBadge.className = 'portal-cp-tab-badge-slot';
+    docsBtn.append(docsLabel, docsBadge);
+    cpTabBadgeEl = docsBadge;
+
+    toggle.append(generalBtn, docsBtn);
+    tabsBar.appendChild(toggle);
+
+    const generalPanel = buildCpGeneralTab(fields);
+    const documentsPanel = buildCpDocumentsTab();
+    documentsPanel.hidden = true;
+
+    const activate = (tab) => {
+      const isGeneral = tab === 'general';
+      generalBtn.classList.toggle('portal-dealtype-btn-active', isGeneral);
+      generalBtn.setAttribute('aria-selected', String(isGeneral));
+      docsBtn.classList.toggle('portal-dealtype-btn-active', !isGeneral);
+      docsBtn.setAttribute('aria-selected', String(!isGeneral));
+      generalPanel.hidden = !isGeneral;
+      documentsPanel.hidden = isGeneral;
+    };
+    generalBtn.addEventListener('click', () => activate('general'));
+    docsBtn.addEventListener('click', () => activate('documents'));
+
+    refreshCpDocsSummary();
+
+    container.append(tabsBar, generalPanel, documentsPanel);
     return container;
   };
 
@@ -3642,6 +3831,8 @@
     if (!companyProfileOverlayEl) return;
     companyProfileOverlayEl.remove();
     companyProfileOverlayEl = null;
+    cpTabBadgeEl = null;
+    cpProgressRefreshFn = null;
     document.removeEventListener('keydown', handleCpEscape);
   };
 
