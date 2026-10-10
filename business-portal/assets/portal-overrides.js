@@ -1733,9 +1733,6 @@
       heading.classList.toggle('portal-doc-step-scaled', step === activeStep && step !== 3);
     });
 
-    const step3Toggle = rowsContainer.querySelector('.portal-doc-show-more');
-    if (step3Toggle) step3Toggle.classList.toggle('portal-doc-row-locked', stepStates[3] === 'locked');
-
     // Before the spotlight measures anything below — it reads
     // heading/row offsets that this call's own gap changes affect, so it
     // needs to run first to avoid the spotlight using a stale (pre-

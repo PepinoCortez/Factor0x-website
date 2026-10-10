@@ -1923,15 +1923,11 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(var(--ov-muted-rgb), 0.8);
 }
 
-/* Same dimmed, inert treatment as a locked step's own rows (see
-   .portal-doc-row-locked above) — this class is reused here (toggled in
-   restructureNewAppDocuments) rather than duplicated, but needs its own
-   rule since the shared one above is scoped to native rows
-   specifically, which this button isn't. */
-.portal-doc-show-more.portal-doc-row-locked {
-  opacity: 0.4;
-  pointer-events: none;
-}
+/* Deliberately NOT dimmed/disabled when Step 3 itself is locked (unlike
+   its own rows, which still stay dimmed/inert) — browsing the full
+   optional-document list is allowed before the invoice is even
+   uploaded, so a visitor can see what's available without having to
+   reach Step 3 first. */
 
 .portal-doc-show-more-icon {
   display: inline-flex;
