@@ -1480,58 +1480,80 @@
   // content. None of this touches childList/subtree (only style
   // properties), so it can't retrigger run() itself — see the circuit
   // breaker note elsewhere in this file for why that distinction matters.
+  // Keep in sync with textarea.border-input's own min-height in
+  // portal-overrides.css — the "base" Комментарий height
+  // updateNewAppCardHeights grows from when Заявка needs to stretch to
+  // match a taller Документы.
+  const NEWAPP_COMMENT_MIN_HEIGHT = 74;
+
   const updateNewAppCardHeights = (form) => {
     const dataCard = form.querySelector('.portal-newapp-data-card');
     const docsCard = form.querySelector('.portal-newapp-docs-card');
     const submitRow = form.querySelector('.portal-newapp-submit-row');
+    const comment = form.querySelector('#description');
     const rowsContainer = docsCard && docsCard.querySelector('.portal-doc-rows-grouped');
     if (!dataCard || !docsCard || !submitRow || !rowsContainer) return;
 
     const step2Heading = rowsContainer.querySelector('.portal-doc-group-step2');
     const step3Heading = rowsContainer.querySelector('.portal-doc-group-step3');
 
+    // Reset every override this function applies, with their own
+    // transitions suspended, *before* measuring — simpler and more
+    // robust than algebraically undoing the previous call's own numbers
+    // (this used to do that; it drifted wrong across a collapsed-
+    // >expanded Step 3 toggle, where the amount of "previous extra" to
+    // undo isn't just a function of this call's own history any more).
+    // Suspending the transition guards against the reset itself being
+    // read mid-animation instead of at its true, final (unconstrained)
+    // value — same class of bug as the Шаг 3 heading-overlap fix
+    // elsewhere in this file, just for a min-height transition here
+    // instead of font-size. Restored right before the real (target)
+    // values go on below, so *that* change still animates.
+    docsCard.style.transition = 'none';
+    if (comment) comment.style.transition = 'none';
+    docsCard.style.minHeight = '';
+    if (step2Heading) step2Heading.style.marginTop = '';
+    if (step3Heading) step3Heading.style.marginTop = '';
+    if (comment) comment.style.minHeight = '';
+    void docsCard.offsetHeight; // force layout before anything below reads it
+
     // Disabled below the single-column breakpoint (docsCard is back in
     // normal flow there, stacked above Заявка — see portal-overrides
-    // .css) — each card just takes its own natural height there.
+    // .css) — each card just takes its own natural height there; the
+    // reset above is all that's needed.
     if (getComputedStyle(docsCard).position !== 'absolute') {
-      docsCard.style.minHeight = '';
-      if (step2Heading) step2Heading.style.marginTop = '';
-      if (step3Heading) step3Heading.style.marginTop = '';
-      submitRow.style.paddingBottom = '';
+      docsCard.style.transition = '';
+      if (comment) comment.style.transition = '';
       return;
     }
 
-    // Undo whatever the *previous* call applied before measuring —
-    // without this, an already-stretched docsCard/submitRow would make
-    // its own current (inflated) height look "natural" on this pass too.
-    const prevGapExtra = Number(rowsContainer.dataset.portalGapExtra) || 0;
-    const prevSubmitExtra = Number(submitRow.dataset.portalHeightExtra) || 0;
-
-    const docsNatural = docsCard.offsetHeight - prevGapExtra * 2;
-    const dataColumnNatural = dataCard.offsetHeight + submitRow.offsetHeight - prevSubmitExtra;
+    const docsNatural = docsCard.offsetHeight;
+    const dataColumnNatural = dataCard.offsetHeight + submitRow.offsetHeight;
     const target = Math.max(docsNatural, dataColumnNatural);
 
     // Docs side: the slack splits evenly between the 2 between-step gaps
     // (Step1->Step2, Step2->Step3 — Step 1's own leading gap, subtitle->
     // Step 1, stays fixed at the base value), clamped to [1x, 2x] the
     // base gap. Whatever's left past that clamp (an unusually tall Step
-    // 3 — e.g. Goods with every optional document shown) just stays
-    // blank at the card's own bottom instead of growing the gap forever.
+    // 3 — e.g. Goods with every optional document shown, or Step 3
+    // expanded via "Показать ещё") just stays blank at the card's own
+    // bottom instead of growing the gap forever.
     const docsDeficit = Math.max(0, target - docsNatural);
     const gapExtra = Math.min(NEWAPP_DOC_STEP_GAP_BASE, docsDeficit / 2);
     const gapPx = NEWAPP_DOC_STEP_GAP_BASE + gapExtra;
     if (step2Heading) step2Heading.style.marginTop = gapPx + 'px';
     if (step3Heading) step3Heading.style.marginTop = gapPx + 'px';
-    rowsContainer.dataset.portalGapExtra = String(gapExtra);
-    docsCard.style.minHeight = target + 'px';
 
-    // Data column side (Документы naturally taller — e.g. Goods with
-    // every optional document shown): extra bottom padding on the submit
-    // row, the fused panel's own last section, extends its bottom edge
-    // to match, without moving the buttons/hint themselves.
+    // Data column side (Документы naturally taller — e.g. Step 3
+    // expanded via "Показать ещё"): grows Комментарий's own height
+    // instead of adding blank space below the buttons — the extra room
+    // actually becomes usable instead of empty padding.
     const dataDeficit = Math.max(0, target - dataColumnNatural);
-    submitRow.style.paddingBottom = (24 + dataDeficit) + 'px';
-    submitRow.dataset.portalHeightExtra = String(dataDeficit);
+
+    docsCard.style.transition = '';
+    if (comment) comment.style.transition = '';
+    docsCard.style.minHeight = target + 'px';
+    if (comment) comment.style.minHeight = (NEWAPP_COMMENT_MIN_HEIGHT + dataDeficit) + 'px';
   };
 
   const prefersReducedMotion = () => {

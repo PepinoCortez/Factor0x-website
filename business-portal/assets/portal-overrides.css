@@ -1703,6 +1703,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
 .portal-new-application-page textarea.border-input {
   min-height: 74px;
   resize: none;
+  transition: min-height 0.35s ease-in-out;
 }
 
 /* Hide the native number-input spinner (Сумма инвойса) — it clashes with
@@ -2406,7 +2407,7 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   }
 
   .portal-new-application-page form > .portal-newapp-docs-card,
-  .portal-new-application-page form > .portal-newapp-submit-row {
+  .portal-new-application-page textarea.border-input {
     transition: opacity 0.2s ease;
   }
 }
@@ -2636,15 +2637,15 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
    the normal 14px field-to-field gap — Заявка's own CardContent
    contributes none of its own any more, see the comment above); 24px
    bottom matches the card's own top inner padding (also p-6), so the
-   panel's padding reads as symmetric top-to-bottom overall — unless
-   updateNewAppCardHeights (portal-overrides.js) grows it further, for
-   the rare case Документы is naturally taller than this whole column;
-   the transition below is what makes that animate instead of jump. */
+   panel's padding reads as symmetric top-to-bottom overall. If
+   Документы is naturally taller than this whole column,
+   updateNewAppCardHeights (portal-overrides.js) grows Комментарий's own
+   height instead of this row's padding — see textarea.border-input's
+   own transition — so there's nothing to animate here. */
 .portal-new-application-page form > .portal-newapp-submit-row {
   order: 2;
   display: flex;
   padding: 21px 24px 24px;
-  transition: padding-bottom 0.35s ease-in-out;
   background:
     linear-gradient(145deg, rgba(var(--ov-tint-rgb), 0.075), rgba(var(--ov-tint-rgb), 0.025)),
     var(--ov-surface-bg);
