@@ -3688,54 +3688,12 @@
     updateCpTabBadge();
   };
 
-  // "Изменить данные" at the bottom of the Основная tab — these fields
-  // come from registration/onboarding and aren't user-editable here (no
-  // backend to write them back to anyway); clicking just reveals why,
-  // with a mailto straight to the same address the landing page itself
-  // uses for contact (see index.html), rather than a fabricated support
-  // address.
-  const buildCpEditDataLink = () => {
-    const wrap = document.createElement('div');
-    wrap.className = 'portal-cp-edit-data';
-
-    const link = document.createElement('button');
-    link.type = 'button';
-    link.className = 'portal-cp-edit-data-link';
-    link.textContent = t('Изменить данные', 'Edit details');
-
-    const notice = document.createElement('div');
-    notice.className = 'portal-cp-edit-data-notice';
-    notice.hidden = true;
-
-    const noticeText = document.createElement('p');
-    noticeText.textContent = t(
-      'Данные компании проходят проверку, поэтому изменить их можно через поддержку.',
-      'Company details are under verification, so changes can only be made through support.'
-    );
-
-    const supportLink = document.createElement('a');
-    supportLink.className = 'portal-cp-subdialog-btn portal-cp-subdialog-btn-primary';
-    supportLink.href = 'mailto:hello@factor0x.com?subject=' +
-      encodeURIComponent(t('Изменение данных компании', 'Company details change request'));
-    supportLink.textContent = t('Написать в поддержку', 'Contact support');
-
-    notice.append(noticeText, supportLink);
-
-    link.addEventListener('click', () => {
-      notice.hidden = !notice.hidden;
-    });
-
-    wrap.append(link, notice);
-    return wrap;
-  };
-
   const buildCpGeneralTab = (fields) => {
     const panel = document.createElement('div');
     panel.className = 'portal-cp-tab-panel';
     panel.append(
       buildCpSection(t('Компания', 'Company'), buildCpFieldsBlock(buildCompanyFieldRows(fields))),
-      buildCpSection(t('Управляющий', 'Manager'), buildCpFieldsBlock(buildManagerFieldRows(fields))),
-      buildCpEditDataLink()
+      buildCpSection(t('Управляющий', 'Manager'), buildCpFieldsBlock(buildManagerFieldRows(fields)))
     );
     return panel;
   };

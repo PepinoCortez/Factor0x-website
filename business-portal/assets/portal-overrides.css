@@ -3889,42 +3889,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(var(--ov-muted-rgb), 0.55);
 }
 
-/* ---- "Изменить данные" link + its revealed notice, bottom of the
-   Основная tab (see buildCpEditDataLink). The support button reuses
-   .portal-cp-subdialog-btn/-btn-primary verbatim — same gold-CTA recipe
-   as the expiry-date dialog's own Confirm button. */
-.portal-cp-edit-data {
-  margin-top: 18px;
-}
-
-.portal-cp-edit-data-link {
-  border: none;
-  background: transparent;
-  padding: 0;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--gold);
-  cursor: pointer;
-}
-
-.portal-cp-edit-data-link:hover {
-  text-decoration: underline;
-}
-
-.portal-cp-edit-data-notice {
-  margin-top: 12px;
-  padding: 14px;
-  border-radius: 10px;
-  background: rgba(var(--ov-tint-rgb), 0.05);
-  border: 1px solid rgba(var(--ov-tint-rgb), 0.12);
-}
-
-.portal-cp-edit-data-notice p {
-  margin: 0 0 12px;
-  font-size: 0.8rem;
-  line-height: 1.4;
-  color: rgba(var(--ov-muted-rgb), 0.75);
-}
 
 /* ---- Document expiry-date prompt (see openCpExpiryDialog) — stacked on
    top of the Company Profile modal itself when uploading a document that
