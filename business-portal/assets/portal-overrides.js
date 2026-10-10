@@ -441,11 +441,17 @@
   // restructureNewAppDocuments). 'delivery_note' carries a different
   // meaning per type (Delivery Note for Goods, Service Completion/Act for
   // Service) instead of spending one of the 7 native slots on a document
-  // that's never shown for the other type at all. The native
-  // 'debt_confirmation' slot has no place in either list and stays hidden
-  // in both. 'delivery_order_do' has no native counterpart — it's built
-  // from scratch by ensureSyntheticDeliveryOrderRow, cloned from an
-  // existing row so it looks identical to one.
+  // that's never shown for the other type at all. 'bill_of_lading' and
+  // 'debt_confirmation' were the two native slots with no place in either
+  // list (bill_of_lading used to be shown, as an actual Bill of Lading,
+  // before an earlier pass removed it) — now repurposed as Statement of
+  // Account / Debtor Company Profile instead of staying hidden, since
+  // relabeling an already-native, still-unused slot is far more robust
+  // than building a third synthetic row from scratch (only
+  // 'delivery_order_do' truly has no native slot left to reuse — see
+  // ensureSyntheticDeliveryOrderRow). Both are optional (step 3) for both
+  // deal types; accept/file-type widening for these two specifically is
+  // handled in restructureNewAppDocuments (search NEWAPP_DOC_ACCEPT).
   const NEWAPP_DOC_CONFIG = {
     goods: [
       { key: 'invoice', step: 1,
@@ -460,6 +466,10 @@
         label: 'Delivery Order', desc: t('Распоряжение на выдачу', 'Delivery order') },
       { key: 'acceptance_certificate', step: 3,
         label: 'Goods Receipt Note', desc: t('Акт приёмки', 'Goods receipt note') },
+      { key: 'bill_of_lading', step: 3,
+        label: 'Statement of Account', desc: t('Последняя выписка по дебитору', 'Recent statement with the debtor') },
+      { key: 'debt_confirmation', step: 3,
+        label: 'Debtor Company Profile', desc: t('Информация о компании покупателя', "Overview of the buyer's business") },
     ],
     service: [
       { key: 'invoice', step: 1,
@@ -470,6 +480,10 @@
         label: 'Contract', desc: t('Договор с дебитором', 'Agreement with the debtor') },
       { key: 'purchase_order', step: 3,
         label: 'Purchase Order', desc: t('Заказ на закупку', 'Purchase order') },
+      { key: 'bill_of_lading', step: 3,
+        label: 'Statement of Account', desc: t('Последняя выписка по дебитору', 'Recent statement with the debtor') },
+      { key: 'debt_confirmation', step: 3,
+        label: 'Debtor Company Profile', desc: t('Информация о компании покупателя', "Overview of the buyer's business") },
     ],
   };
 
@@ -484,7 +498,21 @@
     delivery_order_do: 12,
     acceptance_certificate: 13,
     bill_of_lading: 14,
-    debt_confirmation: 99,
+    debt_confirmation: 15,
+  };
+
+  // Accept-attribute widening for the two repurposed slots (see the
+  // comment above NEWAPP_DOC_CONFIG) — the native input for every
+  // document slot only accepts PDF; Statement of Account/Debtor Company
+  // Profile need PDF+JPG+PNG (Statement of Account also XLSX/CSV, since
+  // it's often exported straight from an accounting system). Re-applied
+  // every tick in restructureNewAppDocuments rather than set once, since
+  // a native re-render of the row would otherwise reset the attribute
+  // back to the bundle's own default.
+  const NEWAPP_DOC_ACCEPT = {
+    bill_of_lading: '.pdf,.jpg,.jpeg,.png,.xlsx,.xls,.csv,application/pdf,image/jpeg,image/png,' +
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv',
+    debt_confirmation: '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png',
   };
 
   const isDocUploaded = (key) => {
@@ -1579,6 +1607,30 @@
 
       const labelEl = document.querySelector('[data-testid="text-doc-label-' + key + '"]');
       const descSpan = setDocRowLabelContent(labelEl, entry.label, entry.desc);
+
+      // Statement of Account's own "i" note — how to actually get fast
+      // approval on it — sits right after the name, before the grey
+      // description (same shared tooltip as every other explainer in
+      // this file; see buildDealInfoIcon). Guarded on the icon's own
+      // trigger class so this only ever runs once per row.
+      if (key === 'bill_of_lading' && labelEl && !labelEl.querySelector('.portal-tip-trigger')) {
+        const infoIcon = buildDealInfoIcon(t(
+          'Загрузите последнюю выписку по расчётам с этим покупателем. Чтобы ускорить одобрение, отправьте выписку покупателю с просьбой подтвердить баланс, указав verification@factor0x.com в копии.',
+          'Upload your latest statement of account with this buyer. For faster approval, send the statement to your buyer asking them to confirm the balance, with verification@factor0x.com in CC.'
+        ));
+        infoIcon.classList.add('portal-doc-info-icon');
+        if (descSpan) labelEl.insertBefore(infoIcon, descSpan);
+        else labelEl.appendChild(infoIcon);
+      }
+
+      // Statement of Account/Debtor Company Profile accept a wider set
+      // of formats than the native default (see NEWAPP_DOC_ACCEPT) — a
+      // native re-render of this row would otherwise reset the
+      // attribute, so this reapplies every tick rather than once.
+      if (NEWAPP_DOC_ACCEPT[key]) {
+        const fileInput = row.querySelector('input[type="file"]');
+        if (fileInput) fileInput.setAttribute('accept', NEWAPP_DOC_ACCEPT[key]);
+      }
 
       if (key !== 'invoice') {
         // Every document but the invoice itself waits for the invoice —

@@ -2175,6 +2175,18 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(var(--ov-muted-rgb), 0.6);
 }
 
+/* Statement of Account's own "i" note (see restructureNewAppDocuments
+   in portal-overrides.js) — sits between the name and the grey
+   description, so it needs margin on both sides rather than just the
+   left margin .portal-doc-desc uses for its own, simpler "one thing
+   after the name" case. vertical-align keeps the small round icon
+   sitting on the name's own text baseline instead of its default
+   inline-block bottom alignment. */
+.portal-doc-info-icon {
+  margin: 0 6px;
+  vertical-align: middle;
+}
+
 /* Once uploaded (see ensureDocUploadedState), the description above holds
    the file name instead — truncated so a long name can't blow out the
    row's height or width. inline-block (rather than changing the label's
