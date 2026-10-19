@@ -332,39 +332,73 @@ const revealObserver = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-// ── TVL INFO ────────────────────────────────
-(function initTvlInfo() {
-  const items = Array.from(document.querySelectorAll('.tvl-info-btn'))
-    .map(button => ({
-      button,
-      info: button.closest('.tvl-strip')?.querySelector('.tvl-info')
-    }))
-    .filter(item => item.info);
-  if (!items.length) return;
+// ── INFO TOOLTIPS (target return / risk indicator) ──
+// One shared panel, positioned via getBoundingClientRect on open rather
+// than CSS position:absolute inside the trigger — the invoice cards and
+// the details-modal facts panel both need overflow:hidden for their own
+// rounded corners, which would otherwise clip an absolutely-positioned
+// tooltip the moment it grew past the card's edge. Delegated click
+// handling (rather than wiring each button on page load) so this also
+// covers the details-modal's buttons, which don't exist until the modal's
+// content is built on first open.
+(function initInfoTips() {
+  const triggers = document.querySelectorAll('.info-tip-btn');
+  if (!triggers.length && !document.getElementById('detailsModal')) return;
 
-  function setOpen(target, isOpen) {
-    items.forEach(item => {
-      const shouldOpen = item === target && isOpen;
-      item.button.setAttribute('aria-expanded', String(shouldOpen));
-      item.info.classList.toggle('open', shouldOpen);
-      item.info.setAttribute('aria-hidden', String(!shouldOpen));
-    });
+  const panel = document.createElement('div');
+  panel.className = 'info-tip-panel';
+  panel.setAttribute('role', 'tooltip');
+  document.body.appendChild(panel);
+
+  let activeBtn = null;
+
+  function closeTip() {
+    if (!activeBtn) return;
+    panel.classList.remove('open');
+    activeBtn.setAttribute('aria-expanded', 'false');
+    activeBtn = null;
   }
 
-  items.forEach(item => {
-    item.button.addEventListener('click', event => {
+  function openTip(btn) {
+    const textEl = btn.querySelector('.info-tip-text');
+    if (!textEl) return;
+    panel.textContent = textEl.textContent.trim();
+    panel.classList.add('open');
+    const rect = btn.getBoundingClientRect();
+    const panelRect = panel.getBoundingClientRect();
+    let left = rect.left + rect.width / 2 - panelRect.width / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - panelRect.width - 8));
+    let top = rect.bottom + 8;
+    if (top + panelRect.height > window.innerHeight - 8) {
+      top = rect.top - panelRect.height - 8;
+    }
+    panel.style.left = `${left}px`;
+    panel.style.top = `${top}px`;
+    btn.setAttribute('aria-expanded', 'true');
+    activeBtn = btn;
+  }
+
+  document.addEventListener('click', event => {
+    const btn = event.target.closest('.info-tip-btn');
+    if (btn) {
       event.stopPropagation();
-      setOpen(item, item.button.getAttribute('aria-expanded') !== 'true');
-    });
-    item.info.addEventListener('click', event => {
-      event.stopPropagation();
-    });
+      if (activeBtn === btn) {
+        closeTip();
+      } else {
+        closeTip();
+        openTip(btn);
+      }
+      return;
+    }
+    if (!event.target.closest('.info-tip-panel')) closeTip();
   });
 
-  document.addEventListener('click', () => setOpen(null, false));
   document.addEventListener('keydown', event => {
-    if (event.key === 'Escape') setOpen(null, false);
+    if (event.key === 'Escape') closeTip();
   });
+
+  window.addEventListener('scroll', closeTip, { passive: true });
+  window.addEventListener('resize', closeTip);
 })();
 
 // ── QUICK FLOW EXPANDER ─────────────────────
@@ -547,6 +581,120 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
       accountPasswordInput.focus();
     }
   });
+
+  // ── REGISTER INTEREST ──────────────────────
+  // This site has no backend of any kind (confirmed: every other "form"
+  // here, including initApplyForm below, only validates client-side and
+  // goes nowhere). Submissions are recorded in the visitor's own
+  // localStorage with a timestamp and the exact consent text they saw —
+  // there is nowhere else to send them from a static site. See the
+  // conversation notes for the operational gap this leaves (no lead ever
+  // reaches Factor0x unless a real backend is added later).
+  (function initInterestForm() {
+    const interestModal = document.getElementById('interestModal');
+    if (!interestModal) return;
+
+    const closeBtn = interestModal.querySelector('.admin-modal-close');
+    const form = document.getElementById('interestForm');
+    const fields = document.getElementById('interestFormFields');
+    const errorEl = document.getElementById('interestFormError');
+    const successEl = document.getElementById('interestFormSuccess');
+    const roleSelect = document.getElementById('interestRoleSelect');
+    const investorRow = document.getElementById('investorConfirmRow');
+    const investorCheckbox = document.getElementById('investorConfirmInput');
+    const privacyCheckbox = document.getElementById('privacyConsentInput');
+    const privacyLabelText = () => privacyCheckbox?.closest('label')?.querySelector('span')?.textContent.trim() || '';
+    const investorLabelText = () => investorRow?.querySelector('span')?.textContent.trim() || '';
+
+    function openInterestModal() {
+      interestModal.classList.add('open');
+      interestModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      errorEl?.classList.remove('visible');
+      fields.hidden = false;
+      successEl.hidden = true;
+      form.reset();
+      investorRow.hidden = true;
+      window.setTimeout(() => form.querySelector('input[name="full_name"]')?.focus(), 100);
+    }
+
+    function closeInterestModal() {
+      interestModal.classList.remove('open');
+      interestModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('[data-open-interest]').forEach(button => {
+      button.addEventListener('click', event => {
+        event.preventDefault();
+        openInterestModal();
+      });
+    });
+    closeBtn?.addEventListener('click', closeInterestModal);
+    interestModal.addEventListener('click', event => {
+      if (event.target === interestModal) closeInterestModal();
+    });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && interestModal.classList.contains('open')) closeInterestModal();
+    });
+
+    roleSelect?.addEventListener('change', () => {
+      const isInvestor = roleSelect.value === 'investor';
+      investorRow.hidden = !isInvestor;
+      if (!isInvestor) investorCheckbox.checked = false;
+    });
+
+    function saveInterestSubmission(record) {
+      try {
+        const key = 'factor0xInterestSubmissions';
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        existing.push(record);
+        localStorage.setItem(key, JSON.stringify(existing));
+      } catch (err) {
+        // localStorage unavailable (private browsing, quota, etc.) — the
+        // visitor still sees the success message; there is no backend to
+        // fall back to on this static site.
+      }
+    }
+
+    form?.addEventListener('submit', event => {
+      event.preventDefault();
+      const fullName = form.querySelector('input[name="full_name"]').value.trim();
+      const workEmail = form.querySelector('input[name="work_email"]').value.trim();
+      const company = form.querySelector('input[name="company"]').value.trim();
+      const country = form.querySelector('input[name="country"]').value.trim();
+      const role = roleSelect.value;
+      const isInvestor = role === 'investor';
+
+      const valid =
+        fullName !== '' &&
+        workEmail !== '' &&
+        country !== '' &&
+        role !== '' &&
+        privacyCheckbox.checked &&
+        (!isInvestor || investorCheckbox.checked);
+
+      if (!valid) {
+        errorEl?.classList.add('visible');
+        return;
+      }
+      errorEl?.classList.remove('visible');
+
+      saveInterestSubmission({
+        timestamp: new Date().toISOString(),
+        fullName,
+        workEmail,
+        company,
+        country,
+        role,
+        privacyConsentText: privacyLabelText(),
+        investorConfirmText: isInvestor ? investorLabelText() : null
+      });
+
+      fields.hidden = true;
+      successEl.hidden = false;
+    });
+  })();
 
   function initApplyForm(applyForm) {
     applyForm.addEventListener('submit', event => {
@@ -1039,10 +1187,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 
 // ── WEB3 MARKETPLACE MICRO-INTERACTIONS ─────
 (function initMarketplaceActions() {
-  const contributionButtons = document.querySelectorAll('.invoice-actions button:first-child');
-  const viewMoreButtons = document.querySelectorAll('.view-more-btn');
-  const invoiceListLinks = document.querySelectorAll('[data-open-invoice-list]');
-  const moreInvoices = document.getElementById('moreInvoices');
   const languageSelect = document.querySelector('.language-select');
   const languageTrigger = document.querySelector('.language-trigger');
   const languageOptions = document.querySelectorAll('.language-menu button');
@@ -1058,288 +1202,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     : supportedLangs.includes(storedLang)
       ? storedLang
       : 'en';
-
-  contributionButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      contributionButtons.forEach(item => {
-        if (item !== button) item.textContent = 'Contribute';
-      });
-      button.textContent = 'Selected';
-    });
-  });
-
-  document.querySelectorAll('.table-contribute-btn').forEach(button => {
-    button.addEventListener('click', () => {
-      document.querySelectorAll('.table-contribute-btn').forEach(item => {
-        if (item !== button) item.textContent = 'Contribute';
-      });
-      button.textContent = 'Selected';
-    });
-  });
-
-  if (viewMoreButtons.length && moreInvoices) {
-    const invoiceHero = moreInvoices.closest('.invoice-hero');
-    const offersTitle = invoiceHero?.querySelector('.offers-title');
-    const setInvoiceTableOpen = isOpen => {
-      invoiceHero?.classList.toggle('show-invoice-table', isOpen);
-      moreInvoices.setAttribute('aria-hidden', String(!isOpen));
-      const buttonText = isOpen
-        ? currentLang === 'en' ? 'View less' : 'Скрыть'
-        : currentLang === 'en' ? 'View More' : 'Смотреть еще';
-      viewMoreButtons.forEach(button => {
-        button.setAttribute('aria-expanded', String(isOpen));
-        button.textContent = buttonText;
-      });
-      if (offersTitle) {
-        offersTitle.textContent = isOpen
-          ? currentLang === 'en' ? 'Offer list' : 'Список предложений'
-          : currentLang === 'en' ? 'Top offers' : 'ТОП сделки';
-        offersTitle.classList.toggle('plain', isOpen);
-      }
-    };
-
-    const rotateHint = document.getElementById('rotateHint');
-    const landscapeModalClose = document.getElementById('landscapeModalClose');
-    const landscapeModalTitle = moreInvoices?.querySelector('.landscape-modal-title');
-
-    function isPortraitMobile() {
-      return window.innerWidth <= 960 && window.matchMedia('(orientation: portrait)').matches;
-    }
-
-    function showRotateHint() {
-      if (!rotateHint) return;
-      const isEn = currentLang === 'en';
-      const textEl = rotateHint.querySelector('.rotate-hint-text');
-      const subEl  = rotateHint.querySelector('.rotate-hint-sub');
-      if (textEl) textEl.textContent = isEn ? 'Rotate your phone to landscape' : 'Переверните телефон горизонтально';
-      if (subEl)  subEl.textContent  = isEn ? 'The deals table fits better in landscape mode' : 'Таблица сделок лучше смотрится в альбомном режиме';
-      rotateHint.removeAttribute('hidden');
-      requestAnimationFrame(() => {
-        rotateHint.classList.add('visible');
-        rotateHint.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    }
-
-    function hideRotateHint() {
-      if (!rotateHint || rotateHint.hasAttribute('hidden')) return;
-      rotateHint.classList.remove('visible');
-      rotateHint.classList.add('hiding');
-      setTimeout(() => {
-        rotateHint.classList.remove('hiding');
-        rotateHint.setAttribute('hidden', '');
-      }, 220);
-    }
-
-    let _landscapeOverlay = null;
-
-    function openLandscapeModal() {
-      if (!moreInvoices || _landscapeOverlay) return;
-      if (landscapeModalTitle) {
-        landscapeModalTitle.textContent = currentLang === 'en' ? 'Offer list' : 'Список предложений';
-      }
-      const navEl = document.getElementById('nav');
-      const navH = navEl ? navEl.offsetHeight : 0;
-
-      // Create a brand-new overlay div with no inherited styles
-      _landscapeOverlay = document.createElement('div');
-      _landscapeOverlay.style.cssText =
-        'position:fixed;left:0;right:0;bottom:0;' +
-        'top:' + navH + 'px;' +
-        'width:100%;max-width:100%;margin:0;padding:0;' +
-        'z-index:600;overflow-y:auto;overflow-x:hidden;' +
-        'background:#ffffff;box-sizing:border-box;' +
-        '-webkit-overflow-scrolling:touch;overscroll-behavior:contain;';
-
-      // Move the modal contents into the fresh overlay
-      while (moreInvoices.firstChild) {
-        _landscapeOverlay.appendChild(moreInvoices.firstChild);
-      }
-      document.body.appendChild(_landscapeOverlay);
-
-      document.body.classList.add('landscape-modal-open');
-      document.body.style.overflow = 'hidden';
-      _landscapeOverlay.scrollTop = 0;
-    }
-
-    function closeLandscapeModal() {
-      document.body.classList.remove('landscape-modal-open');
-      document.body.style.overflow = '';
-      if (_landscapeOverlay) {
-        // Move contents back into moreInvoices
-        while (_landscapeOverlay.firstChild) {
-          moreInvoices.appendChild(_landscapeOverlay.firstChild);
-        }
-        _landscapeOverlay.remove();
-        _landscapeOverlay = null;
-      }
-      // Scroll back to the top offers section
-      const invoicesSection = document.getElementById('invoices');
-      if (invoicesSection) {
-        invoicesSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
-
-    if (landscapeModalClose) {
-      landscapeModalClose.addEventListener('click', () => {
-        closeLandscapeModal();
-        hideRotateHint();
-      });
-    }
-
-    function handleOrientationChange() {
-      const isLandscape = window.innerWidth > window.innerHeight;
-      const isMobile = Math.min(window.innerWidth, window.innerHeight) <= 600;
-      const hintVisible = rotateHint && !rotateHint.hasAttribute('hidden');
-      if (isLandscape && isMobile && hintVisible) {
-        hideRotateHint();
-        openLandscapeModal();
-      } else if (!isLandscape && document.body.classList.contains('landscape-modal-open')) {
-        closeLandscapeModal();
-      }
-    }
-
-    window.addEventListener('orientationchange', () => setTimeout(handleOrientationChange, 300));
-    if (screen.orientation) {
-      screen.orientation.addEventListener('change', () => setTimeout(handleOrientationChange, 300));
-    }
-
-    viewMoreButtons.forEach(viewMoreButton => {
-      viewMoreButton.addEventListener('click', () => {
-        if (isPortraitMobile()) {
-          if (rotateHint && !rotateHint.hasAttribute('hidden')) {
-            hideRotateHint();
-          } else {
-            showRotateHint();
-          }
-        } else {
-          hideRotateHint();
-          setInvoiceTableOpen(!invoiceHero?.classList.contains('show-invoice-table'));
-        }
-      });
-    });
-
-    invoiceListLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        if (isPortraitMobile()) {
-          showRotateHint();
-        } else {
-          setInvoiceTableOpen(true);
-          requestAnimationFrame(() => {
-            moreInvoices.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          });
-        }
-      });
-    });
-  }
-
-  document.querySelectorAll('.more-invoices').forEach(invoiceList => {
-    const tableBody = invoiceList.querySelector('.invoice-table tbody');
-    const rows = Array.from(invoiceList.querySelectorAll('.invoice-table tbody tr'));
-    const sortButtons = Array.from(invoiceList.querySelectorAll('.invoice-sort'));
-    const pageSizeButtons = Array.from(invoiceList.querySelectorAll('[data-page-size]'));
-    const prev = invoiceList.querySelector('.invoice-page-prev');
-    const next = invoiceList.querySelector('.invoice-page-next');
-    const status = invoiceList.querySelector('.invoice-page-status');
-    const riskOrder = {
-      'Low Risk': 1,
-      'Medium Risk': 2,
-      'High Risk': 3,
-    };
-    let activeRows = [...rows];
-    let pageSize = 10;
-    let page = 0;
-    let sortState = {
-      key: null,
-      direction: 'desc',
-    };
-
-    if (!tableBody || !rows.length || !prev || !next || !status) return;
-
-    function parseTableValue(row, key) {
-      if (key === 'amount') return Number(row.dataset.amount?.replace(/[^\d.]/g, '')) || 0;
-      if (key === 'apr') return Number(row.dataset.apr?.replace(/[^\d.]/g, '')) || 0;
-      if (key === 'dueDate') return Number(row.dataset.dueDate?.replace(/[^\d.]/g, '')) || 0;
-      if (key === 'filled') return Number(row.children[4]?.textContent.replace(/[^\d.]/g, '')) || 0;
-      if (key === 'risk') return riskOrder[row.dataset.risk] || 0;
-      if (key === 'minContribution') return Number(row.dataset.minContribution?.replace(/[^\d.]/g, '')) || 0;
-      return 0;
-    }
-
-    function applySort() {
-      if (!sortState.key) {
-        activeRows = [...rows];
-      } else {
-        const direction = sortState.direction === 'asc' ? 1 : -1;
-        activeRows = [...activeRows].sort((a, b) => {
-          const diff = parseTableValue(a, sortState.key) - parseTableValue(b, sortState.key);
-          return diff * direction;
-        });
-      }
-
-      activeRows.forEach(row => tableBody.appendChild(row));
-    }
-
-    function renderInvoicePage() {
-      const size = pageSize === 'all' ? activeRows.length : pageSize;
-      const pages = pageSize === 'all' ? 1 : Math.max(Math.ceil(activeRows.length / size), 1);
-      page = Math.min(Math.max(page, 0), pages - 1);
-
-      activeRows.forEach((row, index) => {
-        const isVisible = pageSize === 'all' || (index >= page * size && index < (page + 1) * size);
-        row.hidden = !isVisible;
-      });
-
-      status.textContent = `Page ${page + 1} / ${pages}`;
-      prev.disabled = page === 0;
-      next.disabled = page >= pages - 1;
-    }
-
-    prev.addEventListener('click', () => {
-      page -= 1;
-      renderInvoicePage();
-    });
-
-    next.addEventListener('click', () => {
-      page += 1;
-      renderInvoicePage();
-    });
-
-    pageSizeButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        const value = button.dataset.pageSize;
-        pageSize = value === 'all' ? 'all' : Number(value);
-        page = 0;
-        pageSizeButtons.forEach(item => item.classList.toggle('active', item === button));
-        renderInvoicePage();
-      });
-    });
-
-    sortButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        const key = button.dataset.sort;
-        if (!key) return;
-
-        if (sortState.key === key) {
-          sortState.direction = sortState.direction === 'desc' ? 'asc' : 'desc';
-        } else {
-          sortState = { key, direction: 'desc' };
-        }
-
-        sortButtons.forEach(item => {
-          const isActive = item === button;
-          item.classList.toggle('active', isActive);
-          item.classList.toggle('asc', isActive && sortState.direction === 'asc');
-        });
-
-        page = 0;
-        applySort();
-        renderInvoicePage();
-      });
-    });
-
-    applySort();
-    renderInvoicePage();
-  });
 
   if (networkSelect && networkTrigger && networkTriggerIcon) {
     networkTrigger.addEventListener('click', event => {
@@ -1373,7 +1235,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       text: {
         'О нас': 'About',
         'Контакты': 'Contacts',
-        'TVL —капитал, размещённый в активных invoice financing deals.': 'TVL is capital allocated to active invoice financing deals.',
         'Личный кабинет': 'My Account',
         'Капитал для бизнеса': 'Capital for business',
         'Доход для инвестора': 'Yield for investors',
@@ -1383,13 +1244,43 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Заявка': 'Apply',
         'Подробнее': 'Flow',
         'Инвестировать': 'Earn',
-        'Краткосрочное финансировании реального бизнеса.': 'Short-term financing for real businesses.',
+        'Краткосрочный оборотный капитал для B2B-бизнеса под проверенные инвойсы. Запуск с лицензированными финансовыми партнёрами в ОАЭ.': 'Short-term working capital for B2B businesses against verified invoices. Launching with licensed financial partners in the UAE.',
         'Проверенные': 'Finance verified',
         'B2B инвойсы': 'B2B invoices',
-        'ТОП сделки': 'Top offers',
-        'Смотреть еще': 'View More',
-        'Скрыть': 'View less',
-        'Список предложений': 'Offer list',
+        'Как выглядит сделка': 'How a deal looks',
+        'Только иллюстративные примеры. Это не действующие предложения, компании вымышленные.': 'Illustrative examples only. These are not live offers, and the companies are fictional.',
+        'Как это работает': 'How it works',
+        'Пример': 'Example',
+        'Сумма инвойса': 'Invoice amount',
+        'Целевая доходность, годовых': 'Target return (p.a.)',
+        'Срок': 'Tenor',
+        'Индикатор риска': 'Risk indicator',
+        '58 дней': '58 days',
+        '40 дней': '40 days',
+        '24 дня': '24 days',
+        'Индикатор на основе данных, сформированный инструментами верификации и скоринга Factor0x. Это не кредитный рейтинг и не инвестиционная рекомендация. Кредитное решение принимает лицензированный финансовый партнёр.': 'A data-based indicator generated by Factor0x’s verification and scoring tools. It is not a credit rating or an investment recommendation. The credit decision is made by a licensed financial partner.',
+        'Только ориентировочная цель. Доходность не гарантирована и зависит от оплаты инвойса. Капитал под риском.': 'An indicative target only. Returns are not guaranteed and depend on invoice payment. Capital is at risk.',
+        'Оставить заявку': 'Register interest',
+        'Подробнее о примере': 'See example details',
+        'Этот пример показывает, как инвойс будет представлен подходящим инвесторам после запуска сделок: сумма инвойса, срок до оплаты покупателем, ориентировочная целевая доходность и индикатор риска Factor0x. Перед финансированием каждый инвойс проверяется, а покупателя уведомляют, что оплату нужно направить на счёт финансового партнёра.': 'This example shows how an invoice will be presented to eligible investors once deals go live: the invoice amount, the time until the buyer’s payment is due, the indicative target return, and the Factor0x risk indicator. Before financing, every invoice is verified, and the buyer is notified to direct payment to the financial partner’s account.',
+        'Оставьте заявку': 'Register your interest',
+        'Мы готовим первые сделки с лицензированными партнёрами. Оставьте свои данные, и мы свяжемся с вами при запуске.': 'We’re preparing our first deals with licensed partners. Leave your details and we’ll reach out when we launch.',
+        'Полное имя': 'Full name',
+        'Рабочий email': 'Work email',
+        'Компания (необязательно)': 'Company (optional)',
+        'Страна': 'Country',
+        'Я —': 'I am a',
+        'Выберите': 'Select',
+        'Компания, которой нужно финансирование': 'A business seeking financing',
+        'Профессиональный или институциональный инвестор': 'A professional or institutional investor',
+        'Партнёр': 'A partner',
+        'Я подтверждаю, что являюсь профессиональным или институциональным инвестором, и понимаю, что любые будущие возможности будут доступны только подходящим инвесторам через регулируемых партнёров и на основании отдельной документации.': 'I confirm that I am a professional or institutional investor, and I understand that any future opportunities will be available only to eligible investors through regulated partners and on the basis of separate documentation.',
+        'Я согласен на обработку моих персональных данных в соответствии с': 'I agree to the processing of my personal data in accordance with the',
+        'Политикой конфиденциальности': 'Privacy Policy',
+        'Заполните обязательные поля': 'Please fill in the required fields',
+        'Отправить': 'Submit',
+        'Спасибо. Мы свяжемся с вами.': 'Thank you. We’ll be in touch.',
+        'Factor0x — технологическая платформа, оператор — FactorZeroX Portal L.L.C (Дубай, лицензия № 1629834). Factor0x не оказывает финансовых, инвестиционных или банковских услуг, не принимает депозиты и не хранит средства клиентов. Сделки выше — вымышленные примеры исключительно для иллюстрации и не являются предложением или призывом инвестировать. Любые будущие инвестиционные возможности будут доступны только подходящим профессиональным или институциональным инвесторам через лицензированных партнёров и на основании отдельных документов о размещении. Целевая доходность ориентировочная и не гарантирована. Инвестиции связаны с риском, включая потерю части или всего капитала. Инвестиции не являются банковскими депозитами и не покрываются системой страхования вкладов. Factor0x может получать вознаграждение за свои технологические услуги. Ничто на этом сайте не является финансовой рекомендацией.': 'Factor0x is a technology platform; the operator is FactorZeroX Portal L.L.C (Dubai, license No. 1629834). Factor0x does not provide financial, investment, or banking services, does not accept deposits, and does not hold client funds. The deals shown above are fictional examples for illustration only and do not constitute an offer or solicitation to invest. Any future investment opportunities will be available only to eligible professional or institutional investors through licensed partners and on the basis of separate placement documents. The target return is indicative and not guaranteed. Investments carry risk, including the loss of part or all of the invested capital. Investments are not bank deposits and are not covered by any deposit insurance scheme. Factor0x may receive compensation for its technology services. Nothing on this site constitutes financial advice.',
         'ОАЭ · Дубай': 'UAE · Dubai',
         'Крипто-ликвидность': 'Crypto Liquidity',
         'Активы реального сектора': 'Real World Assets',
@@ -1502,7 +1393,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Открыть меню': 'Open menu',
         'Мобильная навигация': 'Mobile navigation',
         'Открыть список инвойсов': 'Open invoice list',
-        'Что такое TVL': 'What is TVL',
         'Позиция инвойса': 'Invoice position',
         'Позиция этапа': 'Step position',
         'Закрыть': 'Close',
@@ -1513,8 +1403,8 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Маркус Беннетт': 'Marcus Bennett',
         'Адриан Моро': 'Adrian Moreau',
         'Майя Рейнольдс': 'Maya Reynolds',
-        'Переверните телефон горизонтально': 'Rotate your phone to landscape',
-        'Таблица сделок лучше смотрится в альбомном режиме': 'The deals table fits better in landscape mode'
+        'Что означает индикатор риска': 'What the risk indicator means',
+        'Что такое целевая доходность': 'What the target return means'
       }
     };
 
@@ -1551,6 +1441,40 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         link.setAttribute('href', `${url.pathname.split('/').pop()}${url.search}`);
       });
     }
+
+    // Content built dynamically after page load (the details-modal facts,
+    // filled in on first click rather than present at initial parse) never
+    // gets walked by the initial setLanguage(currentLang) call below, and
+    // only catches up on the NEXT manual language toggle. Exposed on
+    // window so other IIFEs (initDetailsModal) can translate their own
+    // freshly-inserted subtree immediately, using this closure's live
+    // currentLang/translations/ruAttributeValues rather than duplicating
+    // them.
+    function translateSubtree(root) {
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          const parent = node.parentElement;
+          if (!parent || ['SCRIPT', 'STYLE', 'SVG', 'PATH'].includes(parent.tagName)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          return node.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        }
+      });
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(node => translateNodeText(node, currentLang));
+
+      root.querySelectorAll('[aria-label]').forEach(element => {
+        if (!ruAttributeValues.has(element)) {
+          ruAttributeValues.set(element, element.getAttribute('aria-label'));
+        }
+        const original = ruAttributeValues.get(element);
+        element.setAttribute('aria-label', currentLang === 'en' && translations.attributes[original]
+          ? translations.attributes[original]
+          : original);
+      });
+    }
+    window.factor0xTranslateSubtree = translateSubtree;
 
     function setLanguage(lang) {
       currentLang = lang;
@@ -1620,9 +1544,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
   const card = document.getElementById('modalCard');
   const detailsModal = modal.querySelector('.details-modal');
   const title = document.getElementById('modalCompanyName');
-  const description = document.getElementById('modalDescription');
   const facts = document.getElementById('modalFacts');
-  const metrics = document.getElementById('modalMetrics');
 
   function updateScrollFades() {
     const atTop = card.scrollTop <= 2;
@@ -1643,345 +1565,55 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
     card.removeEventListener('scroll', updateScrollFades);
   }
 
+  // Purely illustrative facts — no funding progress, contributors or
+  // calculator here (see the Register Interest modal for the only
+  // interactive next step this section offers).
   const companyDetails = {
     gulf: {
       cardClass: 'modal-card modal-card-photo modal-card-gulf',
       name: 'Gulf Trade Logistics',
-      description: 'UAE-based logistics operator financing verified cross-border receivables from a Singapore trade counterparty. The invoice is backed by shipping documents, KYB review, and obligor confirmation before funding.',
-      investment: {
-        amount: '$420,000',
-        apr: '6.2%',
-        dueDays: '58 days',
-        dueDate: 'Jul 18, 2026',
-        fill: '64.0%',
-        risk: 'Low Risk',
-        riskNote: 'Backed by shipping docs, KYB review & obligor confirmation',
-        contributors: 47,
-        minContribution: '$1,000'
-      },
-      facts: [
-        ['Borrower', 'Gulf Trade Logistics LLC'],
-        ['Obligor', 'Singapore Distribution Pte. Ltd.'],
-        ['Sector', 'Trade Logistics'],
-        ['Risk Level', 'Low Risk'],
-        ['Jurisdiction', 'Dubai, UAE'],
-        ['Invoice Amount', '$420,000'],
-        ['Due Date', '2026/07/18'],
-        ['APR', '6.2% annual']
-      ]
+      amount: '$420,000',
+      targetReturn: '6.2%',
+      tenorKey: '58 дней',
+      riskTier: 'A'
     },
     asia: {
       cardClass: 'modal-card modal-card-photo modal-card-asia',
       name: 'Asia Components Ltd',
-      description: 'Electronics components supplier using invoice financing to bridge working capital between shipment and payment settlement. Medium-risk profile reflects sector cyclicality and a shorter counterparty history.',
-      investment: {
-        amount: '$315,000',
-        apr: '9.4%',
-        dueDays: '40 days',
-        dueDate: 'Jun 30, 2026',
-        fill: '38.5%',
-        risk: 'Medium Risk',
-        riskNote: 'Backed by shipping docs, KYB review & obligor confirmation',
-        contributors: 22,
-        minContribution: '$500'
-      },
-      facts: [
-        ['Borrower', 'Asia Components Ltd'],
-        ['Obligor', 'GCC Manufacturing Group'],
-        ['Sector', 'Electronics'],
-        ['Risk Level', 'Medium Risk'],
-        ['Jurisdiction', 'Singapore'],
-        ['Invoice Amount', '$315,000'],
-        ['Due Date', '2026/06/30'],
-        ['APR', '9.4% annual']
-      ]
+      amount: '$315,000',
+      targetReturn: '9.4%',
+      tenorKey: '40 дней',
+      riskTier: 'B'
     },
     desert: {
       cardClass: 'modal-card modal-card-photo modal-card-desert',
       name: 'Desert Cloud Services',
-      description: 'Recurring SaaS receivable from an enterprise services contract. The invoice has a low-risk profile due to confirmed service delivery, repeat payment history, and a diversified obligor base.',
-      investment: {
-        amount: '$250,000',
-        apr: '5.4%',
-        dueDays: '24 days',
-        dueDate: 'Jun 14, 2026',
-        fill: '81.0%',
-        risk: 'Low Risk',
-        riskNote: 'Confirmed SaaS delivery, repeat payment history & diversified obligors',
-        contributors: 83,
-        minContribution: '$250'
-      },
-      facts: [
-        ['Borrower', 'Desert Cloud Services FZCO'],
-        ['Obligor', 'Regional Enterprise Client'],
-        ['Sector', 'SaaS Contract'],
-        ['Risk Level', 'Low Risk'],
-        ['Jurisdiction', 'UAE Free Zone'],
-        ['Invoice Amount', '$250,000'],
-        ['Due Date', '2026/06/14'],
-        ['APR', '5.4% annual']
-      ]
+      amount: '$250,000',
+      targetReturn: '5.4%',
+      tenorKey: '24 дня',
+      riskTier: 'A'
     }
   };
 
-  function parseNumber(value) {
-    return Number(String(value || '').replace(/[^0-9.]/g, '')) || 0;
+  const INFO_SVG = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg>';
+  const RISK_TIP = 'Индикатор на основе данных, сформированный инструментами верификации и скоринга Factor0x. Это не кредитный рейтинг и не инвестиционная рекомендация. Кредитное решение принимает лицензированный финансовый партнёр.';
+  const RETURN_TIP = 'Только ориентировочная цель. Доходность не гарантирована и зависит от оплаты инвойса. Капитал под риском.';
+
+  function factRow(labelHtml, valueText) {
+    return `<div class="fact-row"><span class="fact-label">${labelHtml}</span><span class="fact-value">${valueText}</span></div>`;
   }
 
-  function formatCurrency(value) {
-    return '$' + Math.round(value).toLocaleString('en-US');
+  function infoBtn(ariaLabel, tipText) {
+    return `<button class="info-tip-btn" type="button" aria-label="${ariaLabel}">${INFO_SVG}<span class="info-tip-text" hidden>${tipText}</span></button>`;
   }
 
-  function daysUntil(dateStr) {
-    if (!dateStr) return null;
-    const due = new Date(dateStr);
-    if (isNaN(due.getTime())) return null;
-    due.setHours(0, 0, 0, 0);
-    const now = new Date(); now.setHours(0, 0, 0, 0);
-    return Math.max(0, Math.ceil((due - now) / 86400000));
-  }
-
-  function getInvestmentMeta(details, row) {
-    const fill = details.investment?.fill || row?.children?.[4]?.textContent?.trim() || '0%';
-    return {
-      amount: details.investment?.amount || row?.dataset.amount || '$0',
-      apr: details.investment?.apr || row?.dataset.apr || '0%',
-      dueDays: details.investment?.dueDays || row?.dataset.dueDate || '0 days',
-      fill,
-      risk: details.investment?.risk || row?.dataset.risk || 'Risk pending',
-      minContribution: details.investment?.minContribution || row?.dataset.minContribution || '$100',
-      dueDate: details.investment?.dueDate || '',
-      contributors: details.investment?.contributors || null,
-      riskNote: details.investment?.riskNote || ''
-    };
-  }
-
-  function renderRiskMeter(riskValue) {
-    const level = riskValue.toLowerCase().includes('medium') ? 'medium'
-      : riskValue.toLowerCase().includes('high') ? 'high' : 'low';
-    const filled = level === 'low' ? 1 : level === 'medium' ? 2 : 3;
-    const labels = { low: 'Low', medium: 'Medium', high: 'High' };
-    const segs = Array.from({ length: 3 }, (_, i) =>
-      `<span class="risk-gauge-seg${i < filled ? ' filled' : ''}" aria-hidden="true"></span>`
-    ).join('');
-    return `<div class="risk-gauge risk-gauge-${level}" role="img" aria-label="Risk level: ${level}, ${filled} of 3"><div class="risk-gauge-track" aria-hidden="true">${segs}</div><span class="risk-gauge-label">${labels[level]}</span></div>`;
-  }
-
-  function renderMetrics(meta) {
-    const amount = parseNumber(meta.amount);
-    const apr = parseNumber(meta.apr);
-    const fillPercent = Math.min(Math.max(parseNumber(meta.fill), 0), 100);
-    const raised = amount * fillPercent / 100;
-    const dynDays = daysUntil(meta.dueDate) ?? parseNumber(meta.dueDays);
-    const poolYield = amount * (apr / 100) * (dynDays / 365);
-    const infoSvg = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg>`;
-    return `
-    <div class="lc-apr-block">
-      <span class="lc-apr-number">${meta.apr}</span>
-      <span class="lc-apr-label">annual APR</span>
-    </div>
-    <div class="lc-progress-block">
-      <div class="lc-progress-meta">
-        <span class="lc-progress-stat">${fillPercent.toFixed(1)}% funded</span>
-        ${meta.contributors ? `<span class="lc-progress-stat"><span class="lc-investors-count">${meta.contributors}</span> investors already in</span>` : ''}
-      </div>
-      <div class="modal-progress" aria-hidden="true"><span style="width:${fillPercent}%"></span></div>
-      <span class="lc-progress-amounts">${formatCurrency(raised)} of ${formatCurrency(amount)}</span>
-    </div>
-    <div class="lc-metrics-row">
-      <div class="lc-metric-cell">
-        <span class="lc-metric-label lc-metric-label-info">Time to repayment
-          <button class="lc-info-btn" type="button" aria-label="About repayment date">${infoSvg}</button>
-          <span class="lc-tooltip" role="tooltip">Expected maturity date — yield accrual ends on this day</span>
-        </span>
-        <span class="lc-metric-value">${dynDays} days</span>
-      </div>
-      <div class="lc-metric-cell">
-        <span class="lc-metric-label lc-metric-label-info">Pool yield
-          <button class="lc-info-btn" type="button" aria-label="What is pool yield?">${infoSvg}</button>
-          <span class="lc-tooltip" role="tooltip">Total interest earned across the full deal term</span>
-        </span>
-        <span class="lc-metric-value">${formatCurrency(poolYield)}</span>
-      </div>
-      <div class="lc-metric-cell">
-        <span class="lc-metric-label lc-metric-label-info">Risk level
-          <button class="lc-info-btn" type="button" aria-label="About risk level">${infoSvg}</button>
-          <span class="lc-tooltip" role="tooltip">Platform score based on borrower profile, obligor quality & deal structure</span>
-        </span>
-        ${renderRiskMeter(meta.risk)}
-      </div>
-    </div>
-    <div class="modal-verif">
-      <div class="modal-verif-item">
-        <span class="modal-verif-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="2" y="5.5" width="10" height="7.5" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M7 1.5L12 5.5H2L7 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><rect x="4.5" y="7" width="2" height="2" rx="0.3" fill="currentColor" opacity="0.7"/><rect x="7.5" y="7" width="2" height="2" rx="0.3" fill="currentColor" opacity="0.7"/><path d="M6 10.5h2v3H6z" stroke="currentColor" stroke-width="1" fill="none"/></svg></span>
-        <span class="modal-verif-label">KYB Completed</span>
-      </div>
-      <div class="modal-verif-item">
-        <span class="modal-verif-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="2" y="1" width="8" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 4.5h3M4.5 6.5h3M4.5 8.5h1.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/><path d="M9 10l1.5 1.5 2-2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="modal-verif-label">Invoice Verified</span>
-      </div>
-      <div class="modal-verif-item">
-        <span class="modal-verif-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><rect x="1" y="3" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><circle cx="4.5" cy="7" r="1.5" stroke="currentColor" stroke-width="1"/><path d="M7 5.5h3.5M7 7h2.5M7 8.5h3" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg></span>
-        <span class="modal-verif-label">Obligor Confirmed</span>
-      </div>
-      <div class="modal-verif-item">
-        <span class="modal-verif-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M7 1.5l5 1.8v3.5C12 9.5 9.8 11.8 7 12.5 4.2 11.8 2 9.5 2 6.8V3.3L7 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M4.5 7l1.5 1.5 3.5-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="modal-verif-label">Bank Account Verified</span>
-      </div>
-    </div>`;
-  }
-
-  function renderCalculator(meta, ctx) {
-    ctx = ctx || {};
-    const amount = parseNumber(meta.amount);
-    const fillPercent = Math.min(Math.max(parseNumber(meta.fill), 0), 100);
-    const raised = amount * fillPercent / 100;
-    const remaining = Math.max(amount - raised, 0);
-    const minInvest = Math.max(100, parseNumber(meta.minContribution) || 500);
-    const maxInvest = Math.max(minInvest, Math.round(remaining));
-    const dynDays = daysUntil(meta.dueDate) ?? parseNumber(meta.dueDays);
-    const facts = [
-      ctx.obligor       && ['Obligor',        ctx.obligor],
-      ctx.sector        && ['Sector',          ctx.sector],
-      ctx.jurisdiction  && ['Jurisdiction',    ctx.jurisdiction],
-      ctx.invoiceAmount && ['Invoice Amount',  ctx.invoiceAmount, true],
-      meta.dueDate      && ['Maturity date',   meta.dueDate],
-    ].filter(Boolean);
-    return `
-      <div class="rc-facts">
-        ${facts.map(([label, value, bold]) => `
-          <div class="rc-fact-row">
-            <span class="rc-fact-label">${label}</span>
-            <span class="rc-fact-value${bold ? ' rc-fact-bold' : ''}">${value}</span>
-          </div>`).join('')}
-      </div>
-      <div class="rc-calc">
-        <span class="rc-calc-label">Your investment</span>
-        <div class="rc-input-group">
-          <span class="deal-calc-prefix" aria-hidden="true">$</span>
-          <input type="text" inputmode="numeric" id="calcAmount" class="deal-calc-input"
-            aria-label="Investment amount in USD">
-          <button type="button" id="calcMaxBtn" class="rc-max-btn">Max</button>
-        </div>
-        <input type="range" id="calcSlider" class="deal-calc-slider"
-          min="0" max="100" step="any"
-          aria-label="Adjust investment amount">
-        <span class="rc-hint">${formatCurrency(maxInvest)} available · Min ${formatCurrency(minInvest)}</span>
-        <div class="rc-outputs">
-          <div class="rc-output-row">
-            <span class="rc-output-label">Return · ${dynDays}d</span>
-            <span class="rc-output-value rc-return-value" id="calcReturn">—</span>
-          </div>
-          <div class="rc-output-row">
-            <span class="rc-output-label">You receive at maturity</span>
-            <span class="rc-output-value" id="calcReceive">—</span>
-          </div>
-        </div>
-      </div>
-      <div class="rc-spacer" aria-hidden="true"></div>
-      <button class="modal-contribute-btn modal-invest-cta rc-contribute" type="button" id="calcCtaBtn">Contribute</button>
-      <div class="rc-escrow">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><rect x="2.5" y="6" width="8" height="5.5" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 6V4.5a2 2 0 014 0V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-        Funds held in escrow until maturity
-      </div>`;
-  }
-
-  function initCalculator(meta) {
-    const amount = parseNumber(meta.amount);
-    const apr = parseNumber(meta.apr);
-    const fillPercent = Math.min(Math.max(parseNumber(meta.fill), 0), 100);
-    const raised = amount * fillPercent / 100;
-    const remaining = Math.max(amount - raised, 0);
-    const minInvest = Math.max(100, parseNumber(meta.minContribution) || 500);
-    const maxInvest = Math.max(minInvest, Math.round(remaining));
-    const dynDays = daysUntil(meta.dueDate) ?? parseNumber(meta.dueDays);
-    const termRatio = (apr / 100) * (dynDays / 365);
-    const termPct = (termRatio * 100).toFixed(2);
-
-    const inputEl   = document.getElementById('calcAmount');
-    const sliderEl  = document.getElementById('calcSlider');
-    const maxBtn    = document.getElementById('calcMaxBtn');
-    const returnEl  = document.getElementById('calcReturn');
-    const receiveEl = document.getElementById('calcReceive');
-    const ctaBtn    = document.getElementById('calcCtaBtn');
-    if (!inputEl || !sliderEl) return;
-
-    const minLog = Math.log(minInvest);
-    const maxLog = Math.log(maxInvest);
-
-    function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
-    function clamp(val) {
-      if (val >= maxInvest) return maxInvest;
-      return Math.max(minInvest, Math.min(maxInvest, Math.round(val / 100) * 100));
-    }
-    function amountToSlider(a) {
-      return ((Math.log(Math.max(minInvest, Math.min(maxInvest, a))) - minLog) / (maxLog - minLog)) * 100;
-    }
-    function sliderToAmount(s) {
-      return Math.exp(minLog + (s / 100) * (maxLog - minLog));
-    }
-    function rawFromInput() { return parseFloat(inputEl.value.replace(/,/g, '')) || 0; }
-
-    function setEmpty() {
-      sliderEl.value = '0';
-      if (maxBtn)    maxBtn.classList.remove('active');
-      if (returnEl)  returnEl.innerHTML = '—';
-      if (receiveEl) receiveEl.textContent = '—';
-      if (ctaBtn)    { ctaBtn.disabled = true; ctaBtn.innerHTML = 'Enter an amount'; }
-    }
-
-    function setBelowMin() {
-      sliderEl.value = '0';
-      if (maxBtn)    maxBtn.classList.remove('active');
-      if (returnEl)  returnEl.innerHTML = '—';
-      if (receiveEl) receiveEl.textContent = '—';
-      if (ctaBtn)    { ctaBtn.disabled = true; ctaBtn.innerHTML = `Min $${fmt(minInvest)}`; }
-    }
-
-    function setValid(val) {
-      sliderEl.value = amountToSlider(val).toFixed(3);
-      if (maxBtn)    maxBtn.classList.toggle('active', val >= maxInvest);
-      if (returnEl)  returnEl.innerHTML = `<strong class="calc-return-pct">${meta.apr}<span class="calc-return-apr-unit"> APR</span></strong><span class="calc-return-apr">+${termPct}% over ${dynDays} days</span>`;
-      if (receiveEl) receiveEl.textContent = `$${fmt(val + val * termRatio)}`;
-      if (ctaBtn)    { ctaBtn.disabled = false; ctaBtn.innerHTML = `Contribute $${fmt(val)} <span class="btn-arrow" aria-hidden="true">→</span>`; }
-    }
-
-    // Init: empty state
-    inputEl.value = '';
-    inputEl.placeholder = '0';
-    setEmpty();
-
-    inputEl.addEventListener('focus', () => {
-      const raw = rawFromInput();
-      if (raw > 0) { inputEl.value = String(Math.round(raw)); inputEl.select(); }
-    });
-
-    inputEl.addEventListener('blur', () => {
-      const raw = rawFromInput();
-      if (!raw || raw <= 0) { inputEl.value = ''; setEmpty(); return; }
-      if (raw < minInvest) { setBelowMin(); return; }
-      const val = clamp(raw);
-      inputEl.value = fmt(val);
-      setValid(val);
-    });
-
-    inputEl.addEventListener('input', () => {
-      const raw = parseFloat(inputEl.value.replace(/,/g, ''));
-      if (isNaN(raw) || raw <= 0) { sliderEl.value = '0'; setEmpty(); return; }
-      if (raw < minInvest) { setBelowMin(); return; }
-      setValid(clamp(raw));
-    });
-
-    sliderEl.addEventListener('input', () => {
-      const val = clamp(sliderToAmount(parseFloat(sliderEl.value)));
-      inputEl.value = fmt(val);
-      setValid(val);
-    });
-
-    if (maxBtn) maxBtn.addEventListener('click', () => {
-      inputEl.value = fmt(maxInvest);
-      setValid(maxInvest);
-    });
+  function renderFacts(details) {
+    return (
+      factRow('Сумма инвойса', details.amount) +
+      factRow('Целевая доходность, годовых' + infoBtn('Что такое целевая доходность', RETURN_TIP), details.targetReturn) +
+      factRow('Срок', details.tenorKey) +
+      factRow('Индикатор риска' + infoBtn('Что означает индикатор риска', RISK_TIP), 'Risk indicator: ' + details.riskTier)
+    );
   }
 
   function getFocusable() {
@@ -1997,50 +1629,13 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
 
   document.querySelectorAll('.details-btn').forEach(button => {
     button.addEventListener('click', () => {
-      const row = button.closest('tr');
-      const details = companyDetails[button.dataset.company] || (row ? {
-        cardClass: 'modal-card',
-        name: row.dataset.companyName,
-        description: `${row.dataset.companyName} is a verified B2B invoice opportunity in ${row.dataset.sector}. The deal is listed with current funding progress, target pricing, and risk tier for investor review.`,
-        facts: [
-          ['Invoice', row.dataset.invoiceId],
-          ['Sector', row.dataset.sector],
-          ['Invoice Amount', row.dataset.amount],
-          ['Due Date', row.dataset.dueDate],
-          ['Risk', row.dataset.risk],
-          ['Min Contribution', row.dataset.minContribution],
-          ['APR', `${row.dataset.apr} annual`]
-        ]
-      } : null);
+      const details = companyDetails[button.dataset.company];
       if (!details) return;
 
-      const investment = getInvestmentMeta(details, row);
-      const getFact = (label) => (details.facts.find(([l]) => l === label) || [])[1] || '';
       card.className = details.cardClass || 'modal-card';
       title.textContent = details.name;
-      description.textContent = details.description;
-      facts.innerHTML = renderCalculator(investment, {
-        obligor:       getFact('Obligor'),
-        sector:        getFact('Sector'),
-        jurisdiction:  getFact('Jurisdiction'),
-        invoiceAmount: getFact('Invoice Amount'),
-      });
-      if (metrics) {
-        metrics.innerHTML = renderMetrics(investment);
-        metrics.querySelectorAll('.lc-info-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const tip = btn.nextElementSibling;
-            const isOpen = tip.classList.contains('open');
-            metrics.querySelectorAll('.lc-tooltip').forEach(t => t.classList.remove('open'));
-            if (!isOpen) tip.classList.add('open');
-          });
-        });
-        document.addEventListener('click', () => {
-          metrics.querySelectorAll('.lc-tooltip').forEach(t => t.classList.remove('open'));
-        });
-      }
-      initCalculator(investment);
+      facts.innerHTML = renderFacts(details);
+      window.factor0xTranslateSubtree?.(facts);
 
       modal.classList.add('open');
       modal.setAttribute('aria-hidden', 'false');

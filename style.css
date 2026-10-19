@@ -860,8 +860,12 @@ body .policy {
   font-size: 13px;
 }
 .view-more-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 118px;
   min-height: 40px;
+  padding: 0 16px;
   border: 1px solid var(--border2);
   border-radius: 12px;
   background: rgba(255,255,255,0.78);
@@ -869,6 +873,7 @@ body .policy {
   font-family: 'Manrope', sans-serif;
   font-size: 13px;
   font-weight: 700;
+  text-decoration: none;
   cursor: pointer;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -1314,7 +1319,11 @@ body.landscape-modal-open .invoice-table th {
   font-weight: 500;
 }
 .risk {
+  position: relative;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border-radius: 999px;
   padding: 5px 10px;
   font-size: 11px;
@@ -1322,6 +1331,7 @@ body.landscape-modal-open .invoice-table th {
   border: 1px solid var(--border2);
   color: var(--black);
   background: rgba(255,255,255,0.68);
+  white-space: nowrap;
 }
 .risk.low {
   border-color: rgba(5,5,5,0.20);
@@ -1331,6 +1341,83 @@ body.landscape-modal-open .invoice-table th {
   color: var(--gray);
   border-color: rgba(111,111,111,0.36);
   background: rgba(111,111,111,0.08);
+}
+
+/* Small, muted — a disclosure label, not a status like .risk next to it. */
+.example-badge {
+  display: inline-block;
+  margin-bottom: 8px;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  border: 1px solid var(--border2);
+  color: var(--text3);
+  background: rgba(5,5,5,0.03);
+}
+
+/* Shared "i" trigger for the target-return / risk-indicator tooltips —
+   see .info-tip-panel below for why this is a single body-level panel
+   positioned via JS instead of a CSS :hover/absolute child (both the
+   invoice card and the details-modal facts panel clip overflow for their
+   own rounded corners). */
+.info-tip-btn {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  line-height: 0;
+  transition: opacity 0.15s ease;
+}
+.info-tip-btn:hover,
+.info-tip-btn[aria-expanded="true"] {
+  opacity: 1;
+}
+.metric-label-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.info-tip-panel {
+  position: fixed;
+  z-index: 700;
+  width: min(300px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border: 1px solid rgba(5,5,5,0.10);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.98);
+  box-shadow: 0 18px 44px rgba(5,5,5,0.22);
+  color: rgba(5,5,5,0.82);
+  font-family: 'Manrope', sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.45;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.info-tip-panel.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+/* This text only ever exists for JS to read (see initInfoTips) — never
+   rendered in place. !important because several ancestor-scoped span
+   rules (.invoice-top span:not(.risk), .fact-label, etc.) set their own
+   display and would otherwise win over a plain [hidden]/display:none
+   here, same cascade-origin gotcha noted on .admin-form-checkbox[hidden]
+   above. */
+.info-tip-text {
+  display: none !important;
 }
 .invoice-metrics {
   display: grid;
@@ -1440,6 +1527,19 @@ body.landscape-modal-open .invoice-table th {
 }
 .invoice-actions button:first-child:hover::after {
   animation: cta-shine 0.85s ease forwards;
+}
+.deal-disclaimer {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.deal-disclaimer p {
+  margin: 0;
+  max-width: 980px;
+  color: var(--text3);
+  font-family: 'Manrope', sans-serif;
+  font-size: 11.5px;
+  line-height: 1.6;
 }
 .btn-primary {
   display: inline-block;
@@ -3249,6 +3349,69 @@ body.landscape-modal-open .invoice-table th {
 }
 .admin-form-submit:hover {
   opacity: 0.85;
+}
+
+.interest-modal {
+  width: min(480px, 100%);
+  max-height: min(680px, 92vh);
+  overflow-y: auto;
+}
+.interest-modal-intro {
+  margin: 10px 0 0;
+  color: rgba(255,255,255,0.56);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.admin-form select {
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  color: var(--white);
+  font-size: 15px;
+  font-family: inherit;
+}
+.admin-form select:focus {
+  outline: none;
+  border-color: rgba(255,255,255,0.4);
+}
+.admin-form select option {
+  background: #141414;
+  color: var(--white);
+}
+.admin-form label.admin-form-checkbox {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+/* .admin-form label's own display:flex (an author rule) otherwise beats
+   the UA stylesheet's [hidden]{display:none} — same gotcha .rotate-hint
+   worked around above, before this feature replaced it. */
+.admin-form label.admin-form-checkbox[hidden] {
+  display: none !important;
+}
+.admin-form-checkbox input[type="checkbox"] {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  accent-color: #fff;
+}
+.admin-form-checkbox span {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.68);
+}
+.admin-form-checkbox a {
+  color: rgba(255,255,255,0.92);
+  text-decoration: underline;
+}
+.admin-form-success {
+  margin: 0;
+  color: rgba(255,255,255,0.86);
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .apply-form label.wide {
@@ -5250,6 +5413,23 @@ footer {
   text-align: left;
   justify-self: end;
   max-width: 260px;
+}
+/* .fact-row:nth-last-child(-n+2) .fact-value further down (left over from
+   this modal's old investment-calculator design, where the last two facts
+   were meant to read as pill badges) would otherwise pill-style this
+   panel's last two rows (Tenor, Risk indicator) by pure position — an
+   accident of this specific example having 4 rows, not an intentional
+   choice for these specific facts. #modalFacts-scoped override (ID beats
+   that rule's three chained classes/pseudo-classes) keeps all four rows
+   the same plain style. */
+#modalFacts .fact-value {
+  display: block;
+  width: auto;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
 }
 .modal-investment-panel {
   display: grid;
