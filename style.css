@@ -3066,7 +3066,7 @@ body.landscape-modal-open .invoice-table th {
   min-height: 226px;
   padding: 14px 22px;
 }
-#flowPanel .flow-panel-inner span {
+#flowPanel .flow-panel-inner > span {
   flex-direction: column;
   justify-content: center;
   min-height: 198px;
@@ -3074,12 +3074,12 @@ body.landscape-modal-open .invoice-table th {
   font-size: 16px;
   text-align: center;
 }
-#flowPanel .flow-panel-inner span img {
+#flowPanel .flow-panel-inner > span img {
   width: 163px;
   height: 163px;
   object-fit: contain;
 }
-#flowPanel .flow-panel-inner span:not(:last-child)::after {
+#flowPanel .flow-panel-inner > span:not(:last-child)::after {
   right: -12px;
   left: auto;
   bottom: auto;
@@ -3088,7 +3088,7 @@ body.landscape-modal-open .invoice-table th {
   height: 16px;
   transform: translateY(-50%) rotate(45deg);
 }
-#flowPanel .flow-panel-inner span:not(:last-child)::before {
+#flowPanel .flow-panel-inner > span:not(:last-child)::before {
   right: -4px;
   left: auto;
   top: 50%;
@@ -4047,7 +4047,7 @@ body.landscape-modal-open .invoice-table th {
   line-height: 1.55;
   text-align: center;
 }
-.flow-panel-inner span {
+.flow-panel-inner > span {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -4061,7 +4061,7 @@ body.landscape-modal-open .invoice-table th {
   font-weight: 700;
   text-align: center;
 }
-.flow-panel-inner span:not(:last-child)::after {
+.flow-panel-inner > span:not(:last-child)::after {
   content: '';
   position: absolute;
   right: -13px;
@@ -4074,7 +4074,7 @@ body.landscape-modal-open .invoice-table th {
   filter: drop-shadow(0 0 8px rgba(255,255,255,0.08));
   animation: flow-arrow-pulse 2.1s ease-in-out infinite;
 }
-.flow-panel-inner span:not(:last-child)::before {
+.flow-panel-inner > span:not(:last-child)::before {
   content: '';
   position: absolute;
   right: -4px;
@@ -4085,14 +4085,14 @@ body.landscape-modal-open .invoice-table th {
   transform: translateY(-50%);
   animation: flow-line-pulse 2.1s ease-in-out infinite;
 }
-.flow-panel-inner span:nth-child(1)::before,
-.flow-panel-inner span:nth-child(1)::after { animation-delay: 0s; }
-.flow-panel-inner span:nth-child(2)::before,
-.flow-panel-inner span:nth-child(2)::after { animation-delay: 0.14s; }
-.flow-panel-inner span:nth-child(3)::before,
-.flow-panel-inner span:nth-child(3)::after { animation-delay: 0.28s; }
-.flow-panel-inner span:nth-child(4)::before,
-.flow-panel-inner span:nth-child(4)::after { animation-delay: 0.42s; }
+.flow-panel-inner > span:nth-child(1)::before,
+.flow-panel-inner > span:nth-child(1)::after { animation-delay: 0s; }
+.flow-panel-inner > span:nth-child(2)::before,
+.flow-panel-inner > span:nth-child(2)::after { animation-delay: 0.14s; }
+.flow-panel-inner > span:nth-child(3)::before,
+.flow-panel-inner > span:nth-child(3)::after { animation-delay: 0.28s; }
+.flow-panel-inner > span:nth-child(4)::before,
+.flow-panel-inner > span:nth-child(4)::after { animation-delay: 0.42s; }
 @keyframes flow-arrow-pulse {
   0%, 12%, 100% {
     border-color: rgba(255,255,255,0.32);
@@ -4112,6 +4112,20 @@ body.landscape-modal-open .invoice-table th {
     opacity: 0.78;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.58));
   }
+}
+.flow-step-title {
+  display: block;
+}
+/* Secondary to the title above it — same muted, regular-weight treatment
+   as .flow-micro-label below the whole strip, just smaller since five of
+   these sit side by side. */
+.flow-step-caption {
+  display: block;
+  margin-top: -4px;
+  color: rgba(255,255,255,0.5);
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
 }
 .flow-step img {
   width: 108px;
@@ -6408,13 +6422,13 @@ footer {
   .apply-form label.wide {
     grid-column: span 2;
   }
-  .flow-panel-inner span:not(:last-child)::after {
+  .flow-panel-inner > span:not(:last-child)::after {
     content: none;
   }
-  .flow-panel-inner span:not(:last-child)::before {
+  .flow-panel-inner > span:not(:last-child)::before {
     content: none;
   }
-  #flowPanel .flow-panel-inner span {
+  #flowPanel .flow-panel-inner > span {
     flex: 0 0 min(34vw, 132px);
     min-height: 145px;
     gap: 7px;
@@ -6426,15 +6440,15 @@ footer {
       opacity 0.28s ease,
       filter 0.28s ease;
   }
-  #flowPanel .flow-panel-inner span.is-flow-visible {
+  #flowPanel .flow-panel-inner > span.is-flow-visible {
     opacity: 1;
     filter: none;
   }
-  #flowPanel .flow-panel-inner span img {
+  #flowPanel .flow-panel-inner > span img {
     width: 114px;
     height: 114px;
   }
-  #flowPanel .flow-panel-inner span:not(:last-child)::after {
+  #flowPanel .flow-panel-inner > span:not(:last-child)::after {
     content: '';
     right: -5px;
     left: auto;
@@ -6447,7 +6461,7 @@ footer {
     transform: translateY(-50%) rotate(45deg);
     animation: flow-arrow-pulse 2.1s ease-in-out infinite;
   }
-  #flowPanel .flow-panel-inner span:not(:last-child)::before {
+  #flowPanel .flow-panel-inner > span:not(:last-child)::before {
     content: '';
     right: 0;
     left: auto;
@@ -6908,7 +6922,7 @@ footer {
     font-size: 18px;
     white-space: normal;
   }
-  .flow-panel-inner span {
+  .flow-panel-inner > span {
     font-size: 16px;
   }
   .apply-panel.open {
