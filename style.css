@@ -2325,9 +2325,11 @@ body.landscape-modal-open .invoice-table th {
   font-size: 19px;
   max-width: 720px;
 }
-/* No forced nowrap here — the old short subtitle fit on one line, but the
-   current (longer) copy wraps onto .quick-how-section .section-sub's own
-   720px max-width like any other section-sub on the page. */
+.quick-how-section .quick-how-sub {
+  max-width: none;
+  white-space: nowrap;
+  font-size: clamp(11px, 1.15vw, 19px);
+}
 .roles-strip {
   display: flex;
   align-items: center;
@@ -6207,6 +6209,14 @@ footer {
     margin: 0 auto;
     white-space: normal;
   }
+  /* Longer than the hero subtitle above — clamp() alone can't shrink it
+     enough to still fit on one line once the viewport (not just the
+     section's own container) drops below desktop width, so it wraps
+     here instead of truncating. */
+  .quick-how-section .quick-how-sub {
+    max-width: 720px;
+    white-space: normal;
+  }
   .tvl-strip {
     justify-content: center;
     max-width: 100%;
@@ -6880,7 +6890,7 @@ footer {
   .quick-how-title {
     font-size: 38px;
   }
-  .quick-how-sub {
+  .quick-how-section .quick-how-sub {
     white-space: normal;
   }
   #hubs .section-head h2,
