@@ -34,9 +34,16 @@
   --warning: #D97A34;
   --warning-bg: rgba(217, 122, 52, 0.14);
   --warning-border: rgba(217, 122, 52, 0.32);
+  /* Softer fill (10-12% vs the 14% above) for the Мои сделки status badges
+     specifically (.portal-badge-warning/-danger, .portal-deals-summary-
+     warning) — kept separate from --warning-bg/--danger-bg rather than
+     lowering those directly, since those two are also used by the deal
+     detail banner and Архив, which this change isn't meant to touch. */
+  --warning-bg-soft: rgba(217, 122, 52, 0.11);
   --danger: #E5484D;
   --danger-bg: rgba(229, 72, 77, 0.14);
   --danger-border: rgba(229, 72, 77, 0.34);
+  --danger-bg-soft: rgba(229, 72, 77, 0.11);
   --info: #5B9BD9;
   --info-bg: rgba(91, 155, 217, 0.14);
   --info-border: rgba(91, 155, 217, 0.34);
@@ -855,6 +862,32 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   background: rgba(217, 122, 52, 0.09);
 }
 
+/* Мои сделки only: a plain color fill made flagged rows read as "loud"
+   against the rest of the (now mostly neutral) table — a 3px left-edge
+   stripe instead, inset so it doesn't shift the row's own padding/box
+   model. More specific than .portal-deal-row-danger/-warning above (two
+   classes vs one) so this wins without !important, but it only overrides
+   the rule for rows actually inside .portal-deals-list — Архив's own
+   reuse of these same two class names (see .portal-archive-table below)
+   is untouched. */
+.portal-deals-list > .portal-deal-row-danger,
+.portal-deals-list > .portal-deal-row-warning {
+  background: transparent;
+}
+
+.portal-deals-list > .portal-deal-row-danger {
+  box-shadow: inset 3px 0 0 0 var(--danger);
+}
+
+.portal-deals-list > .portal-deal-row-warning {
+  box-shadow: inset 3px 0 0 0 var(--warning);
+}
+
+.portal-deals-list > .portal-deal-row-danger:hover,
+.portal-deals-list > .portal-deal-row-warning:hover {
+  background: rgba(var(--ov-tint-rgb), 0.04);
+}
+
 /* Flattens each deal's own card (rounded-xl border shadow) to a plain
    transparent box — the row's actual border/hover now come from the Link
    wrapper above — without touching its Link/click behavior. */
@@ -1552,14 +1585,6 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   opacity: 0.78;
 }
 
-/* "Через N дн." when the due date is close but not yet overdue — a muted
-   amber, deliberately softer than Просрочка's full-strength warning color
-   (that one's an actual problem; this is just "coming up soon"). */
-.portal-deal-countdown-soon {
-  color: var(--warning);
-  opacity: 0.8;
-}
-
 /* Shared floating tooltip (see attachDealTooltip in portal-overrides.js) —
    one node appended straight to <body> and positioned via
    getBoundingClientRect on open, used by the New Application autofill
@@ -1627,26 +1652,27 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   color: rgba(var(--ov-muted-rgb), 0.85);
 }
 
+/* Same treatment as .portal-badge-warning/-success below — this pill makes
+   the same "needs attention vs. all clear" call the status column does, so
+   it reads as the same two tones rather than its own separate palette. */
 .portal-deals-summary-warning {
-  background: var(--warning-bg);
+  background: var(--warning-bg-soft);
   border-color: var(--warning-border);
   color: var(--warning);
 }
 
 .portal-deals-summary-ok {
-  background: var(--success-bg);
-  border-color: rgba(61, 163, 93, 0.32);
+  background: transparent;
+  border-color: var(--success-border);
   color: var(--success);
 }
 
 /* Статус column badges (see applyDealBadgeStyle in portal-overrides.js):
-   same soft-tint pill as .portal-deals-summary above, in place of the
-   native badge's pale, ~90%+-lightness bg/border tokens — those read as a
-   washed-out white smudge on this dark table regardless of which status.
-   Six distinct tones instead of the native badge palette, which doubled
-   up "Просрочка" (a problem) and "Готов к финансированию" (good news) on
-   the exact same --status-warning token — indistinguishable at a glance
-   despite being opposites. */
+   three tones instead of the native badge palette's six — "needs attention"
+   (Дефолт/Просрочка) is the only pair that still gets a filled pill, so it's
+   the only one competing for attention; everything else is an outline with
+   no fill. Gold is deliberately never used here — it's reserved for the
+   brand/primary-action color (Submit buttons), not a status. */
 .portal-deal-badge {
   padding: 4px 12px !important;
   border-radius: 999px !important;
@@ -1655,40 +1681,63 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   line-height: 1.3 !important;
 }
 
+/* "Требует внимания": text+outline in the status color, plus a soft fill
+   (10-12%, see --danger-bg-soft/--warning-bg-soft) — the only two statuses
+   that get any fill at all, so they still read as more urgent than the
+   outline-only tones below without the whole column turning into a wall of
+   color. */
 .portal-badge-danger {
-  background: var(--danger-bg) !important;
+  background: var(--danger-bg-soft) !important;
   border-color: var(--danger-border) !important;
   color: var(--danger) !important;
 }
 
 .portal-badge-warning {
-  background: var(--warning-bg) !important;
+  background: var(--warning-bg-soft) !important;
   border-color: var(--warning-border) !important;
   color: var(--warning) !important;
 }
 
-.portal-badge-info {
-  background: var(--info-bg) !important;
-  border-color: var(--info-border) !important;
-  color: var(--info) !important;
-}
-
-.portal-badge-gold {
-  background: var(--gold-bg) !important;
-  border-color: var(--gold-border) !important;
-  color: var(--gold) !important;
-}
-
+/* "Норма": Профинансировано — muted green outline, no fill (a closed,
+   successful deal doesn't need to shout as loud as a problem row). */
 .portal-badge-success {
-  background: var(--success-bg) !important;
+  background: transparent !important;
   border-color: var(--success-border) !important;
   color: var(--success) !important;
 }
 
+/* "В работе": Ожидает загрузки документов / Расчёт ставки / Готов к
+   финансированию — grey outline, no fill, light-grey text. The three are
+   told apart only by their dot (see .portal-badge-dot-* below), not by
+   color, since none of them is a problem or a brand action. */
 .portal-badge-neutral {
-  background: rgba(var(--ov-tint-rgb), 0.06) !important;
-  border-color: rgba(var(--ov-tint-rgb), 0.16) !important;
+  background: transparent !important;
+  border-color: rgba(var(--ov-tint-rgb), 0.22) !important;
   color: rgba(var(--ov-muted-rgb), 0.75) !important;
+}
+
+.portal-badge-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Ожидает/Расчёт: still waiting on something outside the borrower's next
+   action. */
+.portal-badge-dot-grey {
+  background: rgba(var(--ov-muted-rgb), 0.45);
+}
+
+/* Готов к финансированию: the next actionable step — one shade brighter
+   than the other two neutral badges so it reads as a half-step ahead,
+   without needing its own color. var(--ov-text) rather than a literal
+   white so this stays a dark dot on the light theme's pale badge instead
+   of vanishing. */
+.portal-badge-dot-white {
+  background: var(--ov-text);
 }
 
 /* "Новая заявка": restyle to match the landing page's "Get financing"

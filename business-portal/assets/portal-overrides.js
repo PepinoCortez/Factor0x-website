@@ -2489,25 +2489,45 @@
     ),
   };
 
-  // Native badgeClassName reuses the exact same --status-warning token for
-  // both "Просрочка" (a problem) and "Готов к финансированию" (good news) —
-  // indistinguishable at a glance despite opposite meaning. Six distinct
-  // tones instead, applied via .portal-deal-badge plus one of these below
-  // (see CSS) — doesn't touch the shared --status-* vars themselves, just
-  // what these six specific labels render as in this one table.
+  // Three tones instead of six: "в работе" (neutral, no fill) covers
+  // Ожидает/Расчёт/Готов — gold is reserved for the brand/CTA and never
+  // used for a status, so Готов к финансированию (previously its own gold
+  // tone) moved here too, distinguished only by its dot (see
+  // DEAL_STATUS_DOT below) rather than a whole extra color. "Норма"
+  // (success, muted outline, no fill) covers Профинансировано. "Требует
+  // внимания" (danger/warning, soft fill) covers Дефолт/Просрочка — the
+  // only two statuses that still get a filled badge, so they're the only
+  // ones competing for attention.
   const DEAL_STATUS_TONE = {
     'Дефолт': 'danger',
     'Просрочка': 'warning',
     'Ожидает загрузки документов': 'neutral',
-    'Расчёт ставки': 'info',
-    'Готов к финансированию': 'gold',
+    'Расчёт ставки': 'neutral',
+    'Готов к финансированию': 'neutral',
     'Профинансировано': 'success',
+  };
+
+  // Small 6px dot prepended to the neutral-tone badges only, so "Готов к
+  // финансированию" (the next actionable step) still reads as a half-step
+  // ahead of "Ожидает"/"Расчёт" (still waiting on something) without
+  // needing its own color — see .portal-badge-dot-* in the CSS.
+  const DEAL_STATUS_DOT = {
+    'Ожидает загрузки документов': 'grey',
+    'Расчёт ставки': 'grey',
+    'Готов к финансированию': 'white',
   };
 
   const applyDealBadgeStyle = (badgeEl) => {
     badgeEl.classList.add('portal-deal-badge');
-    const tone = DEAL_STATUS_TONE[badgeEl.textContent.trim()];
+    const label = badgeEl.textContent.trim();
+    const tone = DEAL_STATUS_TONE[label];
     if (tone) badgeEl.classList.add('portal-badge-' + tone);
+    const dotTone = DEAL_STATUS_DOT[label];
+    if (dotTone && !badgeEl.querySelector('.portal-badge-dot')) {
+      const dot = document.createElement('span');
+      dot.className = 'portal-badge-dot portal-badge-dot-' + dotTone;
+      badgeEl.insertBefore(dot, badgeEl.firstChild);
+    }
   };
 
   // ---- Shared floating tooltip for every explainer in this file (status
@@ -2693,7 +2713,6 @@
   // disbursement has happened), so a countdown against their due date would
   // be misleading — a dash instead, per spec.
   const DEAL_COUNTDOWN_DASH_STATUSES = new Set(['Ожидает загрузки документов', 'Расчёт ставки']);
-  const DEAL_COUNTDOWN_SOON_DAYS = 7;
 
   // Both selectors are exact Tailwind class combos confirmed from the
   // compiled component (see q_) — Погашение carries whitespace-nowrap,
@@ -2764,9 +2783,15 @@
       const daysPhrase = match ? match[1] : note.textContent.trim();
       const penaltyPhrase = match ? match[2] : null;
 
-      cell.classList.add(isDefault ? 'text-status-danger' : 'text-status-warning');
+      // Only the days-overdue line carries the row's severity color — the
+      // penalty line (and every other Countdown value, see the plain-date
+      // branch below) stays plain secondary-text grey, via this base class
+      // on the cell itself, so one deal needing attention doesn't make the
+      // whole column read as "loud" scanning down the table.
+      cell.classList.add('text-muted-foreground');
       const daysSpan = document.createElement('span');
-      daysSpan.className = 'portal-deal-countdown-days';
+      daysSpan.className =
+        'portal-deal-countdown-days ' + (isDefault ? 'text-status-danger' : 'text-status-warning');
       daysSpan.textContent = t('просрочено ', 'overdue ') + translateFragment(daysPhrase);
       cell.appendChild(daysSpan);
 
@@ -2779,15 +2804,12 @@
     } else {
       const statusText = badge ? badge.textContent.trim() : '';
       const dueDate = DEAL_COUNTDOWN_DASH_STATUSES.has(statusText) ? null : parsedDueDate;
+      cell.classList.add('text-muted-foreground');
       if (dueDate) {
         const days = dealDaysUntil(dueDate);
         cell.textContent = days <= 0 ? t('сегодня', 'today') : t(`через ${days} дн.`, `in ${days} days`);
-        cell.classList.add(
-          days >= 0 && days <= DEAL_COUNTDOWN_SOON_DAYS ? 'portal-deal-countdown-soon' : 'text-muted-foreground'
-        );
       } else {
         cell.textContent = '—';
-        cell.classList.add('text-muted-foreground');
       }
     }
 
