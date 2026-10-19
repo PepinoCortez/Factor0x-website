@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;0,700;1,300&family=Manrope:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=20261019-1">
+<link rel="stylesheet" href="style.css?v=20261019-2">
 <script>
 (function(){
   document.documentElement.classList.add('lang-pending');
@@ -117,71 +117,83 @@
     </div>
 
     <div class="offers-head">
-      <div>
+      <div class="offers-head-row">
         <span class="offers-title">Как выглядит сделка</span>
-        <p>Только иллюстративные примеры. Это не действующие предложения, компании вымышленные.</p>
+        <a class="view-more-btn" href="#factor0x-layer">Как это работает</a>
       </div>
-      <a class="view-more-btn" href="#factor0x-layer">Как это работает</a>
+      <p>Только иллюстративные примеры. Это не действующие предложения, компании вымышленные.</p>
     </div>
 
     <div class="invoice-board">
       <article class="invoice-card featured">
-        <div class="invoice-top">
-          <div>
-            <span class="example-badge">Пример</span>
-            <h3>Gulf Trade Logistics</h3>
-            <span>#INV-041 · Dubai → Singapore</span>
+        <div class="invoice-card-head">
+          <div class="invoice-card-kicker-row">
+            <span class="invoice-kicker">Пример</span>
+            <span class="risk low">Risk indicator: A<button class="info-tip-btn" type="button" aria-label="Что означает индикатор риска"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Индикатор на основе данных, сформированный инструментами верификации и скоринга Factor0x. Это не кредитный рейтинг и не инвестиционная рекомендация. Кредитное решение принимает лицензированный финансовый партнёр.</span></button></span>
           </div>
-          <span class="risk low">Risk indicator: A<button class="info-tip-btn" type="button" aria-label="Что означает индикатор риска"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Индикатор на основе данных, сформированный инструментами верификации и скоринга Factor0x. Это не кредитный рейтинг и не инвестиционная рекомендация. Кредитное решение принимает лицензированный финансовый партнёр.</span></button></span>
+          <h3>Gulf Trade Logistics</h3>
+          <span class="invoice-meta">#INV-041 · Dubai → Singapore</span>
         </div>
-        <div class="invoice-metrics">
-          <div><span>Сумма инвойса</span><strong>$420 000</strong></div>
-          <div><span class="metric-label-info">Целевая доходность, годовых<button class="info-tip-btn" type="button" aria-label="Что такое целевая доходность"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Только ориентировочная цель. Доходность не гарантирована и зависит от оплаты инвойса. Капитал под риском.</span></button></span><strong>6.2%</strong></div>
+        <div class="invoice-highlight">
+          <span class="metric-label-info">Целевая доходность, годовых<button class="info-tip-btn" type="button" aria-label="Что такое целевая доходность"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Только ориентировочная цель. Доходность не гарантирована и зависит от оплаты инвойса. Капитал под риском.</span></button></span>
+          <strong>6.2%</strong>
+        </div>
+        <div class="invoice-divider"></div>
+        <div class="invoice-columns">
+          <div><span>Сумма инвойса</span><strong>$420,000</strong></div>
           <div><span>Срок</span><strong>58 дней</strong></div>
         </div>
         <div class="invoice-actions">
           <button type="button" data-open-interest>Оставить заявку</button>
-          <button type="button" class="details-btn" data-company="gulf">Подробнее о примере</button>
+          <button type="button" class="details-btn" data-company="gulf">Подробнее о примере →</button>
         </div>
       </article>
 
       <article class="invoice-card">
-        <div class="invoice-top">
-          <div>
-            <span class="example-badge">Пример</span>
-            <h3>Asia Components Ltd</h3>
-            <span>#INV-042 · Electronics</span>
+        <div class="invoice-card-head">
+          <div class="invoice-card-kicker-row">
+            <span class="invoice-kicker">Пример</span>
+            <span class="risk medium">Risk indicator: B<button class="info-tip-btn" type="button" aria-label="Что означает индикатор риска"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Индикатор на основе данных, сформированный инструментами верификации и скоринга Factor0x. Это не кредитный рейтинг и не инвестиционная рекомендация. Кредитное решение принимает лицензированный финансовый партнёр.</span></button></span>
           </div>
-          <span class="risk medium">Risk indicator: B<button class="info-tip-btn" type="button" aria-label="Что означает индикатор риска"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Индикатор на основе данных, сформированный инструментами верификации и скоринга Factor0x. Это не кредитный рейтинг и не инвестиционная рекомендация. Кредитное решение принимает лицензированный финансовый партнёр.</span></button></span>
+          <h3>Asia Components Ltd</h3>
+          <span class="invoice-meta">#INV-042 · Electronics</span>
         </div>
-        <div class="invoice-metrics">
-          <div><span>Сумма инвойса</span><strong>$315 000</strong></div>
-          <div><span class="metric-label-info">Целевая доходность, годовых<button class="info-tip-btn" type="button" aria-label="Что такое целевая доходность"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Только ориентировочная цель. Доходность не гарантирована и зависит от оплаты инвойса. Капитал под риском.</span></button></span><strong>9.4%</strong></div>
+        <div class="invoice-highlight">
+          <span class="metric-label-info">Целевая доходность, годовых<button class="info-tip-btn" type="button" aria-label="Что такое целевая доходность"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Только ориентировочная цель. Доходность не гарантирована и зависит от оплаты инвойса. Капитал под риском.</span></button></span>
+          <strong>9.4%</strong>
+        </div>
+        <div class="invoice-divider"></div>
+        <div class="invoice-columns">
+          <div><span>Сумма инвойса</span><strong>$315,000</strong></div>
           <div><span>Срок</span><strong>40 дней</strong></div>
         </div>
         <div class="invoice-actions">
           <button type="button" data-open-interest>Оставить заявку</button>
-          <button type="button" class="details-btn" data-company="asia">Подробнее о примере</button>
+          <button type="button" class="details-btn" data-company="asia">Подробнее о примере →</button>
         </div>
       </article>
 
       <article class="invoice-card">
-        <div class="invoice-top">
-          <div>
-            <span class="example-badge">Пример</span>
-            <h3>Desert Cloud Services</h3>
-            <span>#INV-043 · SaaS Contract</span>
+        <div class="invoice-card-head">
+          <div class="invoice-card-kicker-row">
+            <span class="invoice-kicker">Пример</span>
+            <span class="risk low">Risk indicator: A<button class="info-tip-btn" type="button" aria-label="Что означает индикатор риска"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Индикатор на основе данных, сформированный инструментами верификации и скоринга Factor0x. Это не кредитный рейтинг и не инвестиционная рекомендация. Кредитное решение принимает лицензированный финансовый партнёр.</span></button></span>
           </div>
-          <span class="risk low">Risk indicator: A<button class="info-tip-btn" type="button" aria-label="Что означает индикатор риска"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Индикатор на основе данных, сформированный инструментами верификации и скоринга Factor0x. Это не кредитный рейтинг и не инвестиционная рекомендация. Кредитное решение принимает лицензированный финансовый партнёр.</span></button></span>
+          <h3>Desert Cloud Services</h3>
+          <span class="invoice-meta">#INV-043 · SaaS Contract</span>
         </div>
-        <div class="invoice-metrics">
-          <div><span>Сумма инвойса</span><strong>$250 000</strong></div>
-          <div><span class="metric-label-info">Целевая доходность, годовых<button class="info-tip-btn" type="button" aria-label="Что такое целевая доходность"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Только ориентировочная цель. Доходность не гарантирована и зависит от оплаты инвойса. Капитал под риском.</span></button></span><strong>5.4%</strong></div>
+        <div class="invoice-highlight">
+          <span class="metric-label-info">Целевая доходность, годовых<button class="info-tip-btn" type="button" aria-label="Что такое целевая доходность"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="6.5" cy="3.8" r="0.6" fill="currentColor"/></svg><span class="info-tip-text" hidden>Только ориентировочная цель. Доходность не гарантирована и зависит от оплаты инвойса. Капитал под риском.</span></button></span>
+          <strong>5.4%</strong>
+        </div>
+        <div class="invoice-divider"></div>
+        <div class="invoice-columns">
+          <div><span>Сумма инвойса</span><strong>$250,000</strong></div>
           <div><span>Срок</span><strong>24 дня</strong></div>
         </div>
         <div class="invoice-actions">
           <button type="button" data-open-interest>Оставить заявку</button>
-          <button type="button" class="details-btn" data-company="desert">Подробнее о примере</button>
+          <button type="button" class="details-btn" data-company="desert">Подробнее о примере →</button>
         </div>
       </article>
     </div>
@@ -730,6 +742,6 @@
   </div>
 </div>
 
-<script src="main.js?v=20261019-1"></script>
+<script src="main.js?v=20261019-2"></script>
 </body>
 </html>

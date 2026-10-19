@@ -827,11 +827,13 @@ body .policy {
   }
 }
 .offers-head {
+  padding-top: 4px;
+}
+.offers-head-row {
   display: flex;
-  align-items: end;
+  align-items: baseline;
   justify-content: space-between;
   gap: 24px;
-  padding-top: 4px;
 }
 .offers-head span {
   display: block;
@@ -961,19 +963,29 @@ body .policy {
   font-family: 'Manrope', sans-serif;
   cursor: pointer;
 }
+/* 5 named rows (head / highlight / divider / columns / actions) shared via
+   subgrid below, so e.g. a title that wraps to two lines in one card
+   grows that row for all three cards instead of just pushing that one
+   card's own content down. row-gap: 0 — each row controls its own
+   spacing explicitly (see .invoice-highlight/.invoice-divider/
+   .invoice-actions margins) rather than one uniform gap, since the brief
+   calls for a specific 24-28px gap before the actions row only. */
 .invoice-board {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-rows: repeat(5, auto);
+  column-gap: 16px;
+  row-gap: 16px;
+  align-items: start;
 }
 .invoice-hero.show-invoice-table .invoice-board {
   display: none;
 }
 .invoice-card {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 430px;
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 5;
   font-family: 'Manrope', sans-serif;
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -982,6 +994,16 @@ body .policy {
   padding: 24px;
   overflow: hidden;
   backdrop-filter: blur(18px);
+}
+/* Narrower than 3-in-a-row, subgrid's cross-card alignment matters less
+   and fights CSS Grid's auto-placement once cards wrap onto a second row
+   (see the tablet/mobile .invoice-board override below) — a plain
+   content-sized column is simpler and just as correct there. */
+@media (max-width: 1024px) {
+  .invoice-card {
+    display: flex;
+    flex-direction: column;
+  }
 }
 .more-invoices {
   display: none;
@@ -1287,31 +1309,38 @@ body.landscape-modal-open .invoice-table th {
   font-weight: 700;
   text-align: center;
 }
-.invoice-card::before {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto;
-  height: 3px;
-  background: linear-gradient(90deg, var(--black), var(--gray), var(--gray-light));
-  opacity: 0.8;
-}
 .invoice-card.featured {
   background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(246,246,246,0.88));
   border-color: rgba(5,5,5,0.18);
 }
-.invoice-top {
+.invoice-card-head {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 22px;
+  flex-direction: column;
 }
-.invoice-top h3 {
+.invoice-card-kicker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+/* Plain kicker, not a chip — distinct from .example-badge (same "Example"
+   label, but used on the dark photo background of the See-example-details
+   modal, where it still needs a border/fill to read against that image). */
+.invoice-kicker {
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.invoice-card-head h3 {
   font-size: 18px;
   line-height: 1.2;
   margin-bottom: 4px;
 }
-.invoice-top span:not(.risk) {
+.invoice-meta {
   display: block;
   color: var(--text3);
   font-family: 'Manrope', sans-serif;
@@ -1323,11 +1352,12 @@ body.landscape-modal-open .invoice-table th {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
+  min-height: 26px;
   gap: 5px;
   border-radius: 999px;
-  padding: 5px 10px;
+  padding: 0 10px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 500;
   border: 1px solid var(--border2);
   color: var(--black);
   background: rgba(255,255,255,0.68);
@@ -1411,99 +1441,79 @@ body.landscape-modal-open .invoice-table th {
   transform: translateY(0);
 }
 /* This text only ever exists for JS to read (see initInfoTips) — never
-   rendered in place. !important because several ancestor-scoped span
-   rules (.invoice-top span:not(.risk), .fact-label, etc.) set their own
-   display and would otherwise win over a plain [hidden]/display:none
-   here, same cascade-origin gotcha noted on .admin-form-checkbox[hidden]
-   above. */
+   rendered in place. !important because ancestor-scoped rules like
+   .metric-label-info/.fact-label set their own display and would
+   otherwise win over a plain [hidden]/display:none here, same
+   cascade-origin gotcha noted on .admin-form-checkbox[hidden] above. */
 .info-tip-text {
   display: none !important;
 }
-.invoice-metrics {
-  display: grid;
-  gap: 14px;
-}
-.invoice-metrics div,
-.invoice-footer div,
-.fill-row > div:first-child {
+/* The card's one hero number — everything else on the card is secondary
+   to it, per the brief's "Target return is the main figure" call. */
+.invoice-highlight {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 16px;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 18px;
 }
-.invoice-metrics span,
-.invoice-footer span,
-.fill-row span {
+.invoice-highlight .metric-label-info {
   color: var(--text3);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
 }
-.invoice-metrics strong,
-.invoice-footer strong,
-.fill-row strong {
+.invoice-highlight strong {
   color: var(--black);
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 16px;
+  font-size: 34px;
   font-weight: 700;
+  line-height: 1.1;
 }
-.invoice-metrics small {
-  display: block;
-  margin-top: 2px;
-  color: var(--black);
-  font-family: 'Space Grotesk', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  text-align: right;
+.invoice-divider {
+  height: 1px;
+  margin: 16px 0;
+  background: var(--border);
 }
-.fill-row {
-  margin-top: 18px;
-}
-.progress {
-  width: 100%;
-  height: 8px;
-  margin-top: 8px;
-  border-radius: 999px;
-  background: var(--gray-light);
-  overflow: hidden;
-}
-.progress span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--black), var(--gray));
-}
-.invoice-footer {
-  display: grid;
-  gap: 12px;
-  margin-top: 18px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-}
-.invoice-actions {
+.invoice-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: auto;
-  padding-top: 22px;
+  gap: 16px;
 }
-.invoice-actions button {
-  position: relative;
-  overflow: hidden;
-  min-height: 42px;
-  border-radius: 12px;
-  border: 1px solid var(--border2);
-  background: var(--white);
+.invoice-columns div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.invoice-columns span {
+  color: var(--text3);
+  font-size: 12px;
+  font-weight: 600;
+}
+.invoice-columns strong {
   color: var(--black);
-  font-size: 13px;
-  font-weight: 700;
-  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: 'Manrope', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+}
+.invoice-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 26px;
 }
 .invoice-actions button:first-child {
-  border-color: rgba(5,5,5,0.92);
-  background:
-    linear-gradient(135deg, #050505 0%, #202020 46%, #050505 100%);
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-height: 46px;
+  border-radius: 12px;
+  border: 1px solid rgba(5,5,5,0.92);
+  background: linear-gradient(135deg, #050505 0%, #202020 46%, #050505 100%);
   color: var(--white);
+  font-size: 13px;
+  font-weight: 700;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 10px 22px rgba(5,5,5,0.14);
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 .invoice-actions button:first-child::after {
   content: '';
@@ -1516,29 +1526,44 @@ body.landscape-modal-open .invoice-table th {
   transform: skewX(-18deg);
   opacity: 0;
 }
-.invoice-actions button:hover {
-  transform: translateY(-2px);
-}
 .invoice-actions button:first-child:hover {
-  background:
-    linear-gradient(135deg, #050505 0%, #262626 46%, #050505 100%);
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #050505 0%, #262626 46%, #050505 100%);
   border-color: rgba(255,255,255,0.64);
   box-shadow: 0 14px 32px rgba(5,5,5,0.24), inset 0 1px 0 rgba(255,255,255,0.22), inset 0 0 0 1px rgba(255,255,255,0.12);
 }
 .invoice-actions button:first-child:hover::after {
   animation: cta-shine 0.85s ease forwards;
 }
+/* "See example details" — a plain text link under the primary button, not
+   a second bordered button competing with it. */
+.invoice-actions .details-btn {
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--text3);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+.invoice-actions .details-btn:hover {
+  color: var(--black);
+  text-decoration: underline;
+}
 .deal-disclaimer {
-  margin-top: 20px;
+  margin-top: 48px;
   padding-top: 18px;
   border-top: 1px solid var(--border);
 }
 .deal-disclaimer p {
   margin: 0;
-  max-width: 980px;
+  max-width: 75ch;
   color: var(--text3);
   font-family: 'Manrope', sans-serif;
-  font-size: 11.5px;
+  font-size: 13px;
   line-height: 1.6;
 }
 .btn-primary {
@@ -6133,7 +6158,7 @@ footer {
     margin: 0 auto;
   }
   .invoice-board {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .invoice-visual-section {
     min-height: auto;
@@ -6217,9 +6242,6 @@ footer {
     top: 61%;
     --beam-x: -50%;
     width: min(300px, 52vw);
-  }
-  .invoice-card {
-    min-height: auto;
   }
   .hero-desc { margin: 0 auto 36px; }
   .hero-btns { justify-content: center; }
@@ -6577,21 +6599,8 @@ footer {
   .note-b { right: 0; top: 18%; }
   .note-c { left: 18%; bottom: 4%; }
   .rail { display: none; }
-  .invoice-actions {
-    grid-template-columns: 1fr;
-  }
-  .offers-head {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-  .view-more-btn {
-    width: 100%;
-  }
   .invoice-card {
     padding: 20px;
-  }
-  .invoice-top {
-    flex-direction: column;
   }
   .section-head h2,
   .cta-inner h2 { font-size: 40px; }
@@ -7532,7 +7541,7 @@ footer {
     display: none;
   }
 
-  .invoice-top h3 {
+  .invoice-card-head h3 {
     font-size: 23px;
   }
 
