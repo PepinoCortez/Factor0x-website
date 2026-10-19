@@ -817,13 +817,14 @@ body .policy {
   white-space: nowrap;
 }
 .market-header .hero-desc {
-  max-width: 760px;
+  max-width: none;
   font-size: 16px;
   margin-bottom: 0;
+  white-space: nowrap;
 }
 @media (min-width: 769px) {
   .market-header .hero-desc {
-    font-size: 20px;
+    font-size: clamp(13px, 1.05vw, 20px);
   }
 }
 .offers-head {
@@ -1560,7 +1561,6 @@ body.landscape-modal-open .invoice-table th {
 }
 .deal-disclaimer p {
   margin: 0;
-  max-width: 75ch;
   color: var(--text3);
   font-family: 'Manrope', sans-serif;
   font-size: 13px;
@@ -6137,6 +6137,11 @@ footer {
   }
   .market-header .hero-title {
     font-size: 46px;
+    white-space: normal;
+  }
+  .market-header .hero-desc {
+    max-width: 720px;
+    margin: 0 auto;
     white-space: normal;
   }
   .tvl-strip {
