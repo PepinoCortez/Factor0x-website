@@ -52,7 +52,7 @@
       </div>
     </div>
     -->
-    <a class="btn-nav" href="business-portal/">Личный кабинет</a>
+    <a class="btn-nav" href="business-portal/" id="myAccountBtn">Личный кабинет</a>
   </div>
   <button class="burger" id="burger" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileMenu">
     <span></span><span></span><span></span>
@@ -894,6 +894,24 @@
         <input type="password" name="admin_password" id="adminPasswordInput" placeholder="••••••••" autocomplete="off" required>
       </label>
       <p class="admin-form-error" id="adminFormError">Неверный пароль</p>
+      <button type="submit" class="admin-form-submit">Войти</button>
+    </form>
+  </div>
+</div>
+
+<div class="admin-modal-backdrop" id="accountModal" aria-hidden="true">
+  <div class="admin-modal" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
+    <button class="admin-modal-close" type="button" aria-label="Закрыть">×</button>
+    <div class="admin-modal-head">
+      <div class="admin-modal-kicker">Restricted</div>
+      <h2 id="accountModalTitle">My Account</h2>
+    </div>
+    <form class="admin-form" id="accountForm" autocomplete="off">
+      <label>
+        <span>Пароль</span>
+        <input type="password" name="account_password" id="accountPasswordInput" placeholder="••••••••" autocomplete="off" required>
+      </label>
+      <p class="admin-form-error" id="accountFormError">Неверный пароль</p>
       <button type="submit" class="admin-form-submit">Войти</button>
     </form>
   </div>

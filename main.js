@@ -501,6 +501,53 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
     }
   });
 
+  const myAccountBtn = document.getElementById('myAccountBtn');
+  const accountModal = document.getElementById('accountModal');
+  const accountModalClose = accountModal?.querySelector('.admin-modal-close');
+  const accountForm = document.getElementById('accountForm');
+  const accountPasswordInput = document.getElementById('accountPasswordInput');
+  const accountFormError = document.getElementById('accountFormError');
+
+  function openAccountModal() {
+    if (!accountModal) return;
+    accountModal.classList.add('open');
+    accountModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    accountFormError?.classList.remove('visible');
+    accountForm?.reset();
+    window.setTimeout(() => accountPasswordInput?.focus(), 100);
+  }
+
+  function closeAccountModal() {
+    if (!accountModal) return;
+    accountModal.classList.remove('open');
+    accountModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  myAccountBtn?.addEventListener('click', event => {
+    event.preventDefault();
+    openAccountModal();
+  });
+  accountModalClose?.addEventListener('click', closeAccountModal);
+  accountModal?.addEventListener('click', event => {
+    if (event.target === accountModal) closeAccountModal();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && accountModal?.classList.contains('open')) closeAccountModal();
+  });
+
+  accountForm?.addEventListener('submit', event => {
+    event.preventDefault();
+    if (accountPasswordInput.value === ADMIN_PASSWORD) {
+      window.location.href = 'business-portal/';
+    } else {
+      accountFormError?.classList.add('visible');
+      accountPasswordInput.value = '';
+      accountPasswordInput.focus();
+    }
+  });
+
   function initApplyForm(applyForm) {
     applyForm.addEventListener('submit', event => {
       event.preventDefault();
