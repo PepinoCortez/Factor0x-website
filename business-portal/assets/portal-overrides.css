@@ -772,6 +772,18 @@ main .mx-auto.flex.max-w-5xl.flex-col.gap-6 > div:has([data-testid="list-activit
   max-width: 1296px !important;
 }
 
+/* Same title size/weight as Обзор's h1 and .portal-new-application-page's
+   own h1 override — this page's header div never gets applyOverviewTheme's
+   .portal-overview-header class (that match requires a sibling action
+   button, which this header doesn't have), so without this the native
+   Tailwind text-2xl renders noticeably smaller than every other page. */
+.portal-deals-page h1 {
+  font-size: clamp(1.75rem, 2.2rem, 2.5rem) !important;
+  line-height: 1.05 !important;
+  letter-spacing: -0.03em !important;
+  color: var(--ov-text);
+}
+
 /* "Мои сделки": reads as one dense table frame, matching Архив's actual
    <table>, instead of a stack of individually-rounded cards with gaps
    between them (see applyDealsTheme in portal-overrides.js — same dark
