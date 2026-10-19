@@ -606,7 +606,13 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
     const privacyLabelText = () => privacyCheckbox?.closest('label')?.querySelector('span')?.textContent.trim() || '';
     const investorLabelText = () => investorRow?.querySelector('span')?.textContent.trim() || '';
 
-    function openInterestModal() {
+    function syncInvestorRow() {
+      const isInvestor = roleSelect.value === 'investor';
+      investorRow.hidden = !isInvestor;
+      if (!isInvestor) investorCheckbox.checked = false;
+    }
+
+    function openInterestModal(presetRole) {
       interestModal.classList.add('open');
       interestModal.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
@@ -614,7 +620,8 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
       fields.hidden = false;
       successEl.hidden = true;
       form.reset();
-      investorRow.hidden = true;
+      if (presetRole) roleSelect.value = presetRole;
+      syncInvestorRow();
       window.setTimeout(() => form.querySelector('input[name="full_name"]')?.focus(), 100);
     }
 
@@ -627,7 +634,7 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
     document.querySelectorAll('[data-open-interest]').forEach(button => {
       button.addEventListener('click', event => {
         event.preventDefault();
-        openInterestModal();
+        openInterestModal(button.dataset.openInterest || null);
       });
     });
     closeBtn?.addEventListener('click', closeInterestModal);
@@ -638,11 +645,7 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
       if (event.key === 'Escape' && interestModal.classList.contains('open')) closeInterestModal();
     });
 
-    roleSelect?.addEventListener('change', () => {
-      const isInvestor = roleSelect.value === 'investor';
-      investorRow.hidden = !isInvestor;
-      if (!isInvestor) investorCheckbox.checked = false;
-    });
+    roleSelect?.addEventListener('change', syncInvestorRow);
 
     function saveInterestSubmission(record) {
       try {
@@ -1287,22 +1290,32 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Финансирование SME': 'SME Financing',
         'Финансирование инвойсов': 'Invoice Financing',
         'Трансграничный B2B': 'Cross-border B2B',
+        'Проверенные инвойсы': 'Verified invoices',
+        'Оборотный капитал': 'Working capital',
         'Как работает модель': 'How the model works',
-        'Factor0x помогает бизнесу получить оборотный капитал, а инвесторам — заработать на проверенных B2B-инвойсах.': 'Factor0x helps businesses access working capital and investors earn from verified B2B invoices.',
+        'Factor0x — это технология для финансирования инвойсов. Мы проверяем B2B-инвойсы и компании и соединяем бизнес с лицензированными финансовыми партнёрами.': 'Factor0x is the technology behind invoice financing. We verify B2B invoices and companies and connect businesses with licensed financing partners.',
         'Бизнес': 'Business',
-        'Получает финансирование': 'Receives financing',
-        'Передаёт подтверждённый B2B-инвойс и получает оборотный капитал до оплаты клиента.': 'Submits a confirmed B2B invoice and receives working capital before the customer pays.',
-        'Структурирует сделку': 'Structures the deal',
-        'Связывает бизнес, капитал и процесс выплат в единую управляемую инфраструктуру.': 'Connects business, capital, and the repayment process in one managed infrastructure.',
+        'Получает оборотный капитал': 'Gets working capital',
+        'Передаёт подтверждённый B2B-инвойс и получает финансирование от лицензированного партнёра до оплаты клиента.': 'Submits a confirmed B2B invoice and receives financing from a licensed partner before the customer pays.',
+        'Проверяет и соединяет': 'Verifies and connects',
+        'Наша технология проверяет компании и инвойсы и даёт каждой стороне прозрачную картину сделки. Factor0x не хранит средства клиентов.': 'Our technology checks companies and invoices and gives every party a clear view of each deal. Factor0x does not hold client funds.',
+        'Посмотреть, как это работает': 'See how it works',
+        'Партнёр': 'Partner',
+        'Предоставляет финансирование': 'Provides financing',
+        'Лицензированная финансовая организация принимает кредитное решение, финансирует инвойс и получает погашение от покупателя.': 'A licensed financial institution makes the credit decision, finances the invoice and collects repayment from the buyer.',
+        'Стать партнёром': 'Become a partner',
         'Инвесторы': 'Investors',
-        'Предоставляют ликвидность': 'Provide liquidity',
-        'Финансируют реальные торговые сделки и получают доход после их погашения.': 'Finance real trade deals and earn after they are repaid.',
+        'Профессиональный доступ': 'Professional access',
+        'Подходящие профессиональные и институциональные инвесторы получат доступ к возможностям, обеспеченным инвойсами, через лицензированных партнёров. Доходность не гарантирована.': 'Eligible professional and institutional investors will access invoice-backed opportunities through licensed partners. Returns are not guaranteed.',
         'Инвойс': 'Invoice',
         'Проверка': 'Verification',
         'Финансирование': 'Financing',
         'Погашение': 'Repayment',
-        'Доход': 'Yield',
+        'Статус': 'Status',
         'Каждый этап фиксируется в системе и отображается инвестору в статусе сделки.': 'Every stage is recorded in the system and shown to investors in the deal status.',
+        'Деньги: инвесторы → лицензированный партнёр → бизнес': 'Funds: investors → licensed partner → business',
+        'Технологии и проверка: Factor0x': 'Technology and verification: Factor0x',
+        'Factor0x — технологическая платформа. Оператор — FactorZeroX Portal L.L.C (Дубай, лицензия № 1629834). Платформа не оказывает финансовых, инвестиционных или банковских услуг. Финансирование предоставляют лицензированные партнёры. Инвестирование связано с риском, включая потерю капитала. Ничто на этом сайте не является финансовой рекомендацией.': 'Factor0x is a technology platform operated by FactorZeroX Portal L.L.C (Dubai, licence No. 1629834) and does not provide financial, investment or banking services. Financing is provided by licensed partners. Investing involves risk, including loss of capital. Nothing on this website is financial advice.',
         'Factor0x работает на пересечении trade finance,': 'Factor0x operates at the intersection of trade finance,',
         'Web3-ликвидности и реального B2B-сектора.': 'Web3 liquidity, and the real B2B sector.',
         'Мы начинаем с ОАЭ — рынка с сильной торговлей, логистикой и спросом на оборотный капитал.': 'We start with the UAE, a market with strong trade, logistics, and demand for working capital.',
