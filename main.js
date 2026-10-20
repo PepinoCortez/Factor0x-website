@@ -10,35 +10,44 @@ if (nav) {
   }, { passive: true });
 }
 
-// ── HERO LOGO LABEL ────────────────────────
+// ── NAV LOGO REVEAL ─────────────────────────
+// Only the homepage has a first slide with its own giant 3D wordmark
+// (brand-first-slide) — the nav's own small text logo stays hidden while
+// that's on screen and fades in once it's fully scrolled past. Every
+// other page (no brand-first-slide) skips this entirely, so the nav logo
+// there keeps showing as plain static markup, same as always.
 (() => {
   const logo = document.querySelector('#nav .logo');
-  const heroLogoStage = document.querySelector('.brand-logo-stage');
-  const heroImage = document.querySelector('.brand-first-slide img');
-  if (!logo || !heroImage) return;
+  const heroSection = document.querySelector('.brand-first-slide');
+  if (!logo || !heroSection) return;
 
-  const factorLogo = 'Factor<span class="logo-accent">0x</span>';
-  const homeLogo = 'HOME';
-  let currentLabel = '';
-
-  function setLogo(label) {
-    if (currentLabel === label) return;
-    logo.innerHTML = label === 'home' ? homeLogo : factorLogo;
-    currentLabel = label;
+  function setLogoVisible(visible) {
+    logo.classList.toggle('logo-hidden', !visible);
+    logo.setAttribute('aria-hidden', String(!visible));
+    if (visible) {
+      logo.removeAttribute('tabindex');
+    } else {
+      logo.setAttribute('tabindex', '-1');
+    }
   }
 
-  function updateLogoLabel() {
-    const logoAnchor = window.matchMedia('(min-width: 769px)').matches && heroLogoStage
-      ? heroLogoStage
-      : heroImage;
-    const imageBottom = logoAnchor.getBoundingClientRect().bottom + window.scrollY;
+  let observer;
+
+  function createObserver() {
+    observer?.disconnect();
+    // Shrinks the effective viewport by the fixed nav's own height, so the
+    // hero counts as "gone" once it's scrolled out from under the nav bar
+    // rather than only once it's past the raw top edge of the window.
     const navHeight = nav?.offsetHeight || 0;
-    setLogo(window.scrollY + navHeight >= imageBottom ? 'factor' : 'home');
+    observer = new IntersectionObserver(
+      entries => entries.forEach(entry => setLogoVisible(!entry.isIntersecting)),
+      { rootMargin: `-${navHeight}px 0px 0px 0px` }
+    );
+    observer.observe(heroSection);
   }
 
-  window.addEventListener('scroll', updateLogoLabel, { passive: true });
-  window.addEventListener('resize', updateLogoLabel);
-  updateLogoLabel();
+  createObserver();
+  window.addEventListener('resize', createObserver);
 })();
 
 // ── MOBILE MENU ─────────────────────────────
