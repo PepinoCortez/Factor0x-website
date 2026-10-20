@@ -3521,6 +3521,91 @@ body.landscape-modal-open .invoice-table th {
   line-height: 1.5;
 }
 
+/* ── Register Interest layout pass — spacing and styling only; fields,
+   copy and the JS submit/validation logic are unchanged. Scoped under
+   .interest-form(-fields) wherever a rule would otherwise also reach the
+   plain admin/account password-gate forms sharing .admin-form. ── */
+.admin-form input,
+.admin-form select {
+  height: 44px;
+}
+.admin-form input::placeholder {
+  color: rgba(255,255,255,0.34);
+}
+/* The role <select>'s first option is value="" + disabled, so the
+   element itself matches :invalid for as long as nothing real is
+   chosen — gives "Select"/"Выберите" the same muted placeholder color
+   as the text inputs above without any JS, since <select> has no actual
+   ::placeholder pseudo-element. */
+.admin-form select:invalid {
+  color: rgba(255,255,255,0.34);
+}
+.interest-form-fields > label {
+  margin-top: 20px;
+}
+.interest-form-fields > label:first-child {
+  margin-top: 0;
+}
+.interest-form-fields > label.admin-form-checkbox {
+  margin-top: 24px;
+}
+.interest-form-fields > .admin-form-error {
+  margin-top: 12px;
+}
+/* 18px, thin grey outline matching the text fields — replaces the
+   native checkbox's own bright white accent-color fill. */
+.interest-form .admin-form-checkbox input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 4px;
+  background-color: rgba(255,255,255,0.06);
+  cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+.interest-form .admin-form-checkbox input[type="checkbox"]:checked {
+  border-color: rgba(255,255,255,0.4);
+  background-color: rgba(255,255,255,0.14);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 11px 11px;
+}
+.interest-form .admin-form-checkbox input[type="checkbox"]:focus-visible {
+  outline: none;
+  border-color: rgba(255,255,255,0.4);
+}
+/* Primary gold CTA, matching the site's main buttons (e.g.
+   .brand-hero-actions a:first-child) — scoped to this form only, so the
+   admin/account password-gate submit buttons keep their own plain
+   style. */
+.interest-form .admin-form-submit {
+  width: 100%;
+  height: 48px;
+  margin-top: 28px;
+  padding: 0;
+  border: 1px solid rgba(244,210,132,0.58);
+  border-radius: 10px;
+  background: linear-gradient(135deg, #C79A36, #FFE2A0 48%, #9E7124);
+  color: #171008;
+  font-size: 15px;
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+.interest-form .admin-form-submit:hover {
+  opacity: 1;
+  filter: brightness(1.04);
+}
+/* Visual-only "disabled" cue while the required consent box is unticked
+   — the actual submit guard is still the existing JS validation in
+   main.js; this just previews that state instead of replacing it. */
+.interest-form:has(#privacyConsentInput:not(:checked)) .admin-form-submit {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
 .apply-form label.wide {
   grid-column: span 3;
 }
