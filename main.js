@@ -1639,7 +1639,7 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
       factRow('Сумма инвойса', details.amount) +
       factRow('Целевая доходность, годовых' + infoBtn('Что такое целевая доходность', RETURN_TIP), details.targetReturn) +
       factRow('Срок', details.tenorKey) +
-      factRow('Индикатор риска' + infoBtn('Что означает индикатор риска', RISK_TIP), 'Risk indicator: ' + details.riskTier)
+      factRow('Индикатор риска' + infoBtn('Что означает индикатор риска', RISK_TIP), details.riskTier)
     );
   }
 
