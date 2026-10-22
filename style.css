@@ -619,7 +619,7 @@ body .policy {
   gap: 72px;
 }
 .invoice-hero {
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
   gap: 20px;
 }
@@ -6321,11 +6321,11 @@ footer {
   }
   .hero { padding-top: 80px; }
   .hero-inner {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 42px;
   }
   .market-header {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     max-width: 720px;
     margin: 0 auto;
     text-align: center;
@@ -7305,10 +7305,10 @@ footer {
   }
 
   #invoices .market-header .hero-desc {
-    font-size: clamp(13px, 3.55vw, 14px);
-    line-height: 1.35;
+    font-size: 14px;
+    line-height: 1.5;
     max-width: none;
-    white-space: nowrap;
+    white-space: normal;
   }
 
   .brand-hero-content {
@@ -7763,6 +7763,8 @@ footer {
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    width: calc(100% + 48px);
+    min-width: 0;
     margin-left: -24px;
     margin-right: -24px;
     padding: 0 13vw 8px;

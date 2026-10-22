@@ -1267,6 +1267,8 @@ document.querySelectorAll('a[href^="#"]').forEach(link => {
         'Целевая доходность, годовых': 'Target return (p.a.)',
         'Срок': 'Tenor',
         'Индикатор риска': 'Risk indicator',
+        'Индикатор риска: A': 'Risk indicator: A',
+        'Индикатор риска: B': 'Risk indicator: B',
         '58 дней': '58 days',
         '40 дней': '40 days',
         '24 дня': '24 days',
