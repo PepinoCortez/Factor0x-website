@@ -1830,6 +1830,19 @@
             'Загрузите ' + docs.missingRequired[0] + ', чтобы отправить заявку',
             'Upload ' + docs.missingRequired[0] + ' to submit the application'
           );
+        } else if (!submitBtn.disabled) {
+          // Step 3 (Additional documents) has no required docs of its own,
+          // so this is the only guidance slot left once Submit unlocks —
+          // same element, same position, same muted styling as the
+          // missing-document copy above, just encouraging rather than
+          // blocking. Keyed off submitBtn.disabled itself (set two lines
+          // up from the same docs.missingRequired check) rather than
+          // re-deriving the condition, so this can never drift out of
+          // sync with the button it's describing.
+          text = t(
+            'Готово к отправке. Добавьте больше документов для более быстрого и точного рассмотрения.',
+            'Ready to submit. Add more documents for a faster, more accurate review.'
+          );
         }
         missingEl.hidden = !text;
         if (text) setTextIfChanged(missingEl, text);
